@@ -5,12 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { theme } from '@/constants/designTheme';
-
-const LANGUAGES = [
-  'Zulu', 'Xhosa', 'Afrikaans', 'Sotho',
-  'Tsotsitaal', 'isiNdebele', 'Sepedi', 'Setswana',
-  'Tsonga', 'Venda',
-];
+import { LANGUAGES } from '@/constants/languages';
 
 export default function OnboardingLanguagesScreen() {
   const router = useRouter();
