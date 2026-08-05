@@ -1,8 +1,9 @@
-import { View, StyleSheet, ScrollView, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
 import { Text } from '@/components/ui/Text';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
 import { theme } from '@/constants/designTheme';
 import { LANGUAGES } from '@/constants/languages';
 import { useAuth } from '@/context/AuthContext';
@@ -12,12 +13,24 @@ export default function AddTermScreen() {
   const { user } = useAuth();
   const [term, setTerm] = useState('');
   const [meaning, setMeaning] = useState('');
-  const [example, setExample] = useState('');
+  const [exampleInput, setExampleInput] = useState('');
+  const [examples, setExamples] = useState<string[]>([]);
   const [region, setRegion] = useState('');
   const [language, setLanguage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  function addExample() {
+    const trimmed = exampleInput.trim();
+    if (!trimmed) return;
+    setExamples((prev) => [...prev, trimmed]);
+    setExampleInput('');
+  }
+
+  function removeExample(index: number) {
+    setExamples((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function handleSubmit() {
     setErrorMsg('');
@@ -37,7 +50,7 @@ export default function AddTermScreen() {
       await addSlangTerm({
         term: term.trim(),
         meaning: meaning.trim(),
-        example: example.trim() || undefined,
+        examples,
         language,
         region: region.trim() || undefined,
         submittedBy: user.uid,
@@ -47,7 +60,8 @@ export default function AddTermScreen() {
       setSuccessMsg(`"${term.trim()}" added!`);
       setTerm('');
       setMeaning('');
-      setExample('');
+      setExampleInput('');
+      setExamples([]);
       setRegion('');
       setLanguage(null);
     } catch (error) {
@@ -60,7 +74,7 @@ export default function AddTermScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text variant="display" style={{ marginBottom: 4 }}>Add a term</Text>
         <Text variant="muted" style={{ marginBottom: 24 }}>
           Teach the community a word or phrase you know.
@@ -68,28 +82,37 @@ export default function AddTermScreen() {
 
         <Input label="Term" placeholder="e.g. Eish" value={term} onChangeText={setTerm} />
         <Input label="Meaning" placeholder="What does it mean?" value={meaning} onChangeText={setMeaning} multiline />
-        <Input label="Example (optional)" placeholder="Use it in a sentence" value={example} onChangeText={setExample} multiline />
+
+        <Text variant="muted" style={{ marginBottom: 8 }}>Examples (optional)</Text>
+        <Input
+          placeholder="Use it in a sentence, then tap Add"
+          value={exampleInput}
+          onChangeText={setExampleInput}
+          onSubmitEditing={addExample}
+          returnKeyType="done"
+        />
+        <Button label="+ Add example" variant="secondary" onPress={addExample} style={{ marginBottom: 12 }} />
+        {examples.length > 0 ? (
+          <View style={styles.chipWrap}>
+            {examples.map((ex, i) => (
+              <Chip key={`${ex}-${i}`} label={ex} selected onRemove={() => removeExample(i)} />
+            ))}
+          </View>
+        ) : null}
+
         <Input label="Region (optional)" placeholder="e.g. Cape Flats, Joburg" value={region} onChangeText={setRegion} />
 
-        <Text variant="muted" style={{ marginBottom: 8 }}>Language</Text>
+        <Text variant="muted" style={{ marginBottom: 8, marginTop: 8 }}>Language</Text>
         <View style={styles.chipWrap}>
-          {LANGUAGES.map((lang) => {
-            const isSelected = language === lang;
-            return (
-              <Pressable
-                key={lang}
-                onPress={() => setLanguage(lang)}
-                style={[
-                  styles.chip,
-                  { backgroundColor: isSelected ? theme.colors.primary : theme.colors.secondary },
-                ]}
-              >
-                <Text style={{ color: isSelected ? theme.colors.primaryText : theme.colors.secondaryText }}>
-                  {lang}
-                </Text>
-              </Pressable>
-            );
-          })}
+          {LANGUAGES.map((lang, index) => (
+            <Chip
+              key={lang}
+              label={lang}
+              selected={language === lang}
+              onPress={() => setLanguage(lang)}
+              delay={index * 30}
+            />
+          ))}
         </View>
 
         {errorMsg ? <Text style={{ color: '#C0392B', marginTop: 16 }}>{errorMsg}</Text> : null}
