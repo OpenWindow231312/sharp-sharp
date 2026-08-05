@@ -1,6 +1,6 @@
 import { View, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useAuth } from '@/context/AuthContext';
 import { getSavedTerms } from '@/services/savedTerms';
@@ -16,6 +16,7 @@ import type { SlangTerm } from '@/types/slangTerm';
 export default function LearnScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { startId } = useLocalSearchParams<{ startId?: string }>();
   const [terms, setTerms] = useState<SlangTerm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -28,16 +29,16 @@ export default function LearnScreen() {
   }, []);
 
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      setTerms(MOCK_TERMS);
+    const source = USE_MOCK_DATA ? Promise.resolve(MOCK_TERMS) : (user ? getSavedTerms(user.uid) : Promise.resolve([]));
+    source.then((loaded) => {
+      setTerms(loaded);
+      if (startId) {
+        const index = loaded.findIndex((t) => t.id === startId);
+        if (index !== -1) setCurrentIndex(index);
+      }
       setIsLoading(false);
-      return;
-    }
-    if (!user) return;
-    getSavedTerms(user.uid)
-      .then(setTerms)
-      .finally(() => setIsLoading(false));
-  }, [user]);
+    });
+  }, [user, startId]);
 
   function handleSwipe() {
     setCurrentIndex((i) => i + 1);
