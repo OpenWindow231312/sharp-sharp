@@ -1,7 +1,16 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeAuth, getReactNativePersistence, getAuth, type Auth } from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { initializeFirestore, getFirestore, type Firestore } from 'firebase/firestore';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getApp, getApps, initializeApp } from "firebase/app";
+import {
+  getAuth,
+  getReactNativePersistence,
+  initializeAuth,
+  type Auth,
+} from "firebase/auth";
+import {
+  getFirestore,
+  initializeFirestore,
+  type Firestore,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -12,8 +21,16 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// TEMPORARY diagnostic — remove once we've confirmed the config is loading.
+// Doesn't print the actual key value, just whether each field made it
+// through from .env or came back undefined.
+console.log("Firebase config check:", {
+  apiKey: firebaseConfig.apiKey ? "present" : "MISSING",
+  projectId: firebaseConfig.projectId ?? "MISSING",
+  authDomain: firebaseConfig.authDomain ?? "MISSING",
+});
 
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 let auth: Auth;
 try {
   auth = initializeAuth(app, {
@@ -22,22 +39,14 @@ try {
 } catch {
   auth = getAuth(app);
 }
-
 let db: Firestore;
 try {
-  // React Native's networking layer doesn't reliably support Firestore's
-  // default streaming connection (WebChannel), which causes spurious
-  // "client is offline" errors even with a perfectly good connection.
-  // Forcing long-polling swaps in a more compatible (if slightly less
-  // efficient) connection method that works reliably in RN.
   db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
     useFetchStreams: false,
   });
 } catch {
-  // Fast Refresh safety net, same reasoning as the auth try/catch above
   db = getFirestore(app);
 }
-
 export { auth, db };
 export default app;

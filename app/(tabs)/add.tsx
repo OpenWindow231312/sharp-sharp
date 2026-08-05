@@ -1,31 +1,39 @@
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { useState } from 'react';
-import { Text } from '@/components/ui/Text';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
-import { theme } from '@/constants/designTheme';
-import { LANGUAGES } from '@/constants/languages';
-import { useAuth } from '@/context/AuthContext';
-import { addSlangTerm } from '@/services/slangTerms';
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { Input } from "@/components/ui/Input";
+import { Text } from "@/components/ui/Text";
+import { theme } from "@/constants/designTheme";
+import { LANGUAGES } from "@/constants/languages";
+import { useAuth } from "@/context/AuthContext";
+import { addSlangTerm } from "@/services/slangTerms";
+import { addXp } from "@/services/xp";
+import * as Haptics from "expo-haptics";
+import { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
 export default function AddTermScreen() {
   const { user } = useAuth();
-  const [term, setTerm] = useState('');
-  const [meaning, setMeaning] = useState('');
-  const [exampleInput, setExampleInput] = useState('');
+  const [term, setTerm] = useState("");
+  const [meaning, setMeaning] = useState("");
+  const [exampleInput, setExampleInput] = useState("");
   const [examples, setExamples] = useState<string[]>([]);
-  const [region, setRegion] = useState('');
+  const [region, setRegion] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   function addExample() {
     const trimmed = exampleInput.trim();
     if (!trimmed) return;
     setExamples((prev) => [...prev, trimmed]);
-    setExampleInput('');
+    setExampleInput("");
   }
 
   function removeExample(index: number) {
@@ -33,15 +41,15 @@ export default function AddTermScreen() {
   }
 
   async function handleSubmit() {
-    setErrorMsg('');
-    setSuccessMsg('');
+    setErrorMsg("");
+    setSuccessMsg("");
 
     if (!term.trim() || !meaning.trim() || !language) {
-      setErrorMsg('Please fill in the term, meaning, and pick a language.');
+      setErrorMsg("Please fill in the term, meaning, and pick a language.");
       return;
     }
     if (!user) {
-      setErrorMsg('You need to be logged in to add a term.');
+      setErrorMsg("You need to be logged in to add a term.");
       return;
     }
 
@@ -54,36 +62,61 @@ export default function AddTermScreen() {
         language,
         region: region.trim() || undefined,
         submittedBy: user.uid,
-        submittedByName: user.displayName || 'Anonymous',
+        submittedByName: user.displayName || "Anonymous",
       });
 
-      setSuccessMsg(`"${term.trim()}" added!`);
-      setTerm('');
-      setMeaning('');
-      setExampleInput('');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      addXp(user.uid, 20).catch((error) => console.log("Add XP error:", error));
+      setSuccessMsg(`"${term.trim()}" added! +20 XP`);
+      setTerm("");
+      setMeaning("");
+      setExampleInput("");
       setExamples([]);
-      setRegion('');
+      setRegion("");
       setLanguage(null);
     } catch (error) {
-      console.log('Add term error:', error);
-      setErrorMsg("Couldn't add the term. Check your connection and try again.");
+      console.log("Add term error:", error);
+      setErrorMsg(
+        "Couldn't add the term. Check your connection and try again.",
+      );
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text variant="display" style={{ marginBottom: 4 }}>Add a term</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text variant="display" style={{ marginBottom: 4 }}>
+          Add a term
+        </Text>
         <Text variant="muted" style={{ marginBottom: 24 }}>
           Teach the community a word or phrase you know.
         </Text>
 
-        <Input label="Term" placeholder="e.g. Eish" value={term} onChangeText={setTerm} />
-        <Input label="Meaning" placeholder="What does it mean?" value={meaning} onChangeText={setMeaning} multiline />
+        <Input
+          label="Term"
+          placeholder="e.g. Eish"
+          value={term}
+          onChangeText={setTerm}
+        />
+        <Input
+          label="Meaning"
+          placeholder="What does it mean?"
+          value={meaning}
+          onChangeText={setMeaning}
+          multiline
+        />
 
-        <Text variant="muted" style={{ marginBottom: 8 }}>Examples (optional)</Text>
+        <Text variant="muted" style={{ marginBottom: 8 }}>
+          Examples (optional)
+        </Text>
         <Input
           placeholder="Use it in a sentence, then tap Add"
           value={exampleInput}
@@ -91,18 +124,35 @@ export default function AddTermScreen() {
           onSubmitEditing={addExample}
           returnKeyType="done"
         />
-        <Button label="+ Add example" variant="secondary" onPress={addExample} style={{ marginBottom: 12 }} />
+        <Button
+          label="+ Add example"
+          variant="secondary"
+          onPress={addExample}
+          style={{ marginBottom: 12 }}
+        />
         {examples.length > 0 ? (
           <View style={styles.chipWrap}>
             {examples.map((ex, i) => (
-              <Chip key={`${ex}-${i}`} label={ex} selected onRemove={() => removeExample(i)} />
+              <Chip
+                key={`${ex}-${i}`}
+                label={ex}
+                selected
+                onRemove={() => removeExample(i)}
+              />
             ))}
           </View>
         ) : null}
 
-        <Input label="Region (optional)" placeholder="e.g. Cape Flats, Joburg" value={region} onChangeText={setRegion} />
+        <Input
+          label="Region (optional)"
+          placeholder="e.g. Cape Flats, Joburg"
+          value={region}
+          onChangeText={setRegion}
+        />
 
-        <Text variant="muted" style={{ marginBottom: 8, marginTop: 8 }}>Language</Text>
+        <Text variant="muted" style={{ marginBottom: 8, marginTop: 8 }}>
+          Language
+        </Text>
         <View style={styles.chipWrap}>
           {LANGUAGES.map((lang, index) => (
             <Chip
@@ -115,11 +165,15 @@ export default function AddTermScreen() {
           ))}
         </View>
 
-        {errorMsg ? <Text style={{ color: '#C0392B', marginTop: 16 }}>{errorMsg}</Text> : null}
-        {successMsg ? <Text style={{ color: '#2E7D32', marginTop: 16 }}>{successMsg}</Text> : null}
+        {errorMsg ? (
+          <Text style={{ color: "#C0392B", marginTop: 16 }}>{errorMsg}</Text>
+        ) : null}
+        {successMsg ? (
+          <Text style={{ color: "#2E7D32", marginTop: 16 }}>{successMsg}</Text>
+        ) : null}
 
         <Button
-          label={isLoading ? 'Adding...' : 'Add term'}
+          label={isLoading ? "Adding..." : "Add term"}
           variant="primary"
           disabled={isLoading}
           onPress={handleSubmit}
@@ -138,8 +192,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   chipWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
     marginBottom: 16,
   },

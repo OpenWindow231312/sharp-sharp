@@ -9,6 +9,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
 import { theme } from '@/constants/designTheme';
+import { USE_MOCK_DATA } from '@/constants/devConfig';
+import { MOCK_TERMS } from '@/constants/mockTerms';
 import type { SlangTerm } from '@/types/slangTerm';
 
 export default function LearnScreen() {
@@ -18,10 +20,6 @@ export default function LearnScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Locks to landscape the instant this screen mounts. The cleanup
-  // function (the returned function below) runs no matter HOW the user
-  // leaves — back gesture, the X button, finishing the deck — so there's
-  // no path that leaves the app stuck sideways afterward.
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     return () => {
@@ -30,6 +28,11 @@ export default function LearnScreen() {
   }, []);
 
   useEffect(() => {
+    if (USE_MOCK_DATA) {
+      setTerms(MOCK_TERMS);
+      setIsLoading(false);
+      return;
+    }
     if (!user) return;
     getSavedTerms(user.uid)
       .then(setTerms)

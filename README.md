@@ -51,3 +51,4 @@ Join our community of developers creating universal apps.
 
 Libraries installed:
 npx expo install react-native-deck-swiper
+npx expo install expo-haptics
