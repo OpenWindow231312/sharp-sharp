@@ -1,7 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { initializeAuth, getReactNativePersistence, getAuth, type Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, type Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -12,22 +12,32 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Avoids a "Firebase app already exists" crash when Expo's Fast Refresh
-// re-runs this file while you're editing other code
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 let auth: Auth;
 try {
-  // Gives you persistent login (stays signed in after closing the app)
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage),
   });
 } catch {
-  // Fast Refresh safety net: if auth was already initialized above,
-  // grab the existing instance instead of erroring
   auth = getAuth(app);
 }
 
-export { auth };
-export const db = getFirestore(app);
+let db: Firestore;
+try {
+  // React Native's networking layer doesn't reliably support Firestore's
+  // default streaming connection (WebChannel), which causes spurious
+  // "client is offline" errors even with a perfectly good connection.
+  // Forcing long-polling swaps in a more compatible (if slightly less
+  // efficient) connection method that works reliably in RN.
+  db = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+    useFetchStreams: false,
+  });
+} catch {
+  // Fast Refresh safety net, same reasoning as the auth try/catch above
+  db = getFirestore(app);
+}
+
+export { auth, db };
 export default app;
