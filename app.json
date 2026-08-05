@@ -3,7 +3,7 @@
     "name": "sharp-sharp",
     "slug": "sharp-sharp",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "sharpsharp",
     "userInterfaceStyle": "automatic",
