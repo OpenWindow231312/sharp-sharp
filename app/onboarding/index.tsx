@@ -1,8 +1,9 @@
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { useOnboarding } from '@/context/OnboardingContext';
 import { theme } from '@/constants/designTheme';
 
 const LANGUAGES = [
@@ -11,31 +12,22 @@ const LANGUAGES = [
   'Tsonga', 'Venda',
 ];
 
-export default function OnboardingScreen() {
+export default function OnboardingLanguagesScreen() {
   const router = useRouter();
-  const [selected, setSelected] = useState<string[]>([]);
-
-  function toggleLanguage(lang: string) {
-    setSelected((prev) =>
-      prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]
-    );
-  }
+  const { languages, toggleLanguage } = useOnboarding();
 
   return (
     <View style={styles.container}>
-      <Text variant="muted" style={{ marginBottom: 4 }}>
-        Sharp Sharp — step 1 of 2
-      </Text>
+      <ProgressBar progress={0.5} />
       <Text variant="display" style={{ marginBottom: 8 }}>
         Pick your languages
       </Text>
       <Text variant="muted" style={{ marginBottom: 24 }}>
         Choose what you want to learn. You can always change this later.
       </Text>
-
       <ScrollView contentContainerStyle={styles.chipWrap} style={{ flex: 1 }}>
         {LANGUAGES.map((lang) => {
-          const isSelected = selected.includes(lang);
+          const isSelected = languages.includes(lang);
           return (
             <Pressable
               key={lang}
@@ -52,16 +44,14 @@ export default function OnboardingScreen() {
           );
         })}
       </ScrollView>
-
       <Text variant="muted" style={{ marginBottom: 12 }}>
-        {selected.length} selected
+        {languages.length} selected
       </Text>
-
       <Button
         label="Next"
         variant="primary"
-        disabled={selected.length === 0}
-        onPress={() => router.push('/(tabs)/feed')}
+        disabled={languages.length === 0}
+        onPress={() => router.push('/onboarding/motivation')}
       />
     </View>
   );
@@ -71,7 +61,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    paddingTop: 80,
+    paddingTop: 60,
     backgroundColor: theme.colors.background,
   },
   chipWrap: {
