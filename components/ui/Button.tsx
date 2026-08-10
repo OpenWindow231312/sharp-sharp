@@ -13,21 +13,22 @@ export function Button({ label, variant = 'primary', disabled = false, style, ..
   return (
     <Pressable
       disabled={disabled}
-      style={({ pressed }) => [
+      style={(state) => [
         styles.base,
         { backgroundColor: isPrimary ? theme.colors.primary : theme.colors.secondary },
-        { borderColor: theme.colors.border },
+        { borderColor: isPrimary ? 'transparent' : theme.colors.indigo },
+        isPrimary && !disabled && !state.pressed && styles.primaryShadow,
+        state.pressed && !disabled && styles.pressed,
         disabled && styles.disabled,
-        pressed && !disabled && styles.pressed,
-        style,
+        typeof style === 'function' ? style(state) : style,
       ]}
       {...rest}
     >
       <Text
         style={{
+          fontFamily: theme.fonts.bodyBold,
           color: isPrimary ? theme.colors.primaryText : theme.colors.secondaryText,
           fontSize: theme.fontSize.body,
-          opacity: disabled ? 0.5 : 1,
         }}
       >
         {label}
@@ -38,16 +39,20 @@ export function Button({ label, variant = 'primary', disabled = false, style, ..
 
 const styles = StyleSheet.create({
   base: {
+    minHeight: theme.tapTarget,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
+    borderRadius: theme.radius.pill,
+    borderWidth: 2,
     alignItems: 'center',
+    justifyContent: 'center',
   },
+  primaryShadow: theme.shadow.card,
   disabled: {
     opacity: 0.4,
   },
   pressed: {
-    opacity: 0.8,
+    transform: [{ scale: 0.97 }],
+    opacity: 0.92,
   },
 });

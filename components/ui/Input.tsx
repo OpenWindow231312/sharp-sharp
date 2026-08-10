@@ -25,10 +25,14 @@ export function Input({ label, style, ...rest }: InputProps) {
 
 const styles = StyleSheet.create({
   input: {
-    borderWidth: 1,
+    minHeight: theme.tapTarget,
+    borderWidth: 2,
     borderColor: theme.colors.border,
     borderRadius: theme.radius.md,
-    padding: theme.spacing.md,
+    backgroundColor: theme.colors.card,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.body,
     color: theme.colors.text,
   },

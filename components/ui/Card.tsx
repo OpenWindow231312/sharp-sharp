@@ -7,10 +7,9 @@ export function Card({ style, ...rest }: ViewProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.background,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
     padding: theme.spacing.md,
+    ...theme.shadow.soft,
   },
 });

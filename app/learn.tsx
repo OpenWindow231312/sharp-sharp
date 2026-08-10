@@ -2,6 +2,7 @@ import { View, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { X, CaretLeft, CaretRight } from 'phosphor-react-native';
 import { useAuth } from '@/context/AuthContext';
 import { getSavedTerms } from '@/services/savedTerms';
 import { StudyCard } from '@/components/ui/StudyCard';
@@ -51,7 +52,7 @@ export default function LearnScreen() {
   return (
     <View style={styles.container}>
       <Pressable onPress={() => router.back()} style={styles.closeButton} hitSlop={12}>
-        <Text style={{ fontSize: 20 }}>✕</Text>
+        <X size={22} color={theme.colors.ink} />
       </Pressable>
 
       {isLoading ? (
@@ -84,10 +85,10 @@ export default function LearnScreen() {
               disabled={currentIndex === 0}
               style={[styles.arrowButton, currentIndex === 0 && styles.arrowDisabled]}
             >
-              <Text style={{ fontSize: 22 }}>←</Text>
+              <CaretLeft size={22} color={theme.colors.ink} />
             </Pressable>
             <Pressable onPress={() => setCurrentIndex((i) => i + 1)} style={styles.arrowButton}>
-              <Text style={{ fontSize: 22 }}>→</Text>
+              <CaretRight size={22} color={theme.colors.ink} />
             </Pressable>
           </View>
         </>
@@ -98,10 +99,24 @@ export default function LearnScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background, paddingHorizontal: 16, justifyContent: 'center' },
-  closeButton: { position: 'absolute', top: 16, left: 16, zIndex: 10 },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    zIndex: 10,
+    width: theme.tapTarget,
+    height: theme.tapTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   progress: { position: 'absolute', top: 16, alignSelf: 'center' },
   arrowRow: { position: 'absolute', bottom: 16, width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16 },
-  arrowButton: { padding: 8 },
+  arrowButton: {
+    width: theme.tapTarget,
+    height: theme.tapTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   arrowDisabled: { opacity: 0.3 },
   messageCard: { alignItems: 'center', padding: 32, marginHorizontal: 40 },
 });

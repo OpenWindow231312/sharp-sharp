@@ -10,8 +10,16 @@ export function Text({ variant = 'body', style, ...rest }: AppTextProps) {
 }
 
 const styles = StyleSheet.create({
-  body: { fontSize: theme.fontSize.body, color: theme.colors.text },
-  heading: { fontSize: theme.fontSize.heading, color: theme.colors.text, fontWeight: '600' },
-  display: { fontSize: theme.fontSize.display, color: theme.colors.text, fontWeight: '700' },
-  muted: { fontSize: theme.fontSize.body, color: theme.colors.textMuted },
+  body: { fontFamily: theme.fonts.body, fontSize: theme.fontSize.body, color: theme.colors.text },
+  heading: {
+    fontFamily: theme.fonts.displayBold,
+    fontSize: theme.fontSize.heading,
+    color: theme.colors.text,
+  },
+  display: {
+    fontFamily: theme.fonts.displayExtraBold,
+    fontSize: theme.fontSize.display,
+    color: theme.colors.text,
+  },
+  muted: { fontFamily: theme.fonts.body, fontSize: theme.fontSize.body, color: theme.colors.textMuted },
 });

@@ -5,17 +5,22 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
+import { theme as shapShap } from './designTheme';
+
 const tintColorDark = '#fff';
 
+// Light theme is a pass-through onto the Shap Shap brand tokens in
+// designTheme.ts, so this file and designTheme.ts never drift apart. Dark
+// mode is explicitly deferred by the design spec — left as the existing
+// fallback so it keeps working, not redesigned.
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: shapShap.colors.ink,
+    background: shapShap.colors.paper,
+    tint: shapShap.colors.indigo,
+    icon: shapShap.colors.inkSoft,
+    tabIconDefault: shapShap.colors.inkSoft,
+    tabIconSelected: shapShap.colors.indigo,
   },
   dark: {
     text: '#ECEDEE',

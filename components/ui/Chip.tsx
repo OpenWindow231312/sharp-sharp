@@ -54,16 +54,29 @@ export function Chip({ label, selected = false, onPress, onRemove, delay = 0, st
         disabled={!onPress}
         style={[
           styles.chip,
-          { backgroundColor: selected ? theme.colors.primary : theme.colors.secondary },
+          {
+            backgroundColor: selected ? theme.colors.primary : theme.colors.secondary,
+            borderColor: selected ? theme.colors.primary : theme.colors.indigo,
+          },
           style,
         ]}
       >
-        <Text style={{ color: selected ? theme.colors.primaryText : theme.colors.secondaryText }}>
+        <Text
+          style={{
+            fontFamily: theme.fonts.bodySemibold,
+            color: selected ? theme.colors.primaryText : theme.colors.secondaryText,
+          }}
+        >
           {label}
         </Text>
         {onRemove ? (
           <Pressable onPress={onRemove} hitSlop={8} style={{ marginLeft: 6 }}>
-            <Text style={{ color: selected ? theme.colors.primaryText : theme.colors.secondaryText, fontWeight: '700' }}>
+            <Text
+              style={{
+                fontFamily: theme.fonts.bodyBold,
+                color: selected ? theme.colors.primaryText : theme.colors.secondaryText,
+              }}
+            >
               ×
             </Text>
           </Pressable>
@@ -77,9 +90,8 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.lg,
+    borderWidth: 1.5,
+    borderRadius: theme.radius.pill,
     paddingVertical: 10,
     paddingHorizontal: 16,
   },

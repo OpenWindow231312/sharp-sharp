@@ -59,7 +59,7 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
       {errorMsg ? (
-        <Text style={{ color: '#C0392B', marginBottom: 8 }}>{errorMsg}</Text>
+        <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>{errorMsg}</Text>
       ) : null}
       <Button
         label={isLoading ? 'Logging in...' : "Let's go"}

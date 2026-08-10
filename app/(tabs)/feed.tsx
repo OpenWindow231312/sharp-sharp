@@ -100,7 +100,7 @@ export default function FeedScreen() {
       </Text>
 
       <View style={styles.levelRow}>
-        <Text style={{ fontWeight: '700' }}>{levelInfo.title}</Text>
+        <Text style={{ fontFamily: theme.fonts.bodyBold }}>{levelInfo.title}</Text>
         <Text variant="muted">{xp} XP</Text>
       </View>
       <ProgressBar progress={levelInfo.progress} />

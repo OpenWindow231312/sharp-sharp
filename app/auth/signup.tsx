@@ -7,6 +7,7 @@ import { auth, db } from '@/services/firebase';
 import { Text } from '@/components/ui/Text';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { theme } from '@/constants/designTheme';
 import { getAuthErrorMessage } from '@/utils/authErrors';
 
 export default function SignupScreen() {
@@ -95,7 +96,7 @@ export default function SignupScreen() {
       />
 
       {errorMsg ? (
-        <Text style={{ color: '#C0392B', marginBottom: 8 }}>{errorMsg}</Text>
+        <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>{errorMsg}</Text>
       ) : null}
 
       <Button
@@ -106,7 +107,9 @@ export default function SignupScreen() {
         style={{ marginTop: 8, marginBottom: 16 }}
       />
       <Link href="/auth/login">
-        <Text variant="muted">Already in? <Text style={{ fontWeight: '600' }}>Log in</Text></Text>
+        <Text variant="muted">
+          Already in? <Text style={{ fontFamily: theme.fonts.bodySemibold }}>Log in</Text>
+        </Text>
       </Link>
     </View>
   );
@@ -116,6 +119,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     paddingTop: 100,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.background,
   },
 });

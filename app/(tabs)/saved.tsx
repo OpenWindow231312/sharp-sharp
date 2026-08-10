@@ -64,7 +64,7 @@ export default function SavedScreen() {
                   <View style={styles.cardTop}>
                     <Chip label={term.language} selected={false} />
                     <Pressable onPress={() => handleRemove(term.id)} hitSlop={10}>
-                      <Text style={{ color: '#C0392B', fontWeight: '700' }}>Remove</Text>
+                      <Text style={{ color: theme.colors.protea, fontFamily: theme.fonts.bodyBold }}>Remove</Text>
                     </Pressable>
                   </View>
                   <Text style={styles.termText}>{term.term}</Text>
@@ -84,5 +84,5 @@ const styles = StyleSheet.create({
   emptyCard: { alignItems: 'center', padding: 32 },
   termCard: { marginBottom: 12 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  termText: { fontSize: 22, fontWeight: '800', marginBottom: 4 },
+  termText: { fontFamily: theme.fonts.displayExtraBold, fontSize: 22, color: theme.colors.text, marginBottom: 4 },
 });

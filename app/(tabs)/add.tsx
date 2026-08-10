@@ -4,11 +4,13 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { useEffect } from 'react';
+import { CaretLeft } from 'phosphor-react-native';
 import { Text } from '@/components/ui/Text';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Card } from '@/components/ui/Card';
+import { PatternFill } from '@/components/ui/PatternFill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { theme } from '@/constants/designTheme';
 import { LANGUAGES } from '@/constants/languages';
@@ -107,8 +109,19 @@ export default function AddTermScreen() {
         <ProgressBar progress={(step + 1) / TOTAL_STEPS} />
 
         {step > 0 ? (
-          <Pressable onPress={goBack} style={{ marginBottom: 16, alignSelf: 'flex-start' }} hitSlop={12}>
-            <Text style={{ fontSize: 20 }}>←</Text>
+          <Pressable
+            onPress={goBack}
+            style={{
+              marginBottom: 16,
+              alignSelf: 'flex-start',
+              width: theme.tapTarget,
+              height: theme.tapTarget,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            hitSlop={12}
+          >
+            <CaretLeft size={22} color={theme.colors.ink} />
           </Pressable>
         ) : null}
 
@@ -158,19 +171,22 @@ export default function AddTermScreen() {
         {step === 4 && (
           <StepBlock title="Ready to teach Sharp Sharp?" subtitle="Here's what people will see.">
             <Card style={styles.previewCard}>
-              <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-                <Chip label={language!} selected />
+              <PatternFill variant="diamond" style={styles.previewStrip} />
+              <View style={styles.previewBody}>
+                <View style={{ flexDirection: 'row', marginBottom: 12 }}>
+                  <Chip label={language!} selected />
+                </View>
+                <Text style={styles.previewTerm}>{term}</Text>
+                <Text style={{ marginTop: 8 }}>{meaning}</Text>
+                {examples.length > 0 ? (
+                  <Text variant="muted" style={{ marginTop: 8, fontStyle: 'italic' }}>"{examples[0]}"</Text>
+                ) : null}
               </View>
-              <Text style={styles.previewTerm}>{term}</Text>
-              <Text style={{ marginTop: 8 }}>{meaning}</Text>
-              {examples.length > 0 ? (
-                <Text variant="muted" style={{ marginTop: 8, fontStyle: 'italic' }}>"{examples[0]}"</Text>
-              ) : null}
             </Card>
           </StepBlock>
         )}
 
-        {errorMsg ? <Text style={{ color: '#C0392B', marginTop: 8 }}>{errorMsg}</Text> : null}
+        {errorMsg ? <Text style={{ color: theme.colors.protea, marginTop: 8 }}>{errorMsg}</Text> : null}
 
         <Button
           label={step === 4 ? (isSubmitting ? 'Adding...' : 'Add term (+20 XP)') : 'Next'}
@@ -230,9 +246,17 @@ function CelebrationScreen({ term, language, onAddAnother, onGoToFeed }: { term:
 const styles = StyleSheet.create({
   container: { padding: 24, paddingTop: 70, backgroundColor: theme.colors.background, flexGrow: 1 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  previewCard: { minHeight: 160, justifyContent: 'center' },
-  previewTerm: { fontSize: 32, fontWeight: '800' },
+  previewCard: { minHeight: 160 },
+  previewStrip: {
+    height: 12,
+    marginTop: -theme.spacing.md,
+    marginHorizontal: -theme.spacing.md,
+    borderTopLeftRadius: theme.radius.lg,
+    borderTopRightRadius: theme.radius.lg,
+  },
+  previewBody: { flex: 1, justifyContent: 'center' },
+  previewTerm: { fontFamily: theme.fonts.displayExtraBold, fontSize: 32, color: theme.colors.text },
   celebrationContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: theme.colors.background },
-  checkmark: { fontSize: 64, color: '#2E7D32', fontWeight: '800' },
-  xpEarned: { fontSize: 28, fontWeight: '800', color: '#2E7D32', marginBottom: 8 },
+  checkmark: { fontSize: 64, color: theme.colors.highveld, fontWeight: '800' },
+  xpEarned: { fontFamily: theme.fonts.displayExtraBold, fontSize: 28, color: theme.colors.highveld, marginBottom: 8 },
 });

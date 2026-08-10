@@ -66,9 +66,9 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   chip: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.lg,
+    borderWidth: 1.5,
+    borderColor: theme.colors.indigo,
+    borderRadius: theme.radius.pill,
     paddingVertical: 10,
     paddingHorizontal: 16,
   },

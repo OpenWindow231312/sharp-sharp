@@ -158,11 +158,7 @@ const styles = StyleSheet.create({
     minHeight: 400,
     borderRadius: theme.radius.lg,
     padding: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
+    ...theme.shadow.card,
   },
   bubbleRow: {
     flexDirection: 'row',
@@ -174,8 +170,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   termText: {
+    fontFamily: theme.fonts.displayExtraBold,
     fontSize: 44,
-    fontWeight: '800',
+    color: theme.colors.text,
     textAlign: 'center',
     marginBottom: 12,
   },
@@ -183,11 +180,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   meaningText: {
+    fontFamily: theme.fonts.body,
     fontSize: 18,
     lineHeight: 26,
+    color: theme.colors.text,
     marginBottom: 16,
   },
   exampleText: {
+    fontFamily: theme.fonts.body,
     fontStyle: 'italic',
     fontSize: 15,
   },
@@ -206,16 +206,16 @@ const styles = StyleSheet.create({
   },
   saveStamp: {
     right: 20,
-    borderColor: '#2E7D32',
+    borderColor: theme.colors.highveld,
     transform: [{ rotate: '12deg' }],
   },
   skipStamp: {
     left: 20,
-    borderColor: '#C0392B',
+    borderColor: theme.colors.protea,
     transform: [{ rotate: '-12deg' }],
   },
   stampText: {
-    fontWeight: '800',
+    fontFamily: theme.fonts.displayExtraBold,
     fontSize: 18,
     letterSpacing: 1,
   },

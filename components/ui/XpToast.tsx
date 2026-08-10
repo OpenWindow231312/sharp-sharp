@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSequence, runOnJS } from 'react-native-reanimated';
 import { Text } from './Text';
+import { theme } from '@/constants/designTheme';
 
 type XpToastProps = {
   amount: number;
@@ -39,5 +40,5 @@ export function XpToast({ amount, onDone }: XpToastProps) {
 
 const styles = StyleSheet.create({
   container: { position: 'absolute', top: 100, alignSelf: 'center', zIndex: 50 },
-  text: { fontSize: 22, fontWeight: '800', color: '#2E7D32' },
+  text: { fontFamily: theme.fonts.displayExtraBold, fontSize: 22, color: theme.colors.highveld },
 });

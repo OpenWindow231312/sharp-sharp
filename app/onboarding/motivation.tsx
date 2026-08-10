@@ -1,5 +1,6 @@
 import { View, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { CaretLeft } from 'phosphor-react-native';
 import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
@@ -29,8 +30,8 @@ export default function OnboardingMotivationScreen() {
   return (
     <View style={styles.container}>
       <ProgressBar progress={1} />
-      <Pressable onPress={() => router.back()} style={styles.backButton}>
-        <Text style={{ fontSize: 20 }}>←</Text>
+      <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={12}>
+        <CaretLeft size={22} color={theme.colors.ink} />
       </Pressable>
       <Text variant="display" style={{ marginBottom: 8 }}>
         Why are you learning?
@@ -70,5 +71,9 @@ const styles = StyleSheet.create({
   backButton: {
     marginBottom: 16,
     alignSelf: 'flex-start',
+    width: theme.tapTarget,
+    height: theme.tapTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

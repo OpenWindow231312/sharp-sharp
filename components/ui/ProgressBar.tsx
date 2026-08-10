@@ -36,15 +36,15 @@ export function ProgressBar({ progress }: ProgressBarProps) {
 
 const styles = StyleSheet.create({
   track: {
-    height: 6,
-    borderRadius: theme.radius.sm,
+    height: 10,
+    borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.surface,
     overflow: 'hidden',
     marginBottom: theme.spacing.lg,
   },
   fill: {
     height: '100%',
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.marigold,
+    borderRadius: theme.radius.pill,
   },
 });
