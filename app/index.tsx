@@ -1,7 +1,7 @@
-import { Redirect } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
-import { useAuth } from '@/context/AuthContext';
-import { theme } from '@/constants/designTheme';
+import { theme } from "@/constants/designTheme";
+import { useAuth } from "@/context/AuthContext";
+import { Redirect } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 
 export default function Index() {
   const { user, isLoading } = useAuth();
@@ -9,11 +9,22 @@ export default function Index() {
   // Brief flash while Firebase checks if there's a stored session
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
-  return user ? <Redirect href="/(tabs)" /> : <Redirect href="/auth/login" />;
+  return user ? (
+    <Redirect href="/(tabs)/feed" />
+  ) : (
+    <Redirect href="/auth/login" />
+  );
 }

@@ -1,40 +1,35 @@
-import { View, StyleSheet } from 'react-native';
-import { useState } from 'react';
-import { Link, useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/services/firebase';
-import { Text } from '@/components/ui/Text';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { theme } from '@/constants/designTheme';
-import { getAuthErrorMessage } from '@/utils/authErrors';
-
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Text } from "@/components/ui/Text";
+import { theme } from "@/constants/designTheme";
+import { auth } from "@/services/firebase";
+import { getAuthErrorMessage } from "@/utils/authErrors";
+import { Link, useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
+import { StyleSheet, View } from "react-native";
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-
+  const [errorMsg, setErrorMsg] = useState("");
   async function handleLogin() {
-    setErrorMsg('');
-
+    setErrorMsg("");
     if (!email.trim() || !password) {
-      setErrorMsg('Please enter both email and password.');
+      setErrorMsg("Please enter both email and password.");
       return;
     }
-
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      router.replace('/(tabs)');
+      router.replace("/(tabs)/feed");
     } catch (error) {
       setErrorMsg(getAuthErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
   }
-
   return (
     <View style={styles.container}>
       <Text variant="display" style={{ marginBottom: 4 }}>
@@ -59,10 +54,12 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
       {errorMsg ? (
-        <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>{errorMsg}</Text>
+        <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>
+          {errorMsg}
+        </Text>
       ) : null}
       <Button
-        label={isLoading ? 'Logging in...' : "Let's go"}
+        label={isLoading ? "Logging in..." : "Let's go"}
         variant="primary"
         disabled={isLoading}
         onPress={handleLogin}
@@ -70,7 +67,9 @@ export default function LoginScreen() {
       />
       <View style={styles.dividerRow}>
         <View style={styles.line} />
-        <Text variant="muted" style={{ marginHorizontal: 8 }}>or</Text>
+        <Text variant="muted" style={{ marginHorizontal: 8 }}>
+          or
+        </Text>
         <View style={styles.line} />
       </View>
       <Button
@@ -83,7 +82,7 @@ export default function LoginScreen() {
       <View style={styles.footer}>
         <Text variant="muted">Don't have an account? </Text>
         <Link href="/auth/signup">
-          <Text style={{ textDecorationLine: 'underline' }}>Sign up</Text>
+          <Text style={{ textDecorationLine: "underline" }}>Sign up</Text>
         </Link>
       </View>
     </View>
@@ -97,8 +96,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 8,
   },
   line: {
@@ -107,7 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.border,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
 });
