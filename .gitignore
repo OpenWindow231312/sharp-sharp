@@ -47,3 +47,5 @@ app-example
 # Firebase emulator
 firebase-debug.log
 firestore-debug.log
+firestore-debug.log
+firebase-debug.log
