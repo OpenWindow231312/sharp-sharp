@@ -1,8 +1,13 @@
+export type SlangExample = {
+  sentence: string;
+  context?: string;
+};
+
 export type SlangTerm = {
   id: string;
   term: string;
   meaning: string;
-  examples?: string[];
+  examples?: SlangExample[];
   language: string;
   region?: string;
   submittedBy: string;
@@ -10,4 +15,4 @@ export type SlangTerm = {
   createdAt: any;
 };
 
-export type NewSlangTerm = Omit<SlangTerm, 'id' | 'createdAt'>;
+export type NewSlangTerm = Omit<SlangTerm, "id" | "createdAt">;

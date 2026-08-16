@@ -1,22 +1,34 @@
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
-import { useEffect } from 'react';
-import { CaretLeft } from 'phosphor-react-native';
-import { Text } from '@/components/ui/Text';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
-import { Card } from '@/components/ui/Card';
-import { PatternFill } from '@/components/ui/PatternFill';
-import { ProgressBar } from '@/components/ui/ProgressBar';
-import { theme } from '@/constants/designTheme';
-import { LANGUAGES } from '@/constants/languages';
-import { useAuth } from '@/context/AuthContext';
-import { addSlangTerm } from '@/services/slangTerms';
-import { addXp } from '@/services/xp';
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Chip } from "@/components/ui/Chip";
+import { Input } from "@/components/ui/Input";
+import { PatternFill } from "@/components/ui/PatternFill";
+import { ProgressBar } from "@/components/ui/ProgressBar";
+import { Text } from "@/components/ui/Text";
+import { theme } from "@/constants/designTheme";
+import { LANGUAGES } from "@/constants/languages";
+import { useAuth } from "@/context/AuthContext";
+import { addSlangTerm } from "@/services/slangTerms";
+import { addXp } from "@/services/xp";
+import type { SlangExample } from "@/types/slangTerm";
+import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import { CaretLeft, X } from "phosphor-react-native";
+import { useEffect, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
 const TOTAL_STEPS = 5;
 
@@ -25,35 +37,55 @@ export default function AddTermScreen() {
   const { user } = useAuth();
 
   const [step, setStep] = useState(0);
-  const [term, setTerm] = useState('');
+  const [term, setTerm] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
-  const [meaning, setMeaning] = useState('');
-  const [exampleInput, setExampleInput] = useState('');
-  const [examples, setExamples] = useState<string[]>([]);
-  const [region, setRegion] = useState('');
+  const [meaning, setMeaning] = useState("");
+  const [exampleSentence, setExampleSentence] = useState("");
+  const [exampleContext, setExampleContext] = useState("");
+  const [examples, setExamples] = useState<SlangExample[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
   const [isDone, setIsDone] = useState(false);
 
   function goNext() {
-    setErrorMsg('');
-    if (step === 0 && !term.trim()) return setErrorMsg('Type a word or phrase first.');
-    if (step === 1 && !language) return setErrorMsg('Pick a language.');
-    if (step === 2 && !meaning.trim()) return setErrorMsg('Add a meaning.');
+    setErrorMsg("");
+    if (step === 0 && !term.trim())
+      return setErrorMsg("Type a word or phrase first.");
+    if (step === 1 && !language) return setErrorMsg("Pick a language.");
+    if (step === 2 && !meaning.trim()) return setErrorMsg("Add a meaning.");
+    if (step === 3 && examples.length === 0)
+      return setErrorMsg("Add at least one example, or tap Skip.");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setStep((s) => s + 1);
+  }
+
+  // Separate from goNext() on purpose: Skip must bypass the "at least one
+  // example" check above, since skipping means the user is choosing NOT to
+  // add one. If Skip called goNext(), it would trip its own validation.
+  function skipStep() {
+    setErrorMsg("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setStep((s) => s + 1);
   }
 
   function goBack() {
-    setErrorMsg('');
+    setErrorMsg("");
     setStep((s) => Math.max(0, s - 1));
   }
 
   function addExample() {
-    const trimmed = exampleInput.trim();
-    if (!trimmed) return;
-    setExamples((prev) => [...prev, trimmed]);
-    setExampleInput('');
+    const trimmedSentence = exampleSentence.trim();
+    if (!trimmedSentence) return;
+    setExamples((prev) => [
+      ...prev,
+      {
+        sentence: trimmedSentence,
+        context: exampleContext.trim() || undefined,
+      },
+    ]);
+    setExampleSentence("");
+    setExampleContext("");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }
 
   function removeExample(index: number) {
@@ -62,80 +94,112 @@ export default function AddTermScreen() {
 
   function resetForm() {
     setStep(0);
-    setTerm('');
+    setTerm("");
     setLanguage(null);
-    setMeaning('');
-    setExampleInput('');
+    setMeaning("");
+    setExampleSentence("");
+    setExampleContext("");
     setExamples([]);
-    setRegion('');
     setIsDone(false);
   }
 
   async function handleSubmit() {
     if (!user) {
-      setErrorMsg('You need to be logged in to add a term.');
+      setErrorMsg("You need to be logged in to add a term.");
       return;
     }
     setIsSubmitting(true);
-    setErrorMsg('');
+    setErrorMsg("");
     try {
       await addSlangTerm({
         term: term.trim(),
         meaning: meaning.trim(),
         examples,
         language: language!,
-        region: region.trim() || undefined,
         submittedBy: user.uid,
-        submittedByName: user.displayName || 'Anonymous',
+        submittedByName: user.displayName || "Anonymous",
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      addXp(user.uid, 20).catch((error) => console.log('Add XP error:', error));
+      addXp(user.uid, 20).catch((error) => console.log("Add XP error:", error));
       setIsDone(true);
     } catch (error) {
-      console.log('Add term error:', error);
-      setErrorMsg("Couldn't add the term. Check your connection and try again.");
+      console.log("Add term error:", error);
+      setErrorMsg(
+        "Couldn't add the term. Check your connection and try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
   if (isDone) {
-    return <CelebrationScreen term={term} language={language!} onAddAnother={resetForm} onGoToFeed={() => { resetForm(); router.push('/(tabs)/feed'); }} />;
+    return (
+      <CelebrationScreen
+        term={term}
+        language={language!}
+        onAddAnother={resetForm}
+        onGoToFeed={() => {
+          resetForm();
+          router.push("/(tabs)/feed");
+        }}
+      />
+    );
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
         <ProgressBar progress={(step + 1) / TOTAL_STEPS} />
 
         {step > 0 ? (
-          <Pressable
-            onPress={goBack}
-            style={{
-              marginBottom: 16,
-              alignSelf: 'flex-start',
-              width: theme.tapTarget,
-              height: theme.tapTarget,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            hitSlop={12}
-          >
-            <CaretLeft size={22} color={theme.colors.ink} />
-          </Pressable>
+          <View style={styles.headerRow}>
+            <Pressable onPress={goBack} style={styles.backButton} hitSlop={12}>
+              <CaretLeft size={22} color={theme.colors.ink} />
+            </Pressable>
+            {step === 3 ? (
+              <Pressable onPress={skipStep} hitSlop={12}>
+                <Text variant="muted" style={styles.skipText}>
+                  Skip
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : null}
 
         {step === 0 && (
-          <StepBlock title="What's the word?" subtitle="A slang term or phrase you know.">
-            <Input placeholder="e.g. Eish" value={term} onChangeText={setTerm} autoFocus />
+          <StepBlock
+            title="What's the word?"
+            subtitle="A slang term or phrase you know."
+          >
+            <Input
+              placeholder="e.g. Eish"
+              value={term}
+              onChangeText={setTerm}
+              autoFocus
+            />
           </StepBlock>
         )}
 
         {step === 1 && (
-          <StepBlock title="Which language?" subtitle={`"${term}" belongs to...`}>
+          <StepBlock
+            title="Which language?"
+            subtitle={`"${term}" belongs to...`}
+          >
             <View style={styles.chipWrap}>
               {LANGUAGES.map((lang, i) => (
-                <Chip key={lang} label={lang} selected={language === lang} onPress={() => setLanguage(lang)} delay={i * 25} />
+                <Chip
+                  key={lang}
+                  label={lang}
+                  selected={language === lang}
+                  onPress={() => setLanguage(lang)}
+                  delay={i * 25}
+                />
               ))}
             </View>
           </StepBlock>
@@ -143,77 +207,167 @@ export default function AddTermScreen() {
 
         {step === 2 && (
           <StepBlock title="What does it mean?" subtitle="Explain it simply.">
-            <Input placeholder="What does it mean?" value={meaning} onChangeText={setMeaning} multiline autoFocus />
+            <Input
+              placeholder="What does it mean?"
+              value={meaning}
+              onChangeText={setMeaning}
+              multiline
+              autoFocus
+            />
           </StepBlock>
         )}
 
         {step === 3 && (
-          <StepBlock title="Add some flavour" subtitle="Optional — an example sentence and where it's used.">
+          <StepBlock
+            title="Add some flavour"
+            subtitle="Show people how it's really used — you can add more than one."
+          >
             <Input
-              placeholder="Use it in a sentence, then tap Add"
-              value={exampleInput}
-              onChangeText={setExampleInput}
+              label="Example sentence"
+              placeholder="e.g. That's your problem, sorry neh"
+              value={exampleSentence}
+              onChangeText={setExampleSentence}
+              returnKeyType="next"
+            />
+            <Input
+              label="Context"
+              placeholder="When would someone say this? e.g. sarcastically, when they're annoyed"
+              value={exampleContext}
+              onChangeText={setExampleContext}
               onSubmitEditing={addExample}
               returnKeyType="done"
             />
-            <Button label="+ Add example" variant="secondary" onPress={addExample} style={{ marginBottom: 12 }} />
+            <Button
+              label="+ Add example"
+              variant="secondary"
+              size="compact"
+              disabled={!exampleSentence.trim()}
+              onPress={addExample}
+              style={{
+                alignSelf: "flex-start",
+                marginBottom: examples.length > 0 ? 16 : 4,
+              }}
+            />
             {examples.length > 0 ? (
-              <View style={styles.chipWrap}>
+              <View style={styles.examplesList}>
                 {examples.map((ex, i) => (
-                  <Chip key={`${ex}-${i}`} label={ex} selected onRemove={() => removeExample(i)} />
+                  <Card key={`${ex.sentence}-${i}`} style={styles.exampleCard}>
+                    <View style={styles.exampleRow}>
+                      <View style={{ flex: 1, paddingRight: 8 }}>
+                        <Text style={styles.exampleSentence}>
+                          "{ex.sentence}"
+                        </Text>
+                        {ex.context ? (
+                          <Text variant="muted" style={styles.exampleContext}>
+                            {ex.context}
+                          </Text>
+                        ) : null}
+                      </View>
+                      <Pressable
+                        onPress={() => removeExample(i)}
+                        hitSlop={10}
+                        style={styles.removeExampleButton}
+                      >
+                        <X size={18} color={theme.colors.protea} />
+                      </Pressable>
+                    </View>
+                  </Card>
                 ))}
               </View>
             ) : null}
-            <Input placeholder="Region, e.g. Cape Flats, Joburg" value={region} onChangeText={setRegion} />
           </StepBlock>
         )}
 
         {step === 4 && (
-          <StepBlock title="Ready to teach Sharp Sharp?" subtitle="Here's what people will see.">
+          <StepBlock
+            title="Ready to teach Sharp Sharp?"
+            subtitle="Here's what people will see."
+          >
             <Card style={styles.previewCard}>
               <PatternFill variant="diamond" style={styles.previewStrip} />
               <View style={styles.previewBody}>
-                <View style={{ flexDirection: 'row', marginBottom: 12 }}>
+                <View style={{ flexDirection: "row", marginBottom: 12 }}>
                   <Chip label={language!} selected />
                 </View>
                 <Text style={styles.previewTerm}>{term}</Text>
                 <Text style={{ marginTop: 8 }}>{meaning}</Text>
                 {examples.length > 0 ? (
-                  <Text variant="muted" style={{ marginTop: 8, fontStyle: 'italic' }}>"{examples[0]}"</Text>
+                  <View style={{ marginTop: 8 }}>
+                    <Text variant="muted" style={{ fontStyle: "italic" }}>
+                      "{examples[0].sentence}"
+                    </Text>
+                    {examples[0].context ? (
+                      <Text
+                        variant="muted"
+                        style={{ fontSize: 12, marginTop: 2 }}
+                      >
+                        {examples[0].context}
+                      </Text>
+                    ) : null}
+                  </View>
                 ) : null}
               </View>
             </Card>
           </StepBlock>
         )}
 
-        {errorMsg ? <Text style={{ color: theme.colors.protea, marginTop: 8 }}>{errorMsg}</Text> : null}
+        {errorMsg ? (
+          <Text style={{ color: theme.colors.protea, marginTop: 8 }}>
+            {errorMsg}
+          </Text>
+        ) : null}
 
         <Button
-          label={step === 4 ? (isSubmitting ? 'Adding...' : 'Add term (+20 XP)') : 'Next'}
+          label={
+            step === 4
+              ? isSubmitting
+                ? "Adding..."
+                : "Add term (+20 XP)"
+              : "Next"
+          }
           variant="primary"
-          disabled={isSubmitting}
+          disabled={isSubmitting || (step === 3 && examples.length === 0)}
           onPress={step === 4 ? handleSubmit : goNext}
           style={{ marginTop: 24 }}
         />
-        {step === 3 ? (
-          <Button label="Skip" variant="secondary" onPress={goNext} style={{ marginTop: 12 }} />
-        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-function StepBlock({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+function StepBlock({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
   return (
     <View>
-      <Text variant="display" style={{ marginBottom: 4 }}>{title}</Text>
-      <Text variant="muted" style={{ marginBottom: 24 }}>{subtitle}</Text>
+      <Text variant="display" style={{ marginBottom: 4 }}>
+        {title}
+      </Text>
+      <Text variant="muted" style={{ marginBottom: 24 }}>
+        {subtitle}
+      </Text>
       {children}
     </View>
   );
 }
 
-function CelebrationScreen({ term, language, onAddAnother, onGoToFeed }: { term: string; language: string; onAddAnother: () => void; onGoToFeed: () => void }) {
+function CelebrationScreen({
+  term,
+  language,
+  onAddAnother,
+  onGoToFeed,
+}: {
+  term: string;
+  language: string;
+  onAddAnother: () => void;
+  onGoToFeed: () => void;
+}) {
   const scale = useSharedValue(0);
   const xpOpacity = useSharedValue(0);
 
@@ -222,8 +376,15 @@ function CelebrationScreen({ term, language, onAddAnother, onGoToFeed }: { term:
     xpOpacity.value = withTiming(1, { duration: 400 });
   }, []);
 
-  const checkStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const xpStyle = useAnimatedStyle(() => ({ opacity: xpOpacity.value, transform: [{ translateY: withTiming(xpOpacity.value * 0, { duration: 1 }) }] }));
+  const checkStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  const xpStyle = useAnimatedStyle(() => ({
+    opacity: xpOpacity.value,
+    transform: [
+      { translateY: withTiming(xpOpacity.value * 0, { duration: 1 }) },
+    ],
+  }));
 
   return (
     <View style={styles.celebrationContainer}>
@@ -231,21 +392,67 @@ function CelebrationScreen({ term, language, onAddAnother, onGoToFeed }: { term:
       <Animated.View style={xpStyle}>
         <Text style={styles.xpEarned}>+20 XP</Text>
       </Animated.View>
-      <Text variant="heading" style={{ marginTop: 8, marginBottom: 4, textAlign: 'center' }}>
+      <Text
+        variant="heading"
+        style={{ marginTop: 8, marginBottom: 4, textAlign: "center" }}
+      >
         "{term}" is live!
       </Text>
-      <Text variant="muted" style={{ marginBottom: 32, textAlign: 'center' }}>
+      <Text variant="muted" style={{ marginBottom: 32, textAlign: "center" }}>
         Someone's about to learn their first {language} word from you.
       </Text>
-      <Button label="Add another word" variant="primary" onPress={onAddAnother} style={{ marginBottom: 12, width: '100%' }} />
-      <Button label="Back to Feed" variant="secondary" onPress={onGoToFeed} style={{ width: '100%' }} />
+      <Button
+        label="Add another word"
+        variant="primary"
+        onPress={onAddAnother}
+        style={{ marginBottom: 12, width: "100%" }}
+      />
+      <Button
+        label="Back to Feed"
+        variant="secondary"
+        onPress={onGoToFeed}
+        style={{ width: "100%" }}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, paddingTop: 70, backgroundColor: theme.colors.background, flexGrow: 1 },
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  container: {
+    padding: 24,
+    paddingTop: 70,
+    backgroundColor: theme.colors.background,
+    flexGrow: 1,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  backButton: {
+    width: theme.tapTarget,
+    height: theme.tapTarget,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: -12,
+  },
+  skipText: {
+    fontSize: 13,
+    textDecorationLine: "underline",
+  },
+  chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  examplesList: { gap: 10 },
+  exampleRow: { flexDirection: "row", alignItems: "flex-start" },
+  exampleCard: {},
+  exampleSentence: {
+    fontFamily: theme.fonts.bodyBold,
+    fontSize: 15,
+    color: theme.colors.text,
+    marginBottom: 4,
+  },
+  exampleContext: { fontSize: 13, fontStyle: "italic" },
+  removeExampleButton: { padding: 4 },
   previewCard: { minHeight: 160 },
   previewStrip: {
     height: 12,
@@ -254,9 +461,24 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: theme.radius.lg,
     borderTopRightRadius: theme.radius.lg,
   },
-  previewBody: { flex: 1, justifyContent: 'center' },
-  previewTerm: { fontFamily: theme.fonts.displayExtraBold, fontSize: 32, color: theme.colors.text },
-  celebrationContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: theme.colors.background },
-  checkmark: { fontSize: 64, color: theme.colors.highveld, fontWeight: '800' },
-  xpEarned: { fontFamily: theme.fonts.displayExtraBold, fontSize: 28, color: theme.colors.highveld, marginBottom: 8 },
+  previewBody: { flex: 1, justifyContent: "center" },
+  previewTerm: {
+    fontFamily: theme.fonts.displayExtraBold,
+    fontSize: 32,
+    color: theme.colors.text,
+  },
+  celebrationContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 32,
+    backgroundColor: theme.colors.background,
+  },
+  checkmark: { fontSize: 64, color: theme.colors.highveld, fontWeight: "800" },
+  xpEarned: {
+    fontFamily: theme.fonts.displayExtraBold,
+    fontSize: 28,
+    color: theme.colors.highveld,
+    marginBottom: 8,
+  },
 });
