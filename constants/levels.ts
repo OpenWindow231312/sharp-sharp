@@ -9,11 +9,11 @@ export type LevelInfo = {
 };
 
 const LEVELS = [
-  { title: 'Newbie', threshold: 0 },
-  { title: 'Sharp', threshold: 50 },
-  { title: 'Sharp Sharp', threshold: 150 },
-  { title: 'Local Legend', threshold: 300 },
-  { title: 'Slang Master', threshold: 500 },
+  { title: "Newbie", threshold: 0 },
+  { title: "Fresh", threshold: 50 },
+  { title: "Local Legend", threshold: 150 },
+  { title: "Sharp", threshold: 300 },
+  { title: "Sharp Sharp", threshold: 500 },
 ];
 
 export function getLevelInfo(xp: number): LevelInfo {
@@ -24,7 +24,9 @@ export function getLevelInfo(xp: number): LevelInfo {
   const current = LEVELS[levelIndex];
   const next = LEVELS[levelIndex + 1];
   const xpIntoLevel = xp - current.threshold;
-  const xpForNextLevel = next ? next.threshold - current.threshold : xpIntoLevel;
+  const xpForNextLevel = next
+    ? next.threshold - current.threshold
+    : xpIntoLevel;
 
   return {
     level: levelIndex + 1,

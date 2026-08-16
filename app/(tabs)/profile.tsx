@@ -1,3 +1,4 @@
+import { BadgeShelf } from "@/components/ui/BadgeShelf";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
@@ -219,7 +220,7 @@ export default function ProfileScreen() {
             <ProgressBar progress={levelInfo.progress} />
             <Text variant="muted" style={{ marginTop: 8, fontSize: 12 }}>
               {levelInfo.isMaxLevel
-                ? "You've hit the top level — Slang Master!"
+                ? "You've hit the top level — Sharp Sharp!"
                 : `${levelInfo.xpForNextLevel - levelInfo.xpIntoLevel} XP to next level`}
             </Text>
           </Card>
@@ -239,12 +240,26 @@ export default function ProfileScreen() {
             </Card>
           </View>
 
+          <Text
+            variant="heading"
+            style={{ marginTop: 24, marginBottom: 12 }}
+          >
+            Badges
+          </Text>
+          <BadgeShelf
+            stats={{
+              submittedCount: myTerms.length,
+              savedCount,
+              xp,
+            }}
+          />
+
           <Button
             label={isLoggingOut ? "Logging out..." : "Log out"}
             variant="secondary"
             disabled={isLoggingOut}
             onPress={handleLogout}
-            style={{ marginTop: 24 }}
+            style={{ marginTop: 8, marginBottom: 24 }}
           />
         </ScrollView>
       ) : (
@@ -283,10 +298,6 @@ export default function ProfileScreen() {
                       <Trash size={20} color={theme.colors.protea} />
                     </Pressable>
                   </View>
-                  {/* This Pressable is now a SIBLING of the delete button above,
-                      not a parent wrapping it — that's the fix. Their touch
-                      zones no longer overlap, so tapping Trash can never also
-                      trigger navigation. */}
                   <Pressable onPress={() => openTerm(term.id)}>
                     <Text style={styles.termText}>{term.term}</Text>
                     <Text variant="muted" numberOfLines={2}>
