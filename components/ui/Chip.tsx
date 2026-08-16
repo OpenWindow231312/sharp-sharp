@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
-import { Pressable, Animated, StyleSheet, type ViewStyle } from 'react-native';
-import { Text } from './Text';
-import { theme } from '@/constants/designTheme';
+import { theme } from "@/constants/designTheme";
+import { useEffect, useRef } from "react";
+import { Animated, Pressable, StyleSheet, type ViewStyle } from "react-native";
+import { Text } from "./Text";
 
 type ChipProps = {
   label: string;
@@ -9,15 +9,23 @@ type ChipProps = {
   onPress?: () => void;
   onRemove?: () => void;
   delay?: number;
+  small?: boolean;
   style?: ViewStyle;
 };
 
-export function Chip({ label, selected = false, onPress, onRemove, delay = 0, style }: ChipProps) {
+export function Chip({
+  label,
+  selected = false,
+  onPress,
+  onRemove,
+  delay = 0,
+  small = false,
+  style,
+}: ChipProps) {
   const entrance = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(1)).current;
   const isFirstRender = useRef(true);
 
-  // Pop-in animation when the chip first appears
   useEffect(() => {
     Animated.spring(entrance, {
       toValue: 1,
@@ -27,8 +35,6 @@ export function Chip({ label, selected = false, onPress, onRemove, delay = 0, st
     }).start();
   }, []);
 
-  // Small bounce when the chip becomes selected (skipped on first mount,
-  // so it doesn't clash with the pop-in animation above)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -36,8 +42,16 @@ export function Chip({ label, selected = false, onPress, onRemove, delay = 0, st
     }
     if (selected) {
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.12, duration: 100, useNativeDriver: true }),
-        Animated.spring(pulse, { toValue: 1, friction: 4, useNativeDriver: true }),
+        Animated.timing(pulse, {
+          toValue: 1.12,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.spring(pulse, {
+          toValue: 1,
+          friction: 4,
+          useNativeDriver: true,
+        }),
       ]).start();
     }
   }, [selected]);
@@ -54,8 +68,11 @@ export function Chip({ label, selected = false, onPress, onRemove, delay = 0, st
         disabled={!onPress}
         style={[
           styles.chip,
+          small && styles.chipSmall,
           {
-            backgroundColor: selected ? theme.colors.primary : theme.colors.secondary,
+            backgroundColor: selected
+              ? theme.colors.primary
+              : theme.colors.secondary,
             borderColor: selected ? theme.colors.primary : theme.colors.indigo,
           },
           style,
@@ -63,18 +80,29 @@ export function Chip({ label, selected = false, onPress, onRemove, delay = 0, st
       >
         <Text
           style={{
+            flexShrink: 1, // lets the text wrap instead of forcing the pill wider than its container
             fontFamily: theme.fonts.bodySemibold,
-            color: selected ? theme.colors.primaryText : theme.colors.secondaryText,
+            fontSize: small ? 11 : theme.fontSize.body,
+            color: selected
+              ? theme.colors.primaryText
+              : theme.colors.secondaryText,
           }}
         >
           {label}
         </Text>
         {onRemove ? (
-          <Pressable onPress={onRemove} hitSlop={8} style={{ marginLeft: 6 }}>
+          <Pressable
+            onPress={onRemove}
+            hitSlop={8}
+            style={{ flexShrink: 0, marginLeft: small ? 4 : 6 }}
+          >
             <Text
               style={{
                 fontFamily: theme.fonts.bodyBold,
-                color: selected ? theme.colors.primaryText : theme.colors.secondaryText,
+                fontSize: small ? 11 : theme.fontSize.body,
+                color: selected
+                  ? theme.colors.primaryText
+                  : theme.colors.secondaryText,
               }}
             >
               ×
@@ -88,11 +116,17 @@ export function Chip({ label, selected = false, onPress, onRemove, delay = 0, st
 
 const styles = StyleSheet.create({
   chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "flex-start", // top-aligns the × against wrapped multi-line text
     borderWidth: 1.5,
     borderRadius: theme.radius.pill,
     paddingVertical: 10,
     paddingHorizontal: 16,
+    maxWidth: "100%", // the actual overflow fix — caps the pill at its container's width
+  },
+  chipSmall: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1.2,
   },
 });

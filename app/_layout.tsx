@@ -1,31 +1,35 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useEffect } from 'react';
-import * as ScreenOrientation from 'expo-screen-orientation';
-import * as SplashScreen from 'expo-splash-screen';
 import {
-  useFonts as useBaloo2Fonts,
   Baloo2_600SemiBold,
   Baloo2_700Bold,
   Baloo2_800ExtraBold,
-} from '@expo-google-fonts/baloo-2';
+  useFonts as useBaloo2Fonts,
+} from "@expo-google-fonts/baloo-2";
 import {
-  useFonts as usePlusJakartaSansFonts,
+  IBMPlexMono_500Medium,
+  useFonts as useIBMPlexMonoFonts,
+} from "@expo-google-fonts/ibm-plex-mono";
+import {
   PlusJakartaSans_400Regular,
   PlusJakartaSans_500Medium,
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold,
-} from '@expo-google-fonts/plus-jakarta-sans';
+  useFonts as usePlusJakartaSansFonts,
+} from "@expo-google-fonts/plus-jakarta-sans";
 import {
-  useFonts as useIBMPlexMonoFonts,
-  IBMPlexMono_500Medium,
-} from '@expo-google-fonts/ibm-plex-mono';
-import 'react-native-reanimated';
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Stack } from "expo-router";
+import * as ScreenOrientation from "expo-screen-orientation";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from "@/context/AuthContext";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,7 +48,8 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
   });
   const [ibmPlexMonoLoaded] = useIBMPlexMonoFonts({ IBMPlexMono_500Medium });
-  const fontsLoaded = baloo2Loaded && plusJakartaSansLoaded && ibmPlexMonoLoaded;
+  const fontsLoaded =
+    baloo2Loaded && plusJakartaSansLoaded && ibmPlexMonoLoaded;
 
   // Portrait is the app's default everywhere except Learning Mode, which
   // handles its own landscape lock (and reverts back to this on exit).
@@ -65,7 +70,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="auth/login" options={{ headerShown: false }} />
@@ -73,7 +80,11 @@ export default function RootLayout() {
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="learn" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+            <Stack.Screen name="edit-term" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="modal"
+              options={{ presentation: "modal", title: "Modal" }}
+            />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

@@ -1,22 +1,57 @@
-import { TextInput, View, StyleSheet, TextInputProps } from 'react-native';
-import { Text } from './Text';
-import { theme } from '@/constants/designTheme';
+import { theme } from "@/constants/designTheme";
+import { useState } from "react";
+import {
+  StyleSheet,
+  TextInput,
+  TextInputProps,
+  View,
+  type ViewStyle,
+} from "react-native";
+import { Text } from "./Text";
 
 type InputProps = TextInputProps & {
   label?: string;
+  containerStyle?: ViewStyle;
 };
 
-export function Input({ label, style, ...rest }: InputProps) {
+export function Input({
+  label,
+  style,
+  containerStyle,
+  multiline,
+  onContentSizeChange,
+  ...rest
+}: InputProps) {
+  const [contentHeight, setContentHeight] = useState<number | undefined>(
+    undefined,
+  );
+
   return (
-    <View style={{ marginBottom: theme.spacing.md }}>
+    <View style={[{ marginBottom: theme.spacing.md }, containerStyle]}>
       {label ? (
         <Text variant="muted" style={{ marginBottom: theme.spacing.xs }}>
           {label}
         </Text>
       ) : null}
       <TextInput
-        style={[styles.input, style]}
+        style={[
+          styles.input,
+          multiline && styles.multiline,
+          multiline && contentHeight
+            ? { height: Math.max(theme.tapTarget, contentHeight) }
+            : null,
+          style,
+        ]}
         placeholderTextColor={theme.colors.textMuted}
+        multiline={multiline}
+        onContentSizeChange={(e) => {
+          if (multiline) {
+            setContentHeight(
+              e.nativeEvent.contentSize.height + theme.spacing.sm * 2,
+            );
+          }
+          onContentSizeChange?.(e);
+        }}
         {...rest}
       />
     </View>
@@ -35,5 +70,8 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.body,
     fontSize: theme.fontSize.body,
     color: theme.colors.text,
+  },
+  multiline: {
+    textAlignVertical: "top",
   },
 });
