@@ -134,7 +134,7 @@ Being upfront about what's still in progress:
 
 ## 👥 Contributions
 
-Built solo by **Anika** as a final assignment for Interactive Development 300 at Open Window.
+Anika de Beer
 
 ---
 
