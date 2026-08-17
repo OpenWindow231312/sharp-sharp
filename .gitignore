@@ -31,7 +31,7 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+# .env*.local
 
 # typescript
 *.tsbuildinfo
@@ -42,7 +42,7 @@ app-example
 /ios
 /android
 
-.env
+# .env
 
 # Firebase emulator
 firebase-debug.log

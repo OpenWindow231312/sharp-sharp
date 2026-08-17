@@ -1,3 +1,4 @@
+import { USE_LOCAL_EMULATOR } from "@/constants/devConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { getApp, getApps, initializeApp } from "firebase/app";
@@ -24,9 +25,6 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-// TEMPORARY diagnostic — remove once we've confirmed the config is loading.
-// Doesn't print the actual key value, just whether each field made it
-// through from .env or came back undefined.
 console.log("Firebase config check:", {
   apiKey: firebaseConfig.apiKey ? "present" : "MISSING",
   projectId: firebaseConfig.projectId ?? "MISSING",
@@ -54,15 +52,13 @@ try {
   db = getFirestore(app);
 }
 
-// Route to local Firebase emulators during development, so we're testing
-// against real Auth/Firestore behaviour without touching the cloud project.
-// __DEV__ is false in production builds, so this block simply never runs
-// once the app is actually shipped.
-if (__DEV__) {
-  // Expo Go serves the app from a specific host (e.g. 192.168.1.23:8081) —
-  // reusing that same host for the emulators means this works automatically
-  // whether we're on the iOS Simulator (host is "localhost"), Android
-  // Emulator, or a physical phone on the same WiFi — no manual IP editing.
+// Route to local Firebase emulators ONLY when explicitly opted in via
+// USE_LOCAL_EMULATOR — not just because we're in a dev build. This means
+// a normal `npx expo start` always talks to the real cloud project
+// (sharp-sharp-2f95c) unless you deliberately flip the flag on for
+// local testing. Critical for demo day: no risk of the app silently
+// trying to reach an emulator that isn't running.
+if (__DEV__ && USE_LOCAL_EMULATOR) {
   const debuggerHost = Constants.expoConfig?.hostUri;
   const EMULATOR_HOST = debuggerHost ? debuggerHost.split(":")[0] : "127.0.0.1";
 
