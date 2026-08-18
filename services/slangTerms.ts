@@ -28,7 +28,13 @@ export async function addSlangTerm(data: NewSlangTerm) {
     createdAt: serverTimestamp(),
   };
   if (data.examples && data.examples.length > 0) {
-    payload.examples = data.examples;
+    payload.examples = data.examples.map((ex) => {
+      const clean: { sentence: string; context?: string } = {
+        sentence: ex.sentence,
+      };
+      if (ex.context) clean.context = ex.context;
+      return clean;
+    });
   }
   if (data.region) {
     payload.region = data.region;

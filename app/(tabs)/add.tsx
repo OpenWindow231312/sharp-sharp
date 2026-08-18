@@ -76,13 +76,11 @@ export default function AddTermScreen() {
   function addExample() {
     const trimmedSentence = exampleSentence.trim();
     if (!trimmedSentence) return;
-    setExamples((prev) => [
-      ...prev,
-      {
-        sentence: trimmedSentence,
-        context: exampleContext.trim() || undefined,
-      },
-    ]);
+    const trimmedContext = exampleContext.trim();
+    const newExample: SlangExample = trimmedContext
+      ? { sentence: trimmedSentence, context: trimmedContext }
+      : { sentence: trimmedSentence };
+    setExamples((prev) => [...prev, newExample]);
     setExampleSentence("");
     setExampleContext("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

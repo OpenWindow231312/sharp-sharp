@@ -1,26 +1,26 @@
-import { StyleSheet, Dimensions, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { theme } from "@/constants/designTheme";
+import type { SlangTerm } from "@/types/slangTerm";
+import { Dimensions, StyleSheet, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  useSharedValue,
+  Extrapolation,
+  interpolate,
+  runOnJS,
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
   withTiming,
-  runOnJS,
-  interpolate,
-  Extrapolation,
-} from 'react-native-reanimated';
-import { Card } from './Card';
-import { Text } from './Text';
-import { Chip } from './Chip';
-import { theme } from '@/constants/designTheme';
-import type { SlangTerm } from '@/types/slangTerm';
+} from "react-native-reanimated";
+import { Card } from "./Card";
+import { Chip } from "./Chip";
+import { Text } from "./Text";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
 
 type SwipeCardProps = {
   term: SlangTerm;
-  onSwipe: (direction: 'left' | 'right') => void;
+  onSwipe: (direction: "left" | "right") => void;
 };
 
 export function SwipeCard({ term, onSwipe }: SwipeCardProps) {
@@ -40,11 +40,11 @@ export function SwipeCard({ term, onSwipe }: SwipeCardProps) {
     .onEnd((e) => {
       const passedThreshold = Math.abs(e.translationX) > SWIPE_THRESHOLD;
       if (passedThreshold) {
-        const direction = e.translationX > 0 ? 'right' : 'left';
+        const direction = e.translationX > 0 ? "right" : "left";
         translateX.value = withTiming(
-          direction === 'right' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5,
+          direction === "right" ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5,
           { duration: 220 },
-          () => runOnJS(onSwipe)(direction)
+          () => runOnJS(onSwipe)(direction),
         );
       } else {
         translateX.value = withSpring(0);
@@ -68,7 +68,7 @@ export function SwipeCard({ term, onSwipe }: SwipeCardProps) {
       translateX.value,
       [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
       [-12, 0, 12],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     return {
       transform: [
@@ -88,11 +88,21 @@ export function SwipeCard({ term, onSwipe }: SwipeCardProps) {
   }));
 
   const saveStampStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [10, SWIPE_THRESHOLD], [0, 1], Extrapolation.CLAMP),
+    opacity: interpolate(
+      translateX.value,
+      [10, SWIPE_THRESHOLD],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
   }));
 
   const skipStampStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [-SWIPE_THRESHOLD, -10], [1, 0], Extrapolation.CLAMP),
+    opacity: interpolate(
+      translateX.value,
+      [-SWIPE_THRESHOLD, -10],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
   }));
 
   return (
@@ -113,26 +123,45 @@ export function SwipeCard({ term, onSwipe }: SwipeCardProps) {
             </View>
             <View style={styles.frontCenter}>
               <Text style={styles.termText}>{term.term}</Text>
-              <Text variant="muted" style={styles.flipHint}>↻ Tap to reveal meaning</Text>
+              <Text variant="muted" style={styles.flipHint}>
+                ↻ Tap to reveal meaning
+              </Text>
             </View>
           </Card>
         </Animated.View>
 
         {/* Back face */}
-        <Animated.View style={[styles.face, styles.backFacePosition, backFaceStyle]}>
+        <Animated.View
+          style={[styles.face, styles.backFacePosition, backFaceStyle]}
+        >
           <Card style={styles.card}>
             <View style={styles.bubbleRow}>
               <Chip label={term.language} selected />
             </View>
-            <Text variant="muted" style={{ marginBottom: 4 }}>Meaning</Text>
+            <Text variant="muted" style={{ marginBottom: 4 }}>
+              Meaning
+            </Text>
             <Text style={styles.meaningText}>{term.meaning}</Text>
             {term.examples && term.examples.length > 0 ? (
-              <Text variant="muted" style={styles.exampleText}>"{term.examples[0]}"</Text>
+              <View style={{ marginTop: 4 }}>
+                <Text variant="muted" style={styles.exampleText}>
+                  "{term.examples[0].sentence}"
+                </Text>
+                {term.examples[0].context ? (
+                  <Text variant="muted" style={styles.exampleContextText}>
+                    {term.examples[0].context}
+                  </Text>
+                ) : null}
+              </View>
             ) : null}
             {term.region ? (
-              <Text variant="muted" style={{ marginTop: 10 }}>{term.region}</Text>
+              <Text variant="muted" style={{ marginTop: 10 }}>
+                {term.region}
+              </Text>
             ) : null}
-            <Text variant="muted" style={styles.addedBy}>Added by {term.submittedByName}</Text>
+            <Text variant="muted" style={styles.addedBy}>
+              Added by {term.submittedByName}
+            </Text>
           </Card>
         </Animated.View>
       </Animated.View>
@@ -142,16 +171,16 @@ export function SwipeCard({ term, onSwipe }: SwipeCardProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    position: 'absolute',
-    width: '100%',
+    position: "absolute",
+    width: "100%",
     minHeight: 400,
   },
   face: {
-    backfaceVisibility: 'hidden',
-    width: '100%',
+    backfaceVisibility: "hidden",
+    width: "100%",
   },
   backFacePosition: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
   },
   card: {
@@ -161,19 +190,19 @@ const styles = StyleSheet.create({
     ...theme.shadow.card,
   },
   bubbleRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 16,
   },
   frontCenter: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 44,
     color: theme.colors.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 12,
   },
   flipHint: {
@@ -188,15 +217,20 @@ const styles = StyleSheet.create({
   },
   exampleText: {
     fontFamily: theme.fonts.body,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     fontSize: 15,
   },
+  exampleContextText: {
+    fontSize: 13,
+    fontStyle: "italic",
+    marginTop: 2,
+  },
   addedBy: {
-    marginTop: 'auto',
+    marginTop: "auto",
     paddingTop: 16,
   },
   stamp: {
-    position: 'absolute',
+    position: "absolute",
     top: 20,
     borderWidth: 3,
     borderRadius: theme.radius.sm,
@@ -207,12 +241,12 @@ const styles = StyleSheet.create({
   saveStamp: {
     right: 20,
     borderColor: theme.colors.highveld,
-    transform: [{ rotate: '12deg' }],
+    transform: [{ rotate: "12deg" }],
   },
   skipStamp: {
     left: 20,
     borderColor: theme.colors.protea,
-    transform: [{ rotate: '-12deg' }],
+    transform: [{ rotate: "-12deg" }],
   },
   stampText: {
     fontFamily: theme.fonts.displayExtraBold,
