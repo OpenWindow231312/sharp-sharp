@@ -2,7 +2,7 @@ import { theme } from "@/constants/designTheme";
 import type { SlangTerm } from "@/types/slangTerm";
 import { BookOpen, Quotes } from "phosphor-react-native";
 import { forwardRef, useImperativeHandle } from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
@@ -19,6 +19,7 @@ import { Text } from "./Text";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
+const CARD_HEIGHT = 400;
 
 const PATTERN_VARIANTS: PatternVariant[] = [
   "chevron",
@@ -140,55 +141,74 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
             <Text style={styles.stampText}>SKIP</Text>
           </Animated.View>
 
+          {/* Front face */}
           <Animated.View style={[styles.face, frontFaceStyle]}>
             <View style={styles.cardShell}>
               <PatternFill variant={patternVariant} style={styles.patternZone} />
               <View style={styles.termZone}>
-                <Chip label={term.language} selected style={styles.langPill} />
+                <View style={styles.langPillWrap}>
+                  <Chip label={term.language} selected />
+                </View>
                 <Text style={styles.termText}>{term.term}</Text>
               </View>
             </View>
           </Animated.View>
 
+          {/* Back face */}
           <Animated.View
             style={[styles.face, styles.backFacePosition, backFaceStyle]}
           >
-            <View style={[styles.cardShell, styles.backContent]}>
-              <View style={styles.subheadingRow}>
-                <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
-                <Text variant="muted" style={styles.subheadingText}>
-                  Definition
-                </Text>
-              </View>
-              <Text style={styles.meaningText}>{term.meaning}</Text>
-
-              {term.examples && term.examples.length > 0 ? (
-                <>
-                  <View style={styles.subheadingRow}>
-                    <Quotes size={13} weight="bold" color={theme.colors.inkSoft} />
-                    <Text variant="muted" style={styles.subheadingText}>
-                      In a sentence
-                    </Text>
-                  </View>
-                  <Text style={styles.exampleText}>
-                    "{term.examples[0].sentence}"
+            <View style={styles.cardShell}>
+              <ScrollView
+                contentContainerStyle={styles.backContent}
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.subheadingRow}>
+                  <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
+                  <Text variant="muted" style={styles.subheadingText}>
+                    Definition
                   </Text>
-                  {term.examples[0].context ? (
-                    <Text variant="muted" style={styles.exampleContextText}>
-                      {term.examples[0].context}
-                    </Text>
-                  ) : null}
-                </>
-              ) : null}
+                </View>
+                <Text style={styles.meaningText}>{term.meaning}</Text>
 
-              {term.region ? (
-                <Text variant="muted" style={styles.regionText}>
-                  {term.region}
+                {term.examples && term.examples.length > 0 ? (
+                  <>
+                    <View style={styles.subheadingRow}>
+                      <Quotes size={13} weight="bold" color={theme.colors.inkSoft} />
+                      <Text variant="muted" style={styles.subheadingText}>
+                        In a sentence
+                      </Text>
+                    </View>
+                    {term.examples.map((example, index) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.exampleBlock,
+                          index > 0 && styles.exampleBlockSpacing,
+                        ]}
+                      >
+                        <Text style={styles.exampleText}>
+                          "{example.sentence}"
+                        </Text>
+                        {example.context ? (
+                          <Text variant="muted" style={styles.exampleContextText}>
+                            {example.context}
+                          </Text>
+                        ) : null}
+                      </View>
+                    ))}
+                  </>
+                ) : null}
+
+                {term.region ? (
+                  <Text variant="muted" style={styles.regionText}>
+                    {term.region}
+                  </Text>
+                ) : null}
+                <Text variant="muted" style={styles.addedBy}>
+                  Added by {term.submittedByName}
                 </Text>
-              ) : null}
-              <Text variant="muted" style={styles.addedBy}>
-                Added by {term.submittedByName}
-              </Text>
+              </ScrollView>
             </View>
           </Animated.View>
         </Animated.View>
@@ -200,8 +220,9 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 const styles = StyleSheet.create({
   wrapper: {
     position: "absolute",
-    width: "100%",
-    minHeight: 400,
+    left: theme.spacing.lg,
+    right: theme.spacing.lg,
+    minHeight: CARD_HEIGHT,
   },
   face: {
     backfaceVisibility: "hidden",
@@ -212,14 +233,14 @@ const styles = StyleSheet.create({
     top: 0,
   },
   cardShell: {
-    minHeight: 400,
+    height: CARD_HEIGHT,
     borderRadius: theme.radius.lg,
     overflow: "hidden",
     backgroundColor: theme.colors.card,
     ...theme.shadow.card,
   },
   patternZone: {
-    height: 150,
+    height: 130,
   },
   termZone: {
     flex: 1,
@@ -228,10 +249,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: theme.spacing.lg,
   },
-  langPill: {
+  langPillWrap: {
     position: "absolute",
     top: theme.spacing.md,
     left: theme.spacing.md,
+    zIndex: 2,
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
@@ -241,6 +263,7 @@ const styles = StyleSheet.create({
   },
   backContent: {
     padding: theme.spacing.lg,
+    flexGrow: 1,
   },
   subheadingRow: {
     flexDirection: "row",
@@ -260,6 +283,13 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: theme.colors.text,
   },
+  exampleBlock: {},
+  exampleBlockSpacing: {
+    marginTop: theme.spacing.sm,
+    paddingTop: theme.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
   exampleText: {
     fontFamily: theme.fonts.body,
     fontStyle: "italic",
@@ -272,11 +302,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   regionText: {
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.md,
   },
   addedBy: {
-    marginTop: "auto",
-    paddingTop: theme.spacing.md,
+    marginTop: theme.spacing.md,
   },
   stamp: {
     position: "absolute",

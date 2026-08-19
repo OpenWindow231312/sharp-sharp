@@ -41,7 +41,7 @@ export default function FeedScreen() {
   useEffect(() => {
     if (USE_MOCK_DATA) {
       setExcludedIds(new Set());
-      setXp(35); // demo value so the level bar has something to show in preview mode
+      setXp(35);
       return;
     }
     if (!user) return;
@@ -115,10 +115,13 @@ export default function FeedScreen() {
 
   const isLoading = excludedIds === null;
   const topTerm = feedTerms[currentIndex];
-  const nextTerm = feedTerms[currentIndex + 1];
   const noMoreCards = !isLoading && currentIndex >= feedTerms.length;
   const levelInfo = getLevelInfo(xp);
   const showControls = !isLoading && !noMoreCards && !!topTerm;
+  // How many faint cards to hint at behind the top one — purely decorative,
+  // doesn't need real term data, just enough to read as "a deck" rather
+  // than "one card floating alone."
+  const peekCount = Math.min(2, Math.max(0, feedTerms.length - currentIndex - 1));
 
   return (
     <View style={styles.container}>
@@ -154,8 +157,13 @@ export default function FeedScreen() {
           </Card>
         ) : (
           <>
-            {nextTerm ? (
-              <View style={styles.peekWrapper}>
+            {peekCount > 1 ? (
+              <View style={[styles.peekWrapper, styles.peekWrapperFar]}>
+                <Card style={styles.peekCard} />
+              </View>
+            ) : null}
+            {peekCount > 0 ? (
+              <View style={[styles.peekWrapper, styles.peekWrapperNear]}>
                 <Card style={styles.peekCard} />
               </View>
             ) : null}
@@ -191,14 +199,21 @@ const styles = StyleSheet.create({
   stack: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: theme.spacing.lg,
   },
   peekWrapper: {
     position: "absolute",
-    width: "100%",
+    left: theme.spacing.lg,
+    right: theme.spacing.lg,
+  },
+  peekWrapperNear: {
     top: 8,
     transform: [{ scale: 0.96 }],
     opacity: 0.6,
+  },
+  peekWrapperFar: {
+    top: 16,
+    transform: [{ scale: 0.92 }],
+    opacity: 0.32,
   },
   peekCard: { minHeight: 340 },
   emptyCard: { alignItems: "center", padding: 32 },
