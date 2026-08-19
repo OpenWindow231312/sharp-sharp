@@ -1,14 +1,15 @@
 import { theme } from "@/constants/designTheme";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { BookmarkSimple, House, Plus, User, type Icon } from "phosphor-react-native";
+import * as Haptics from "expo-haptics";
+import { Book, Bookmark, PlusCircle, User, type Icon } from "phosphor-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "./Text";
 
 const ICONS: Record<string, Icon> = {
-  feed: House,
-  add: Plus,
-  saved: BookmarkSimple,
+  feed: Book,
+  add: PlusCircle,
+  saved: Bookmark,
   profile: User,
 };
 
@@ -16,18 +17,24 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.wrap, { paddingBottom: insets.bottom || theme.spacing.sm }]}>
+    <View
+      style={[
+        styles.wrap,
+        { paddingBottom: insets.bottom || theme.spacing.sm },
+      ]}
+    >
       <View style={styles.shell}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-          const IconComponent = ICONS[route.name] ?? House;
+          const IconComponent = ICONS[route.name] ?? Book;
           const label =
             typeof options.tabBarLabel === "string"
               ? options.tabBarLabel
               : (options.title ?? route.name);
 
           const onPress = () => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             const event = navigation.emit({
               type: "tabPress",
               target: route.key,
@@ -49,9 +56,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
                 weight={isFocused ? "fill" : "bold"}
                 color={isFocused ? theme.colors.primaryText : theme.colors.inkSoft}
               />
-              {isFocused ? (
-                <Text style={styles.label}>{label}</Text>
-              ) : null}
+              {isFocused ? <Text style={styles.label}>{label}</Text> : null}
             </Pressable>
           );
         })}
@@ -62,12 +67,10 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
 
 const styles = StyleSheet.create({
   wrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     alignItems: "center",
+    backgroundColor: theme.colors.background,
     paddingTop: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
   },
   shell: {
     flexDirection: "row",
