@@ -1,5 +1,5 @@
 import { theme } from "@/constants/designTheme";
-import { Pressable, PressableProps, StyleSheet, Text } from "react-native";
+import { Pressable, PressableProps, StyleSheet, Text, View } from "react-native";
 
 type ButtonProps = PressableProps & {
   label: string;
@@ -18,38 +18,50 @@ export function Button({
 }: ButtonProps) {
   const isPrimary = variant === "primary";
   const isCompact = size === "compact";
+  const shadowHeight = isCompact ? 3 : 4;
+
+  const fillColor = isPrimary ? theme.colors.indigo : theme.colors.marigold;
+  // Marigold has no "deep" counterpart in the palette, so its shadow is an
+  // ink-tinted rgba instead — same trick used in the design-system doc.
+  const shadowColor = isPrimary ? theme.colors.indigoDeep : "rgba(36,28,21,0.35)";
+  const textColor = isPrimary ? theme.colors.primaryText : theme.colors.ink;
 
   return (
-    <Pressable
-      disabled={disabled}
-      style={(state) => [
-        styles.base,
-        isCompact && styles.compact,
-        {
-          backgroundColor: isPrimary
-            ? theme.colors.primary
-            : theme.colors.secondary,
-        },
-        { borderColor: isPrimary ? "transparent" : theme.colors.indigo },
-        isPrimary && !disabled && !state.pressed && styles.primaryShadow,
-        state.pressed && !disabled && styles.pressed,
-        disabled && styles.disabled,
-        typeof style === "function" ? style(state) : style,
-      ]}
-      {...rest}
+    <View
+      style={
+        !disabled && {
+          backgroundColor: shadowColor,
+          borderRadius: theme.radius.pill,
+        }
+      }
     >
-      <Text
-        style={{
-          fontFamily: theme.fonts.bodyBold,
-          color: isPrimary
-            ? theme.colors.primaryText
-            : theme.colors.secondaryText,
-          fontSize: isCompact ? 14 : theme.fontSize.body,
-        }}
+      <Pressable
+        disabled={disabled}
+        style={(state) => [
+          styles.base,
+          isCompact && styles.compact,
+          {
+            backgroundColor: disabled ? theme.colors.surface : fillColor,
+          },
+          !disabled &&
+            (state.pressed
+              ? { marginBottom: 0, transform: [{ translateY: shadowHeight }] }
+              : { marginBottom: shadowHeight, transform: [{ translateY: 0 }] }),
+          typeof style === "function" ? style(state) : style,
+        ]}
+        {...rest}
       >
-        {label}
-      </Text>
-    </Pressable>
+        <Text
+          style={{
+            fontFamily: theme.fonts.bodyBold,
+            color: disabled ? theme.colors.textMuted : textColor,
+            fontSize: isCompact ? 14 : theme.fontSize.body,
+          }}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -59,7 +71,6 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radius.pill,
-    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -67,14 +78,5 @@ const styles = StyleSheet.create({
     minHeight: 40,
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
-    borderWidth: 1.5,
-  },
-  primaryShadow: theme.shadow.card,
-  disabled: {
-    opacity: 0.4,
-  },
-  pressed: {
-    transform: [{ scale: 0.97 }],
-    opacity: 0.92,
   },
 });

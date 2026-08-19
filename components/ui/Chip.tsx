@@ -70,22 +70,18 @@ export function Chip({
           styles.chip,
           small && styles.chipSmall,
           {
-            backgroundColor: selected
-              ? theme.colors.primary
-              : theme.colors.secondary,
-            borderColor: selected ? theme.colors.primary : theme.colors.indigo,
+            backgroundColor: selected ? theme.colors.beadwork : theme.colors.card,
+            borderColor: theme.colors.beadwork,
           },
           style,
         ]}
       >
         <Text
           style={{
-            flexShrink: 1, // lets the text wrap instead of forcing the pill wider than its container
+            flexShrink: 1,
             fontFamily: theme.fonts.bodySemibold,
-            fontSize: small ? 11 : theme.fontSize.body,
-            color: selected
-              ? theme.colors.primaryText
-              : theme.colors.secondaryText,
+            fontSize: small ? 10 : 13,
+            color: selected ? theme.colors.card : theme.colors.beadwork,
           }}
         >
           {label}
@@ -99,10 +95,8 @@ export function Chip({
             <Text
               style={{
                 fontFamily: theme.fonts.bodyBold,
-                fontSize: small ? 11 : theme.fontSize.body,
-                color: selected
-                  ? theme.colors.primaryText
-                  : theme.colors.secondaryText,
+                fontSize: small ? 10 : 13,
+                color: selected ? theme.colors.card : theme.colors.beadwork,
               }}
             >
               ×
@@ -117,16 +111,16 @@ export function Chip({
 const styles = StyleSheet.create({
   chip: {
     flexDirection: "row",
-    alignItems: "flex-start", // top-aligns the × against wrapped multi-line text
-    borderWidth: 1.5,
+    alignItems: "flex-start",
+    borderWidth: 1.25,
     borderRadius: theme.radius.pill,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    maxWidth: "100%", // the actual overflow fix — caps the pill at its container's width
+    paddingVertical: 7,
+    paddingHorizontal: 13,
+    maxWidth: "100%",
   },
   chipSmall: {
     paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderWidth: 1.2,
+    paddingHorizontal: 9,
+    borderWidth: 1,
   },
 });
