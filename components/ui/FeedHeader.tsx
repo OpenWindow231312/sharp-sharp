@@ -95,15 +95,16 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: theme.spacing.xxl,
+    gap: theme.spacing.xl,
     paddingBottom: theme.spacing.md,
     borderBottomWidth: 1.5,
     borderBottomColor: theme.colors.border,
     marginBottom: theme.spacing.sm,
   },
   stat: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 6,
   },
   statDot: {
     width: 7,
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontFamily: theme.fonts.mono,
-    fontSize: 9.5,
+    fontSize: 11,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },

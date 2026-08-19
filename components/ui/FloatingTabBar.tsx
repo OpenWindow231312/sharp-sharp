@@ -20,7 +20,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
     <View
       style={[
         styles.wrap,
-        { paddingBottom: insets.bottom || theme.spacing.sm },
+        { paddingBottom: insets.bottom || theme.spacing.md },
       ]}
     >
       <View style={styles.shell}>
@@ -52,7 +52,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
               style={[styles.tab, isFocused && styles.tabActive]}
             >
               <IconComponent
-                size={20}
+                size={24}
                 weight={isFocused ? "fill" : "bold"}
                 color={isFocused ? theme.colors.primaryText : theme.colors.inkSoft}
               />
@@ -69,23 +69,23 @@ const styles = StyleSheet.create({
   wrap: {
     alignItems: "center",
     backgroundColor: theme.colors.background,
-    paddingTop: theme.spacing.sm,
+    paddingTop: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
   },
   shell: {
     flexDirection: "row",
     backgroundColor: "rgba(255,255,255,0.92)",
     borderRadius: theme.radius.pill,
-    padding: theme.spacing.xs,
+    padding: theme.spacing.sm,
     ...theme.shadow.soft,
   },
   tab: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
+    gap: 7,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radius.pill,
   },
   tabActive: {
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: theme.fonts.bodyBold,
-    fontSize: 13,
+    fontSize: 14,
     color: theme.colors.primaryText,
   },
 });
