@@ -1,5 +1,7 @@
 import { theme } from "@/constants/designTheme";
 import type { SlangTerm } from "@/types/slangTerm";
+import { BookOpen, Quotes } from "phosphor-react-native";
+import { forwardRef, useImperativeHandle } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -11,163 +13,189 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { Card } from "./Card";
 import { Chip } from "./Chip";
+import { PatternFill, type PatternVariant } from "./PatternFill";
 import { Text } from "./Text";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
+
+const PATTERN_VARIANTS: PatternVariant[] = [
+  "chevron",
+  "diamond",
+  "triangle",
+  "beadscatter",
+];
+
+function patternForTerm(term: string): PatternVariant {
+  let hash = 0;
+  for (let i = 0; i < term.length; i++) {
+    hash = (hash * 31 + term.charCodeAt(i)) >>> 0;
+  }
+  return PATTERN_VARIANTS[hash % PATTERN_VARIANTS.length];
+}
 
 type SwipeCardProps = {
   term: SlangTerm;
   onSwipe: (direction: "left" | "right") => void;
 };
 
-export function SwipeCard({ term, onSwipe }: SwipeCardProps) {
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const flip = useSharedValue(0); // 0 = front showing, 180 = back showing
+export type SwipeCardHandle = {
+  flip: () => void;
+};
 
-  function toggleFlip() {
-    flip.value = withTiming(flip.value === 0 ? 180 : 0, { duration: 450 });
-  }
+export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
+  function SwipeCard({ term, onSwipe }, ref) {
+    const translateX = useSharedValue(0);
+    const translateY = useSharedValue(0);
+    const flip = useSharedValue(0);
 
-  const pan = Gesture.Pan()
-    .onUpdate((e) => {
-      translateX.value = e.translationX;
-      translateY.value = e.translationY;
-    })
-    .onEnd((e) => {
-      const passedThreshold = Math.abs(e.translationX) > SWIPE_THRESHOLD;
-      if (passedThreshold) {
-        const direction = e.translationX > 0 ? "right" : "left";
-        translateX.value = withTiming(
-          direction === "right" ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5,
-          { duration: 220 },
-          () => runOnJS(onSwipe)(direction),
-        );
-      } else {
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
-      }
+    function toggleFlip() {
+      flip.value = withTiming(flip.value === 0 ? 180 : 0, { duration: 450 });
+    }
+
+    useImperativeHandle(ref, () => ({
+      flip: toggleFlip,
+    }));
+
+    const pan = Gesture.Pan()
+      .onUpdate((e) => {
+        translateX.value = e.translationX;
+        translateY.value = e.translationY;
+      })
+      .onEnd((e) => {
+        const passedThreshold = Math.abs(e.translationX) > SWIPE_THRESHOLD;
+        if (passedThreshold) {
+          const direction = e.translationX > 0 ? "right" : "left";
+          translateX.value = withTiming(
+            direction === "right" ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5,
+            { duration: 220 },
+            () => runOnJS(onSwipe)(direction),
+          );
+        } else {
+          translateX.value = withSpring(0);
+          translateY.value = withSpring(0);
+        }
+      });
+
+    const tap = Gesture.Tap()
+      .maxDuration(250)
+      .onEnd(() => {
+        runOnJS(toggleFlip)();
+      });
+
+    const composedGesture = Gesture.Race(pan, tap);
+
+    const dragStyle = useAnimatedStyle(() => {
+      const rotate = interpolate(
+        translateX.value,
+        [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+        [-12, 0, 12],
+        Extrapolation.CLAMP,
+      );
+      return {
+        transform: [
+          { translateX: translateX.value },
+          { translateY: translateY.value },
+          { rotate: `${rotate}deg` },
+        ],
+      };
     });
 
-  const tap = Gesture.Tap()
-    .maxDuration(250)
-    .onEnd(() => {
-      runOnJS(toggleFlip)();
-    });
+    const frontFaceStyle = useAnimatedStyle(() => ({
+      transform: [{ perspective: 1200 }, { rotateY: `${flip.value}deg` }],
+    }));
 
-  // Race, not Simultaneous: whichever gesture recognizes first "wins" and
-  // cancels the other — a still finger reads as Tap, real horizontal
-  // movement reads as Pan, so they never both fire for one touch.
-  const composedGesture = Gesture.Race(pan, tap);
+    const backFaceStyle = useAnimatedStyle(() => ({
+      transform: [{ perspective: 1200 }, { rotateY: `${flip.value - 180}deg` }],
+    }));
 
-  const dragStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(
-      translateX.value,
-      [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-      [-12, 0, 12],
-      Extrapolation.CLAMP,
-    );
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { rotate: `${rotate}deg` },
-      ],
-    };
-  });
+    const saveStampStyle = useAnimatedStyle(() => ({
+      opacity: interpolate(
+        translateX.value,
+        [10, SWIPE_THRESHOLD],
+        [0, 1],
+        Extrapolation.CLAMP,
+      ),
+    }));
 
-  const frontFaceStyle = useAnimatedStyle(() => ({
-    transform: [{ perspective: 1200 }, { rotateY: `${flip.value}deg` }],
-  }));
+    const skipStampStyle = useAnimatedStyle(() => ({
+      opacity: interpolate(
+        translateX.value,
+        [-SWIPE_THRESHOLD, -10],
+        [1, 0],
+        Extrapolation.CLAMP,
+      ),
+    }));
 
-  const backFaceStyle = useAnimatedStyle(() => ({
-    transform: [{ perspective: 1200 }, { rotateY: `${flip.value - 180}deg` }],
-  }));
+    const patternVariant = patternForTerm(term.term);
 
-  const saveStampStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      translateX.value,
-      [10, SWIPE_THRESHOLD],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
-  }));
+    return (
+      <GestureDetector gesture={composedGesture}>
+        <Animated.View style={[styles.wrapper, dragStyle]}>
+          <Animated.View style={[styles.stamp, styles.saveStamp, saveStampStyle]}>
+            <Text style={styles.stampText}>SAVE</Text>
+          </Animated.View>
+          <Animated.View style={[styles.stamp, styles.skipStamp, skipStampStyle]}>
+            <Text style={styles.stampText}>SKIP</Text>
+          </Animated.View>
 
-  const skipStampStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      translateX.value,
-      [-SWIPE_THRESHOLD, -10],
-      [1, 0],
-      Extrapolation.CLAMP,
-    ),
-  }));
-
-  return (
-    <GestureDetector gesture={composedGesture}>
-      <Animated.View style={[styles.wrapper, dragStyle]}>
-        <Animated.View style={[styles.stamp, styles.saveStamp, saveStampStyle]}>
-          <Text style={styles.stampText}>SAVE</Text>
-        </Animated.View>
-        <Animated.View style={[styles.stamp, styles.skipStamp, skipStampStyle]}>
-          <Text style={styles.stampText}>SKIP</Text>
-        </Animated.View>
-
-        {/* Front face */}
-        <Animated.View style={[styles.face, frontFaceStyle]}>
-          <Card style={styles.card}>
-            <View style={styles.bubbleRow}>
-              <Chip label={term.language} selected />
-            </View>
-            <View style={styles.frontCenter}>
-              <Text style={styles.termText}>{term.term}</Text>
-              <Text variant="muted" style={styles.flipHint}>
-                ↻ Tap to reveal meaning
-              </Text>
-            </View>
-          </Card>
-        </Animated.View>
-
-        {/* Back face */}
-        <Animated.View
-          style={[styles.face, styles.backFacePosition, backFaceStyle]}
-        >
-          <Card style={styles.card}>
-            <View style={styles.bubbleRow}>
-              <Chip label={term.language} selected />
-            </View>
-            <Text variant="muted" style={{ marginBottom: 4 }}>
-              Meaning
-            </Text>
-            <Text style={styles.meaningText}>{term.meaning}</Text>
-            {term.examples && term.examples.length > 0 ? (
-              <View style={{ marginTop: 4 }}>
-                <Text variant="muted" style={styles.exampleText}>
-                  "{term.examples[0].sentence}"
-                </Text>
-                {term.examples[0].context ? (
-                  <Text variant="muted" style={styles.exampleContextText}>
-                    {term.examples[0].context}
-                  </Text>
-                ) : null}
+          <Animated.View style={[styles.face, frontFaceStyle]}>
+            <View style={styles.cardShell}>
+              <PatternFill variant={patternVariant} style={styles.patternZone} />
+              <View style={styles.termZone}>
+                <Chip label={term.language} selected style={styles.langPill} />
+                <Text style={styles.termText}>{term.term}</Text>
               </View>
-            ) : null}
-            {term.region ? (
-              <Text variant="muted" style={{ marginTop: 10 }}>
-                {term.region}
+            </View>
+          </Animated.View>
+
+          <Animated.View
+            style={[styles.face, styles.backFacePosition, backFaceStyle]}
+          >
+            <View style={[styles.cardShell, styles.backContent]}>
+              <View style={styles.subheadingRow}>
+                <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
+                <Text variant="muted" style={styles.subheadingText}>
+                  Definition
+                </Text>
+              </View>
+              <Text style={styles.meaningText}>{term.meaning}</Text>
+
+              {term.examples && term.examples.length > 0 ? (
+                <>
+                  <View style={styles.subheadingRow}>
+                    <Quotes size={13} weight="bold" color={theme.colors.inkSoft} />
+                    <Text variant="muted" style={styles.subheadingText}>
+                      In a sentence
+                    </Text>
+                  </View>
+                  <Text style={styles.exampleText}>
+                    "{term.examples[0].sentence}"
+                  </Text>
+                  {term.examples[0].context ? (
+                    <Text variant="muted" style={styles.exampleContextText}>
+                      {term.examples[0].context}
+                    </Text>
+                  ) : null}
+                </>
+              ) : null}
+
+              {term.region ? (
+                <Text variant="muted" style={styles.regionText}>
+                  {term.region}
+                </Text>
+              ) : null}
+              <Text variant="muted" style={styles.addedBy}>
+                Added by {term.submittedByName}
               </Text>
-            ) : null}
-            <Text variant="muted" style={styles.addedBy}>
-              Added by {term.submittedByName}
-            </Text>
-          </Card>
+            </View>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
-    </GestureDetector>
-  );
-}
+      </GestureDetector>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -183,51 +211,72 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
   },
-  card: {
+  cardShell: {
     minHeight: 400,
     borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
+    overflow: "hidden",
+    backgroundColor: theme.colors.card,
     ...theme.shadow.card,
   },
-  bubbleRow: {
-    flexDirection: "row",
-    marginBottom: 16,
+  patternZone: {
+    height: 150,
   },
-  frontCenter: {
+  termZone: {
     flex: 1,
-    justifyContent: "center",
+    backgroundColor: theme.colors.indigo,
     alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing.lg,
+  },
+  langPill: {
+    position: "absolute",
+    top: theme.spacing.md,
+    left: theme.spacing.md,
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 44,
-    color: theme.colors.text,
+    fontSize: 34,
+    color: "#FFFFFF",
     textAlign: "center",
-    marginBottom: 12,
   },
-  flipHint: {
-    fontSize: 13,
+  backContent: {
+    padding: theme.spacing.lg,
+  },
+  subheadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 4,
+    marginTop: theme.spacing.sm,
+  },
+  subheadingText: {
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
   },
   meaningText: {
     fontFamily: theme.fonts.body,
-    fontSize: 18,
-    lineHeight: 26,
+    fontSize: 17,
+    lineHeight: 24,
     color: theme.colors.text,
-    marginBottom: 16,
   },
   exampleText: {
     fontFamily: theme.fonts.body,
     fontStyle: "italic",
     fontSize: 15,
+    color: theme.colors.text,
   },
   exampleContextText: {
     fontSize: 13,
     fontStyle: "italic",
     marginTop: 2,
   },
+  regionText: {
+    marginTop: theme.spacing.sm,
+  },
   addedBy: {
     marginTop: "auto",
-    paddingTop: 16,
+    paddingTop: theme.spacing.md,
   },
   stamp: {
     position: "absolute",

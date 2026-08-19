@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { SwipeCard } from "@/components/ui/SwipeCard";
+import { FeedControls } from "@/components/ui/FeedControls";
+import { FeedHeader } from "@/components/ui/FeedHeader";
+import { FirstTimeTutorial } from "@/components/ui/FirstTimeTutorial";
+import { SwipeCard, type SwipeCardHandle } from "@/components/ui/SwipeCard";
 import { Text } from "@/components/ui/Text";
 import { XpToast } from "@/components/ui/XpToast";
 import { theme } from "@/constants/designTheme";
@@ -14,7 +15,6 @@ import { saveTermForUser } from "@/services/savedTerms";
 import { addXp } from "@/services/xp";
 import type { SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
 import {
   collection,
   doc,
@@ -23,11 +23,10 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 export default function FeedScreen() {
-  const router = useRouter();
   const { user } = useAuth();
   const [allTerms, setAllTerms] = useState<SlangTerm[]>([]);
   const [excludedIds, setExcludedIds] = useState<Set<string> | null>(null);
@@ -37,6 +36,7 @@ export default function FeedScreen() {
   const [toast, setToast] = useState<{ id: number; amount: number } | null>(
     null,
   );
+  const cardRef = useRef<SwipeCardHandle>(null);
 
   useEffect(() => {
     if (USE_MOCK_DATA) {
@@ -62,13 +62,6 @@ export default function FeedScreen() {
       setAllTerms(MOCK_TERMS);
       return;
     }
-    // Only subscribe once we actually have a logged-in user — and this
-    // effect re-runs automatically when `user` changes (e.g. becomes null
-    // on logout), which unsubscribes the *old* listener via the cleanup
-    // function below before doing anything else. Without this guard, the
-    // listener stays alive after logout, tries to re-validate against
-    // firestore.rules with no auth token, and throws an unhandled
-    // permission-denied error — which is what was freezing the Log out flow.
     if (!user) {
       setAllTerms([]);
       return;
@@ -83,9 +76,6 @@ export default function FeedScreen() {
         setAllTerms(terms);
       },
       (error) => {
-        // Catches any listener error instead of letting it go unhandled —
-        // e.g. this fires harmlessly during the brief moment of logging out,
-        // instead of crashing/freezing the app.
         console.log("Feed listener error:", error.message);
       },
     );
@@ -128,34 +118,18 @@ export default function FeedScreen() {
   const nextTerm = feedTerms[currentIndex + 1];
   const noMoreCards = !isLoading && currentIndex >= feedTerms.length;
   const levelInfo = getLevelInfo(xp);
+  const showControls = !isLoading && !noMoreCards && !!topTerm;
 
   return (
     <View style={styles.container}>
-      <Text variant="display" style={{ marginBottom: 4 }}>
-        Feed
-      </Text>
-      <Text variant="muted" style={{ marginBottom: 12 }}>
-        Swipe right to collect words — earn XP as you go.
-      </Text>
+      <FirstTimeTutorial />
 
-      <View style={styles.levelRow}>
-        <Text style={{ fontFamily: theme.fonts.bodyBold }}>
-          {levelInfo.title}
-        </Text>
-        <Text variant="muted">{xp} XP</Text>
-      </View>
-      <ProgressBar progress={levelInfo.progress} />
-
-      <Button
-        label={
-          savedCount > 0
-            ? `Learn (${savedCount} in your dictionary)`
-            : "Learn (nothing saved yet)"
-        }
-        variant={savedCount > 0 ? "primary" : "secondary"}
-        disabled={savedCount === 0}
-        onPress={() => router.push("/learn")}
-        style={{ alignSelf: "flex-start", marginBottom: 16 }}
+      <FeedHeader
+        levelTitle={levelInfo.title}
+        progress={levelInfo.progress}
+        xp={xp}
+        savedCount={savedCount}
+        avatarInitial={user?.email?.[0]?.toUpperCase() ?? "?"}
       />
 
       <View style={styles.stack}>
@@ -187,6 +161,7 @@ export default function FeedScreen() {
             ) : null}
             {topTerm ? (
               <SwipeCard
+                ref={cardRef}
                 key={topTerm.id}
                 term={topTerm}
                 onSwipe={handleSwipe}
@@ -195,6 +170,14 @@ export default function FeedScreen() {
           </>
         )}
       </View>
+
+      {showControls ? (
+        <FeedControls
+          onSkip={() => handleSwipe("left")}
+          onFlip={() => cardRef.current?.flip()}
+          onSave={() => handleSwipe("right")}
+        />
+      ) : null}
     </View>
   );
 }
@@ -202,16 +185,14 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
     paddingTop: 70,
     backgroundColor: theme.colors.background,
   },
-  levelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
+  stack: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: theme.spacing.lg,
   },
-  stack: { flex: 1, justifyContent: "center" },
   peekWrapper: {
     position: "absolute",
     width: "100%",
