@@ -56,9 +56,20 @@ export async function flagTerm(
   };
 
   await addDoc(collection(db, "flags"), payload);
-  await updateDoc(doc(db, "slang_terms", termId), {
-    flagCount: increment(1),
-  });
+
+  // Bumping flagCount requires update permission on slang_terms, which
+  // firestore.rules only grants to the term's own submitter or an admin.
+  // Most people flagging a term didn't submit it, so this write is
+  // expected to be denied for them — that's fine, flagCount is just a
+  // display counter for Control Center and shouldn't block the flag
+  // report above (the part that actually matters) from succeeding.
+  try {
+    await updateDoc(doc(db, "slang_terms", termId), {
+      flagCount: increment(1),
+    });
+  } catch (error) {
+    console.log("Flag count increment error:", error);
+  }
 }
 
 export async function getPendingFlags(): Promise<Flag[]> {

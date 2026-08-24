@@ -5,7 +5,7 @@ import type { FlagReason, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import { BookOpen, Flag as FlagIcon, Quotes } from "phosphor-react-native";
 import { forwardRef, useImperativeHandle, useState } from "react";
-import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Dimensions, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
@@ -65,7 +65,6 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
     const [reportModalVisible, setReportModalVisible] = useState(false);
     const [isFlagging, setIsFlagging] = useState(false);
-    const [justFlagged, setJustFlagged] = useState(false);
 
     async function submitFlag(reason: FlagReason) {
       if (!user || isFlagging) return;
@@ -74,10 +73,17 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
         await flagTerm(term.id, term.term, user.uid, reason);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setReportModalVisible(false);
-        setJustFlagged(true);
-        setTimeout(() => setJustFlagged(false), 1500);
+        Alert.alert("Reported", "Thanks — our team will take a look.");
+        // Flagging behaves like a skip for the rest of this session — the
+        // term leaves the visible stack rather than sitting there looking
+        // untouched.
+        onSwipe("left");
       } catch (error) {
         console.log("Flag term error:", error);
+        Alert.alert(
+          "Couldn't report this term",
+          "Check your connection and try again.",
+        );
       } finally {
         setIsFlagging(false);
       }
@@ -189,11 +195,6 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 >
                   <FlagIcon size={18} weight="bold" color="#FFFFFF" />
                 </Pressable>
-                {justFlagged ? (
-                  <View style={styles.flaggedBadge}>
-                    <Text style={styles.flaggedBadgeText}>Reported</Text>
-                  </View>
-                ) : null}
                 <Text style={styles.termText}>{term.term}</Text>
               </View>
             </View>
@@ -341,21 +342,6 @@ const styles = StyleSheet.create({
     right: theme.spacing.md,
     zIndex: 2,
     padding: 6,
-  },
-  flaggedBadge: {
-    position: "absolute",
-    top: theme.spacing.md + 32,
-    right: theme.spacing.md,
-    zIndex: 2,
-    backgroundColor: "rgba(0,0,0,0.35)",
-    borderRadius: theme.radius.sm,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-  },
-  flaggedBadgeText: {
-    fontFamily: theme.fonts.bodySemibold,
-    fontSize: 11,
-    color: "#FFFFFF",
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
