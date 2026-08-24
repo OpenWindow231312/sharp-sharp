@@ -1,8 +1,11 @@
 import { theme } from "@/constants/designTheme";
-import type { SlangTerm } from "@/types/slangTerm";
-import { BookOpen, Quotes } from "phosphor-react-native";
-import { forwardRef, useImperativeHandle } from "react";
-import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
+import { useAuth } from "@/context/AuthContext";
+import { flagTerm } from "@/services/adminTerms";
+import type { FlagReason, SlangTerm } from "@/types/slangTerm";
+import * as Haptics from "expo-haptics";
+import { BookOpen, Flag as FlagIcon, Quotes } from "phosphor-react-native";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
@@ -13,9 +16,17 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { Button } from "./Button";
 import { Chip } from "./Chip";
 import { PatternFill, type PatternVariant } from "./PatternFill";
 import { Text } from "./Text";
+
+const FLAG_REASONS: { reason: FlagReason; label: string }[] = [
+  { reason: "offensive", label: "Offensive" },
+  { reason: "inaccurate", label: "Inaccurate" },
+  { reason: "spam", label: "Spam" },
+  { reason: "other", label: "Other" },
+];
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
@@ -47,9 +58,30 @@ export type SwipeCardHandle = {
 
 export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
   function SwipeCard({ term, onSwipe }, ref) {
+    const { user } = useAuth();
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const flip = useSharedValue(0);
+
+    const [reportModalVisible, setReportModalVisible] = useState(false);
+    const [isFlagging, setIsFlagging] = useState(false);
+    const [justFlagged, setJustFlagged] = useState(false);
+
+    async function submitFlag(reason: FlagReason) {
+      if (!user || isFlagging) return;
+      setIsFlagging(true);
+      try {
+        await flagTerm(term.id, term.term, user.uid, reason);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setReportModalVisible(false);
+        setJustFlagged(true);
+        setTimeout(() => setJustFlagged(false), 1500);
+      } catch (error) {
+        console.log("Flag term error:", error);
+      } finally {
+        setIsFlagging(false);
+      }
+    }
 
     function toggleFlip() {
       flip.value = withTiming(flip.value === 0 ? 180 : 0, { duration: 450 });
@@ -132,6 +164,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
     const patternVariant = patternForTerm(term.term);
 
     return (
+      <>
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={[styles.wrapper, dragStyle]}>
           <Animated.View style={[styles.stamp, styles.saveStamp, saveStampStyle]}>
@@ -149,6 +182,18 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 <View style={styles.langPillWrap}>
                   <Chip label={term.language} selected />
                 </View>
+                <Pressable
+                  onPress={() => setReportModalVisible(true)}
+                  hitSlop={10}
+                  style={styles.flagButton}
+                >
+                  <FlagIcon size={18} weight="bold" color="#FFFFFF" />
+                </Pressable>
+                {justFlagged ? (
+                  <View style={styles.flaggedBadge}>
+                    <Text style={styles.flaggedBadgeText}>Reported</Text>
+                  </View>
+                ) : null}
                 <Text style={styles.termText}>{term.term}</Text>
               </View>
             </View>
@@ -213,6 +258,41 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
           </Animated.View>
         </Animated.View>
       </GestureDetector>
+
+      <Modal
+        visible={reportModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <View style={styles.backdrop}>
+          <View style={styles.reportCard}>
+            <Text variant="heading" style={styles.reportTitle}>
+              Report this term
+            </Text>
+            <Text variant="muted" style={styles.reportSubtitle}>
+              Why are you flagging &quot;{term.term}&quot;?
+            </Text>
+            {FLAG_REASONS.map(({ reason, label }) => (
+              <Button
+                key={reason}
+                label={label}
+                variant="secondary"
+                disabled={isFlagging}
+                onPress={() => submitFlag(reason)}
+                style={{ marginTop: theme.spacing.sm }}
+              />
+            ))}
+            <Button
+              label="Cancel"
+              variant="secondary"
+              onPress={() => setReportModalVisible(false)}
+              style={{ marginTop: theme.spacing.md, opacity: 0.7 }}
+            />
+          </View>
+        </View>
+      </Modal>
+      </>
     );
   },
 );
@@ -254,6 +334,28 @@ const styles = StyleSheet.create({
     top: theme.spacing.md,
     left: theme.spacing.md,
     zIndex: 2,
+  },
+  flagButton: {
+    position: "absolute",
+    top: theme.spacing.md,
+    right: theme.spacing.md,
+    zIndex: 2,
+    padding: 6,
+  },
+  flaggedBadge: {
+    position: "absolute",
+    top: theme.spacing.md + 32,
+    right: theme.spacing.md,
+    zIndex: 2,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    borderRadius: theme.radius.sm,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  flaggedBadgeText: {
+    fontFamily: theme.fonts.bodySemibold,
+    fontSize: 11,
+    color: "#FFFFFF",
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
@@ -330,5 +432,26 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 18,
     letterSpacing: 1,
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(36,28,21,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing.lg,
+  },
+  reportCard: {
+    width: "100%",
+    maxWidth: 320,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
+  },
+  reportTitle: {
+    textAlign: "center",
+    marginBottom: theme.spacing.xs,
+  },
+  reportSubtitle: {
+    textAlign: "center",
   },
 });

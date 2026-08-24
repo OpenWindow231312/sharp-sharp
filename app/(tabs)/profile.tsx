@@ -44,6 +44,7 @@ export default function ProfileScreen() {
 
   const [xp, setXp] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [myTerms, setMyTerms] = useState<SlangTerm[]>([]);
   const [isLoadingTerms, setIsLoadingTerms] = useState(true);
@@ -61,6 +62,7 @@ export default function ProfileScreen() {
         const data = snap.exists() ? snap.data() : {};
         setXp(data.xp ?? 0);
         setSavedCount((data.savedTerms ?? []).length);
+        setIsAdmin(data.isAdmin === true);
       },
       (error) => console.log("Profile stats listener error:", error),
     );
@@ -253,6 +255,15 @@ export default function ProfileScreen() {
               xp,
             }}
           />
+
+          {isAdmin ? (
+            <Button
+              label="Admin Dashboard"
+              variant="secondary"
+              onPress={() => router.push("/admin")}
+              style={{ marginTop: 8, marginBottom: 8 }}
+            />
+          ) : null}
 
           <Button
             label={isLoggingOut ? "Logging out..." : "Log out"}
