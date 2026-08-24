@@ -1,4 +1,3 @@
-import { BadgeMedallion } from "@/components/ui/BadgeMedallion";
 import { Button } from "@/components/ui/Button";
 import { PatternFill } from "@/components/ui/PatternFill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -6,12 +5,7 @@ import { Text } from "@/components/ui/Text";
 import { TypewriterText } from "@/components/ui/TypewriterText";
 import { theme } from "@/constants/designTheme";
 import { useRouter } from "expo-router";
-import {
-  ArrowBendDownLeft,
-  Check,
-  Flag as FlagIcon,
-  X as XIcon,
-} from "phosphor-react-native";
+import { ArrowBendDownLeft, Flag as FlagIcon } from "phosphor-react-native";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
@@ -31,14 +25,20 @@ type BeatBase = { autoAdvanceMs?: number };
 type DialogueBeat = BeatBase & { kind: "dialogue"; lines: [string, string] };
 type HeroBeat = BeatBase & {
   kind: "hero";
-  accentLine: string;
-  headlineLine: string;
+  bigLines: [string, string];
+  smallLine: string;
   body: string;
 };
-type MechanicsBeat = BeatBase & { kind: "mechanics"; text: string };
+type MechanicsBeat = BeatBase & {
+  kind: "mechanics";
+  heading: string;
+  text: string;
+};
 type ClosingBeat = BeatBase & {
   kind: "closing";
-  headline: string;
+  headlineBefore: string;
+  headlineAccent: string;
+  headlineAfter: string;
   caption: string;
 };
 type Beat = DialogueBeat | HeroBeat | MechanicsBeat | ClosingBeat;
@@ -62,20 +62,23 @@ const BEATS: Beat[] = [
   },
   {
     kind: "hero",
-    autoAdvanceMs: 5500,
-    accentLine: "Sharp sharp.",
-    headlineLine: "We've got you.",
+    autoAdvanceMs: 6000,
+    bigLines: ["Sharp", "Sharp."],
+    smallLine: "We've got you",
     body: "It's your turn to actually understand what being a real South African actually sounds like.",
   },
   {
     kind: "mechanics",
-    autoAdvanceMs: 6200,
-    text: "Swipe right to save a word. Swipe left to skip it. Tap to flip and see what it means.",
+    autoAdvanceMs: 4000,
+    heading: "Learn South African slang in real time",
+    text: "Swipe right to save a word, swipe left to skip it.",
   },
   {
     // No autoAdvanceMs — this beat is manual only, it ends on "Let's go".
     kind: "closing",
-    headline: "Keep it real, not rude.",
+    headlineBefore: "Keep it ",
+    headlineAccent: "real",
+    headlineAfter: ", not rude.",
     caption: "See something off? Tap the flag. We'll take a look.",
   },
 ];
@@ -134,16 +137,22 @@ export default function OnboardingStoryScreen() {
         ) : beat.kind === "hero" ? (
           <HeroBeatView
             key={stepIndex}
-            accentLine={beat.accentLine}
-            headlineLine={beat.headlineLine}
+            bigLines={beat.bigLines}
+            smallLine={beat.smallLine}
             body={beat.body}
           />
         ) : beat.kind === "mechanics" ? (
-          <MechanicsBeatView key={stepIndex} text={beat.text} />
+          <MechanicsBeatView
+            key={stepIndex}
+            heading={beat.heading}
+            text={beat.text}
+          />
         ) : (
           <ClosingBeatView
             key={stepIndex}
-            headline={beat.headline}
+            headlineBefore={beat.headlineBefore}
+            headlineAccent={beat.headlineAccent}
+            headlineAfter={beat.headlineAfter}
             caption={beat.caption}
             onFinish={goToLanguages}
           />
@@ -215,54 +224,53 @@ function Bubble({
 }
 
 function HeroBeatView({
-  accentLine,
-  headlineLine,
+  bigLines,
+  smallLine,
   body,
 }: {
-  accentLine: string;
-  headlineLine: string;
+  bigLines: [string, string];
+  smallLine: string;
   body: string;
 }) {
-  const [showHeadlineLine, setShowHeadlineLine] = useState(false);
+  const [showSecondBig, setShowSecondBig] = useState(false);
+  const [showSmallLine, setShowSmallLine] = useState(false);
   const [showBody, setShowBody] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutsRef.current.forEach(clearTimeout);
+      timeoutsRef.current = [];
     };
   }, []);
 
+  function afterPause(fn: () => void) {
+    timeoutsRef.current.push(setTimeout(fn, PAUSE_MS));
+  }
+
   return (
     <View style={styles.heroWrap}>
-      <BadgeMedallion
-        variant="chevron"
-        shape="circle"
-        unlocked
-        size={200}
-        style={styles.heroMedallion}
+      <TypewriterText
+        text={bigLines[0]}
+        style={styles.heroBigLine}
+        charDelayMs={44}
+        onDone={() => afterPause(() => setShowSecondBig(true))}
       />
-      <View>
+      {showSecondBig ? (
         <TypewriterText
-          text={accentLine}
-          style={styles.heroAccentLine}
-          charDelayMs={38}
-          onDone={() => {
-            timeoutRef.current = setTimeout(
-              () => setShowHeadlineLine(true),
-              PAUSE_MS,
-            );
-          }}
+          text={bigLines[1]}
+          style={styles.heroBigLine}
+          charDelayMs={44}
+          onDone={() => afterPause(() => setShowSmallLine(true))}
         />
-        {showHeadlineLine ? (
-          <TypewriterText
-            text={headlineLine}
-            style={styles.heroHeadlineLine}
-            charDelayMs={38}
-            onDone={() => setShowBody(true)}
-          />
-        ) : null}
-      </View>
+      ) : null}
+      {showSmallLine ? (
+        <TypewriterText
+          text={smallLine}
+          style={styles.heroSmallLine}
+          onDone={() => setShowBody(true)}
+        />
+      ) : null}
       {showBody ? (
         <Animated.View entering={FadeIn.duration(400)}>
           <Text style={styles.heroBody}>{body}</Text>
@@ -272,23 +280,41 @@ function HeroBeatView({
   );
 }
 
-function MechanicsBeatView({ text }: { text: string }) {
+function MechanicsBeatView({
+  heading,
+  text,
+}: {
+  heading: string;
+  text: string;
+}) {
   return (
     <View style={styles.mechanicsWrap}>
-      <TypewriterText text={text} style={styles.mechanicsText} />
-      <View style={styles.mechanicsDemoWrap}>
-        <DemoGestureCard />
-      </View>
+      <Animated.Text
+        entering={FadeIn.duration(350)}
+        style={styles.mechanicsHeading}
+      >
+        {heading}
+      </Animated.Text>
+      <Animated.Text
+        entering={FadeIn.delay(150).duration(350)}
+        style={styles.mechanicsText}
+      >
+        {text}
+      </Animated.Text>
     </View>
   );
 }
 
 function ClosingBeatView({
-  headline,
+  headlineBefore,
+  headlineAccent,
+  headlineAfter,
   caption,
   onFinish,
 }: {
-  headline: string;
+  headlineBefore: string;
+  headlineAccent: string;
+  headlineAfter: string;
   caption: string;
   onFinish: () => void;
 }) {
@@ -298,7 +324,11 @@ function ClosingBeatView({
         entering={ZoomIn.duration(350)}
         style={styles.closingHeadline}
       >
-        {headline}
+        {headlineBefore}
+        <Animated.Text style={styles.closingHeadlineAccent}>
+          {headlineAccent}
+        </Animated.Text>
+        {headlineAfter}
       </Animated.Text>
 
       <Animated.View entering={ZoomIn.delay(180).duration(350)}>
@@ -371,148 +401,6 @@ function MiniFlagCard() {
   );
 }
 
-const DEMO_SWIPE_DISTANCE = 34;
-const GESTURE_SLIDE_MS = 450;
-const GESTURE_HOLD_MS = 400;
-const GESTURE_RESET_MS = 350;
-const GESTURE_GAP_MS = 150;
-const GESTURE_CYCLE_MS =
-  GESTURE_SLIDE_MS +
-  GESTURE_HOLD_MS +
-  GESTURE_RESET_MS +
-  GESTURE_GAP_MS +
-  GESTURE_SLIDE_MS +
-  GESTURE_HOLD_MS +
-  GESTURE_RESET_MS +
-  GESTURE_GAP_MS;
-
-type GestureIcon = "none" | "check" | "x";
-
-// Demonstrates both swipe gestures in sequence rather than a single vague
-// slide-and-reset: right with a save checkmark, then left with a skip X,
-// looping a couple of times before the beat auto-advances.
-function DemoGestureCard() {
-  const translateX = useSharedValue(0);
-  const rotate = useSharedValue(0);
-  const iconScale = useSharedValue(0);
-  const iconOpacity = useSharedValue(0);
-  const [icon, setIcon] = useState<GestureIcon>("none");
-  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  useEffect(() => {
-    function after(delay: number, fn: () => void) {
-      timeoutsRef.current.push(setTimeout(fn, delay));
-    }
-
-    function runCycle(start: number) {
-      // Slide right, checkmark stamps in.
-      after(start, () => {
-        setIcon("check");
-        translateX.value = withTiming(DEMO_SWIPE_DISTANCE, {
-          duration: GESTURE_SLIDE_MS,
-          easing: Easing.out(Easing.quad),
-        });
-        rotate.value = withTiming(6, { duration: GESTURE_SLIDE_MS });
-        iconScale.value = withTiming(1, {
-          duration: 260,
-          easing: Easing.out(Easing.back(1.6)),
-        });
-        iconOpacity.value = withTiming(1, { duration: 220 });
-      });
-
-      // Hold, then reset to center.
-      after(start + GESTURE_SLIDE_MS + GESTURE_HOLD_MS, () => {
-        iconOpacity.value = withTiming(0, { duration: 180 });
-        iconScale.value = withTiming(0.6, { duration: 180 });
-        translateX.value = withTiming(0, {
-          duration: GESTURE_RESET_MS,
-          easing: Easing.inOut(Easing.quad),
-        });
-        rotate.value = withTiming(0, { duration: GESTURE_RESET_MS });
-      });
-
-      const leftStart =
-        start + GESTURE_SLIDE_MS + GESTURE_HOLD_MS + GESTURE_RESET_MS + GESTURE_GAP_MS;
-
-      // Slide left, skip X stamps in.
-      after(leftStart, () => {
-        setIcon("x");
-        translateX.value = withTiming(-DEMO_SWIPE_DISTANCE, {
-          duration: GESTURE_SLIDE_MS,
-          easing: Easing.out(Easing.quad),
-        });
-        rotate.value = withTiming(-6, { duration: GESTURE_SLIDE_MS });
-        iconScale.value = withTiming(1, {
-          duration: 260,
-          easing: Easing.out(Easing.back(1.6)),
-        });
-        iconOpacity.value = withTiming(1, { duration: 220 });
-      });
-
-      // Hold, then reset to center.
-      after(leftStart + GESTURE_SLIDE_MS + GESTURE_HOLD_MS, () => {
-        iconOpacity.value = withTiming(0, { duration: 180 });
-        iconScale.value = withTiming(0.6, { duration: 180 });
-        translateX.value = withTiming(0, {
-          duration: GESTURE_RESET_MS,
-          easing: Easing.inOut(Easing.quad),
-        });
-        rotate.value = withTiming(0, { duration: GESTURE_RESET_MS });
-      });
-
-      after(
-        leftStart + GESTURE_SLIDE_MS + GESTURE_HOLD_MS + GESTURE_RESET_MS,
-        () => setIcon("none"),
-      );
-    }
-
-    runCycle(500);
-    runCycle(500 + GESTURE_CYCLE_MS);
-
-    return () => {
-      timeoutsRef.current.forEach(clearTimeout);
-      timeoutsRef.current = [];
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const cardStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { rotate: `${rotate.value}deg` },
-    ],
-  }));
-
-  const iconStyle = useAnimatedStyle(() => ({
-    opacity: iconOpacity.value,
-    transform: [{ scale: iconScale.value }],
-  }));
-
-  return (
-    <View style={styles.demoCardWrap} pointerEvents="none">
-      <Animated.View style={[styles.demoCard, cardStyle]}>
-        <PatternFill
-          variant="triangle"
-          style={styles.demoCardPattern}
-          opacity={0.5}
-        />
-        <View style={styles.demoCardTermZone}>
-          <Text style={styles.demoCardTerm}>Howzit</Text>
-        </View>
-        {icon !== "none" ? (
-          <Animated.View style={[styles.demoCardIconWrap, iconStyle]}>
-            {icon === "check" ? (
-              <Check size={44} weight="fill" color={theme.colors.highveld} />
-            ) : (
-              <XIcon size={44} weight="fill" color={theme.colors.protea} />
-            )}
-          </Animated.View>
-        ) : null}
-      </Animated.View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -574,46 +462,43 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: "#FFFFFF",
   },
-  heroWrap: {
-    gap: theme.spacing.md,
-  },
-  heroMedallion: {
-    position: "absolute",
-    top: -34,
-    right: -16,
-    opacity: 0.14,
-  },
-  heroAccentLine: {
+  heroWrap: {},
+  heroBigLine: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 40,
-    lineHeight: 46,
+    fontSize: 92,
+    lineHeight: 86,
     color: theme.colors.marigold,
   },
-  heroHeadlineLine: {
+  heroSmallLine: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 40,
-    lineHeight: 46,
+    fontSize: 32,
+    lineHeight: 38,
     color: theme.colors.indigo,
+    marginTop: theme.spacing.sm,
   },
   heroBody: {
     fontFamily: theme.fonts.body,
     fontSize: 17,
     lineHeight: 25,
     color: theme.colors.text,
+    marginTop: theme.spacing.md,
   },
   mechanicsWrap: {
     flex: 1,
     paddingTop: theme.spacing.sm,
   },
-  mechanicsText: {
-    fontFamily: theme.fonts.bodyMedium,
-    fontSize: 20,
-    lineHeight: 28,
+  mechanicsHeading: {
+    fontFamily: theme.fonts.displayExtraBold,
+    fontSize: 30,
+    lineHeight: 36,
     color: theme.colors.text,
   },
-  mechanicsDemoWrap: {
-    flex: 1,
-    justifyContent: "center",
+  mechanicsText: {
+    fontFamily: theme.fonts.bodyMedium,
+    fontSize: 18,
+    lineHeight: 26,
+    color: theme.colors.textMuted,
+    marginTop: theme.spacing.xl,
   },
   closingWrap: {
     alignItems: "center",
@@ -623,8 +508,11 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 32,
     lineHeight: 38,
-    color: theme.colors.text,
+    color: theme.colors.indigo,
     textAlign: "center",
+  },
+  closingHeadlineAccent: {
+    color: theme.colors.marigold,
   },
   closingCaption: {
     fontFamily: theme.fonts.bodyMedium,
@@ -672,35 +560,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -8,
     right: -28,
-  },
-  demoCardWrap: {
-    alignItems: "center",
-  },
-  demoCard: {
-    width: 200,
-    borderRadius: theme.radius.lg,
-    overflow: "hidden",
-    backgroundColor: theme.colors.card,
-    ...theme.shadow.card,
-  },
-  demoCardPattern: {
-    height: 34,
-  },
-  demoCardTermZone: {
-    height: 108,
-    backgroundColor: theme.colors.indigo,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  demoCardTerm: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 26,
-    color: "#FFFFFF",
-  },
-  demoCardIconWrap: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(36,28,21,0.15)",
   },
 });
