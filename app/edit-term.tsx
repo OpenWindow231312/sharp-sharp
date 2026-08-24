@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Chip } from "@/components/ui/Chip";
+import { Dropdown } from "@/components/ui/Dropdown";
 import { Input } from "@/components/ui/Input";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
@@ -13,11 +13,11 @@ import {
     getSlangTermById,
     updateSlangTerm,
 } from "@/services/slangTerms";
-import type { SlangTerm } from "@/types/slangTerm";
+import type { SlangExample, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { doc, onSnapshot } from "firebase/firestore";
-import { CaretLeft } from "phosphor-react-native";
+import { CaretLeft, Trash, X } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -43,9 +43,9 @@ export default function EditTermScreen() {
   const [term, setTerm] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
   const [meaning, setMeaning] = useState("");
-  const [exampleInput, setExampleInput] = useState("");
-  const [examples, setExamples] = useState<string[]>([]);
-  const [region, setRegion] = useState("");
+  const [exampleSentence, setExampleSentence] = useState("");
+  const [exampleContext, setExampleContext] = useState("");
+  const [examples, setExamples] = useState<SlangExample[]>([]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -102,7 +102,6 @@ export default function EditTermScreen() {
         setLanguage(loaded.language);
         setMeaning(loaded.meaning);
         setExamples(loaded.examples ?? []);
-        setRegion(loaded.region ?? "");
       })
       .catch((error) => {
         console.log("Load term error:", error);
@@ -114,10 +113,16 @@ export default function EditTermScreen() {
   }, [termId, user, isAdmin]);
 
   function addExample() {
-    const trimmed = exampleInput.trim();
-    if (!trimmed) return;
-    setExamples((prev) => [...prev, trimmed]);
-    setExampleInput("");
+    const trimmedSentence = exampleSentence.trim();
+    if (!trimmedSentence) return;
+    const trimmedContext = exampleContext.trim();
+    const newExample: SlangExample = trimmedContext
+      ? { sentence: trimmedSentence, context: trimmedContext }
+      : { sentence: trimmedSentence };
+    setExamples((prev) => [...prev, newExample]);
+    setExampleSentence("");
+    setExampleContext("");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }
 
   function removeExample(index: number) {
@@ -138,7 +143,6 @@ export default function EditTermScreen() {
         meaning: meaning.trim(),
         language,
         examples,
-        region: region.trim() || undefined,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
@@ -241,19 +245,13 @@ export default function EditTermScreen() {
 
         <Input label="Term" value={term} onChangeText={setTerm} />
 
-        <Text variant="muted" style={{ marginBottom: 8 }}>
-          Language
-        </Text>
-        <View style={styles.chipWrap}>
-          {LANGUAGES.map((lang) => (
-            <Chip
-              key={lang}
-              label={lang}
-              selected={language === lang}
-              onPress={() => setLanguage(lang)}
-            />
-          ))}
-        </View>
+        <Dropdown
+          label="Language"
+          value={language}
+          options={LANGUAGES}
+          onChange={setLanguage}
+          placeholder="Choose a language"
+        />
 
         <Input
           label="Meaning"
@@ -266,40 +264,61 @@ export default function EditTermScreen() {
           Examples
         </Text>
         <Input
-          placeholder="Use it in a sentence, then tap Add"
-          value={exampleInput}
-          onChangeText={setExampleInput}
+          label="Example sentence"
+          placeholder="e.g. That's your problem, sorry neh"
+          value={exampleSentence}
+          onChangeText={setExampleSentence}
+          returnKeyType="next"
+        />
+        <Input
+          label="Context"
+          placeholder="When would someone say this? e.g. sarcastically, when they're annoyed"
+          value={exampleContext}
+          onChangeText={setExampleContext}
           onSubmitEditing={addExample}
           returnKeyType="done"
         />
         <Button
           label="+ Add example"
           variant="secondary"
+          size="compact"
+          disabled={!exampleSentence.trim()}
           onPress={addExample}
-          style={{ marginBottom: 12 }}
+          style={{
+            alignSelf: "flex-start",
+            marginBottom: examples.length > 0 ? 16 : 20,
+          }}
         />
         {examples.length > 0 ? (
-          <View style={[styles.chipWrap, { marginBottom: 12 }]}>
+          <View style={styles.examplesList}>
             {examples.map((ex, i) => (
-              <Chip
-                key={`${ex}-${i}`}
-                label={ex}
-                selected
-                onRemove={() => removeExample(i)}
-              />
+              <Card key={`${ex.sentence}-${i}`} style={styles.exampleCard}>
+                <View style={styles.exampleRow}>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={styles.exampleSentence}>
+                      &quot;{ex.sentence}&quot;
+                    </Text>
+                    {ex.context ? (
+                      <Text variant="muted" style={styles.exampleContext}>
+                        {ex.context}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Pressable
+                    onPress={() => removeExample(i)}
+                    hitSlop={10}
+                    style={styles.removeExampleButton}
+                  >
+                    <X size={18} color={theme.colors.protea} />
+                  </Pressable>
+                </View>
+              </Card>
             ))}
           </View>
         ) : null}
 
-        <Input
-          label="Region (optional)"
-          placeholder="e.g. Cape Flats, Joburg"
-          value={region}
-          onChangeText={setRegion}
-        />
-
         {errorMsg ? (
-          <Text style={{ color: theme.colors.protea, marginBottom: 12 }}>
+          <Text style={{ color: theme.colors.protea, marginTop: 20, marginBottom: 12 }}>
             {errorMsg}
           </Text>
         ) : null}
@@ -309,14 +328,19 @@ export default function EditTermScreen() {
           variant="primary"
           disabled={isSaving || isDeleting}
           onPress={handleSave}
-          style={{ marginBottom: 12 }}
+          style={{ marginTop: errorMsg ? 0 : 24, marginBottom: 16 }}
         />
-        <Button
-          label={isDeleting ? "Deleting..." : "Delete term"}
-          variant="secondary"
-          disabled={isSaving || isDeleting}
+        <Pressable
           onPress={confirmDelete}
-        />
+          disabled={isSaving || isDeleting}
+          hitSlop={8}
+          style={styles.deleteRow}
+        >
+          <Trash size={16} weight="bold" color={theme.colors.protea} />
+          <Text style={styles.deleteLabel}>
+            {isDeleting ? "Deleting..." : "Delete term"}
+          </Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -338,10 +362,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: -12, // pulls the touch target back so the chevron itself still lines up visually with the edge
   },
-  chipWrap: {
+  examplesList: { gap: 10, marginBottom: 4 },
+  exampleRow: { flexDirection: "row", alignItems: "flex-start" },
+  exampleCard: {},
+  exampleSentence: {
+    fontFamily: theme.fonts.bodyBold,
+    fontSize: 15,
+    color: theme.colors.text,
+    marginBottom: 4,
+  },
+  exampleContext: { fontSize: 13, fontStyle: "italic" },
+  removeExampleButton: { padding: 4 },
+  deleteRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: theme.spacing.sm,
+  },
+  deleteLabel: {
+    fontFamily: theme.fonts.bodySemibold,
+    fontSize: 14,
+    color: theme.colors.protea,
   },
 });

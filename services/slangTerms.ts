@@ -1,4 +1,4 @@
-import type { NewSlangTerm, SlangTerm } from "@/types/slangTerm";
+import type { NewSlangTerm, SlangExample, SlangTerm } from "@/types/slangTerm";
 import {
   addDoc,
   arrayUnion,
@@ -75,24 +75,28 @@ export type UpdateSlangTermData = {
   term: string;
   meaning: string;
   language: string;
-  examples?: string[];
-  region?: string;
+  examples?: SlangExample[];
 };
 
 export async function updateSlangTerm(
   termId: string,
   data: UpdateSlangTermData,
 ) {
-  // Unlike addSlangTerm, we deliberately always write examples/region —
-  // including as an empty array/string — so a user can clear a field they'd
+  // Unlike addSlangTerm, we deliberately always write examples —
+  // including as an empty array — so a user can clear a field they'd
   // previously filled in. The SwipeCard/StudyCard components already treat
-  // an empty region/examples as "nothing to show", so this is safe.
+  // an empty examples list as "nothing to show", so this is safe.
+  const examples = data.examples?.map((ex) => {
+    const clean: SlangExample = { sentence: ex.sentence };
+    if (ex.context) clean.context = ex.context;
+    return clean;
+  });
+
   await updateDoc(doc(db, "slang_terms", termId), {
     term: data.term,
     meaning: data.meaning,
     language: data.language,
-    examples: data.examples && data.examples.length > 0 ? data.examples : [],
-    region: data.region || "",
+    examples: examples && examples.length > 0 ? examples : [],
   });
 }
 

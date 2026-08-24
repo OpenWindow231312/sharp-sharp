@@ -49,10 +49,21 @@ export function StudyCard({ term, onSwipe }: StudyCardProps) {
           <Text variant="muted" style={{ marginBottom: 4 }}>Meaning</Text>
           <Text style={{ marginBottom: 16 }}>{term.meaning}</Text>
           {term.examples && term.examples.length > 0 ? (
-            <>
-              <Text variant="muted" style={{ marginBottom: 4 }}>Example</Text>
-              <Text style={{ fontStyle: 'italic', marginBottom: 16 }}>"{term.examples[0]}"</Text>
-            </>
+            <View style={{ marginBottom: 16 }}>
+              <Text variant="muted" style={{ marginBottom: 4 }}>
+                {term.examples.length > 1 ? 'Examples' : 'Example'}
+              </Text>
+              {term.examples.map((example, index) => (
+                <View key={index} style={index > 0 ? { marginTop: 8 } : undefined}>
+                  <Text style={{ fontStyle: 'italic' }}>&quot;{example.sentence}&quot;</Text>
+                  {example.context ? (
+                    <Text variant="muted" style={{ fontSize: 12, marginTop: 2 }}>
+                      {example.context}
+                    </Text>
+                  ) : null}
+                </View>
+              ))}
+            </View>
           ) : null}
           {term.region ? <Text variant="muted">{term.region}</Text> : null}
           <Text variant="muted" style={{ marginTop: 12 }}>Added by {term.submittedByName}</Text>

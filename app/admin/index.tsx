@@ -406,9 +406,16 @@ export default function AdminDashboardScreen() {
                       </Text>
                     </View>
                     {detailTerm.examples.map((example, index) => (
-                      <Text key={index} style={styles.exampleText}>
-                        &quot;{example.sentence}&quot;
-                      </Text>
+                      <View key={index} style={index > 0 ? styles.exampleBlockSpacing : undefined}>
+                        <Text style={styles.exampleText}>
+                          &quot;{example.sentence}&quot;
+                        </Text>
+                        {example.context ? (
+                          <Text variant="muted" style={styles.exampleContextText}>
+                            {example.context}
+                          </Text>
+                        ) : null}
+                      </View>
                     ))}
                   </>
                 ) : null}
@@ -583,7 +590,14 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     fontSize: 15,
     color: theme.colors.text,
-    marginBottom: 6,
+  },
+  exampleBlockSpacing: {
+    marginTop: theme.spacing.sm,
+  },
+  exampleContextText: {
+    fontSize: 13,
+    fontStyle: "italic",
+    marginTop: 2,
   },
   regionText: {
     marginTop: theme.spacing.sm,
