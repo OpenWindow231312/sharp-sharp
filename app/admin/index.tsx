@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { Dropdown } from "@/components/ui/Dropdown";
 import { Input } from "@/components/ui/Input";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
@@ -24,6 +25,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -57,6 +59,7 @@ export default function AdminDashboardScreen() {
   const [searchText, setSearchText] = useState("");
   const [languageFilter, setLanguageFilter] = useState<string | null>(null);
   const [flaggedOnly, setFlaggedOnly] = useState(false);
+  const [detailTerm, setDetailTerm] = useState<SlangTerm | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -213,7 +216,7 @@ export default function AdminDashboardScreen() {
           <CaretLeft size={22} color={theme.colors.ink} />
         </Pressable>
         <Text variant="heading" style={{ marginLeft: 4 }}>
-          Admin Dashboard
+          Control Center
         </Text>
       </View>
 
@@ -298,22 +301,20 @@ export default function AdminDashboardScreen() {
             containerStyle={{ marginBottom: 12 }}
           />
 
+          <Dropdown
+            label="Language"
+            value={languageFilter}
+            options={LANGUAGES}
+            onChange={setLanguageFilter}
+            placeholder="All languages"
+          />
+
           <View style={styles.chipWrap}>
             <Chip
               label="Flagged only"
               selected={flaggedOnly}
               onPress={() => setFlaggedOnly((prev) => !prev)}
             />
-            {LANGUAGES.map((lang) => (
-              <Chip
-                key={lang}
-                label={lang}
-                selected={languageFilter === lang}
-                onPress={() =>
-                  setLanguageFilter((prev) => (prev === lang ? null : lang))
-                }
-              />
-            ))}
           </View>
 
           {isLoadingTerms ? (
@@ -327,28 +328,27 @@ export default function AdminDashboardScreen() {
             </Card>
           ) : (
             visibleTerms.map((term) => (
-              <Card key={term.id} style={styles.termRow}>
-                <View style={styles.termRowMain}>
-                  <Text style={styles.termRowText} numberOfLines={1}>
-                    {term.term}
-                  </Text>
-                  <View style={styles.termRowMeta}>
-                    <Chip label={term.language} selected={false} small />
+              <Pressable key={term.id} onPress={() => setDetailTerm(term)}>
+                <Card style={styles.termRow}>
+                  <View style={styles.termRowMain}>
+                    <Text style={styles.termRowText} numberOfLines={1}>
+                      {term.term}
+                    </Text>
                     {term.flagCount && term.flagCount > 0 ? (
                       <View style={styles.flagBadge}>
                         <Text style={styles.flagBadgeText}>{term.flagCount}</Text>
                       </View>
                     ) : null}
                   </View>
-                </View>
-                <Pressable
-                  onPress={() => confirmDeleteTerm(term)}
-                  hitSlop={10}
-                  style={styles.deleteIconButton}
-                >
-                  <Trash size={20} weight="bold" color={theme.colors.protea} />
-                </Pressable>
-              </Card>
+                  <Pressable
+                    onPress={() => confirmDeleteTerm(term)}
+                    hitSlop={10}
+                    style={styles.deleteIconButton}
+                  >
+                    <Trash size={20} weight="bold" color={theme.colors.protea} />
+                  </Pressable>
+                </Card>
+              </Pressable>
             ))
           )}
 
@@ -363,6 +363,49 @@ export default function AdminDashboardScreen() {
           ) : null}
         </ScrollView>
       )}
+
+      <Modal
+        visible={detailTerm !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDetailTerm(null)}
+      >
+        <Pressable style={styles.backdrop} onPress={() => setDetailTerm(null)}>
+          {detailTerm ? (
+            <View style={styles.detailCard}>
+              <Text variant="heading" style={{ marginBottom: 4 }}>
+                {detailTerm.term}
+              </Text>
+              <Chip
+                label={detailTerm.language}
+                selected={false}
+                small
+                style={{ marginBottom: 12 }}
+              />
+              <ScrollView style={styles.detailScroll}>
+                <Text style={{ marginBottom: 12 }}>{detailTerm.meaning}</Text>
+                {detailTerm.examples && detailTerm.examples.length > 0
+                  ? detailTerm.examples.map((example, index) => (
+                      <Text
+                        key={index}
+                        variant="muted"
+                        style={{ marginBottom: 6, fontStyle: "italic" }}
+                      >
+                        &quot;{example.sentence}&quot;
+                      </Text>
+                    ))
+                  : null}
+              </ScrollView>
+              <Button
+                label="Close"
+                variant="secondary"
+                onPress={() => setDetailTerm(null)}
+                style={{ marginTop: 4 }}
+              />
+            </View>
+          ) : null}
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -419,14 +462,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  termRowMain: { flex: 1, marginRight: 12 },
-  termRowText: {
-    fontFamily: theme.fonts.bodyBold,
-    fontSize: 15,
-    color: theme.colors.text,
-    marginBottom: 6,
+  termRowMain: {
+    flex: 1,
+    marginRight: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
-  termRowMeta: { flexDirection: "row", alignItems: "center", gap: 8 },
+  termRowText: {
+    flexShrink: 1,
+    fontFamily: theme.fonts.displayExtraBold,
+    fontSize: 19,
+    color: theme.colors.text,
+  },
   flagBadge: {
     backgroundColor: theme.colors.protea,
     borderRadius: theme.radius.pill,
@@ -442,4 +490,21 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   deleteIconButton: { padding: 4 },
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(36,28,21,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing.lg,
+  },
+  detailCard: {
+    width: "100%",
+    maxWidth: 320,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
+  },
+  detailScroll: {
+    maxHeight: 280,
+  },
 });

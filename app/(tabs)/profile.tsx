@@ -258,7 +258,7 @@ export default function ProfileScreen() {
 
           {isAdmin ? (
             <Button
-              label="Admin Dashboard"
+              label="Control Center"
               variant="secondary"
               onPress={() => router.push("/admin")}
               style={{ marginTop: 8, marginBottom: 8 }}
