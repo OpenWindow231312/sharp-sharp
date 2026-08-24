@@ -54,7 +54,7 @@ export default function SignupScreen() {
         createdAt: serverTimestamp(),
       }, { merge: true });
 
-      router.replace('/onboarding');
+      router.replace('/onboarding/story');
     } catch (error) {
       setErrorMsg(getAuthErrorMessage(error));
     } finally {

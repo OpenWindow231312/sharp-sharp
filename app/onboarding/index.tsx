@@ -46,7 +46,7 @@ export default function OnboardingLanguagesScreen() {
         label="Next"
         variant="primary"
         disabled={languages.length === 0}
-        onPress={() => router.push('/onboarding/motivation')}
+        onPress={() => router.replace('/(tabs)/feed')}
       />
     </View>
   );

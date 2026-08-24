@@ -65,20 +65,6 @@ export default function LoginScreen() {
         onPress={handleLogin}
         style={{ marginTop: 8, marginBottom: 16 }}
       />
-      <View style={styles.dividerRow}>
-        <View style={styles.line} />
-        <Text variant="muted" style={{ marginHorizontal: 8 }}>
-          or
-        </Text>
-        <View style={styles.line} />
-      </View>
-      <Button
-        label="Continue with Google (coming soon)"
-        variant="secondary"
-        disabled
-        onPress={() => {}}
-        style={{ marginTop: 16, marginBottom: 24 }}
-      />
       <View style={styles.footer}>
         <Text variant="muted">Don't have an account? </Text>
         <Link href="/auth/signup">
@@ -94,16 +80,6 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 100,
     backgroundColor: theme.colors.background,
-  },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: theme.colors.border,
   },
   footer: {
     flexDirection: "row",
