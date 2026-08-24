@@ -212,6 +212,15 @@ export default function ProfileScreen() {
 
       {activeTab === "overview" ? (
         <ScrollView showsVerticalScrollIndicator={false}>
+          {isAdmin ? (
+            <Button
+              label="Control Center"
+              variant="secondary"
+              onPress={() => router.push("/admin")}
+              style={{ marginBottom: 16 }}
+            />
+          ) : null}
+
           <Card style={{ marginBottom: 16 }}>
             <View style={styles.levelRow}>
               <Text style={{ fontFamily: theme.fonts.bodyBold }}>
@@ -255,15 +264,6 @@ export default function ProfileScreen() {
               xp,
             }}
           />
-
-          {isAdmin ? (
-            <Button
-              label="Control Center"
-              variant="secondary"
-              onPress={() => router.push("/admin")}
-              style={{ marginTop: 8, marginBottom: 8 }}
-            />
-          ) : null}
 
           <Button
             label={isLoggingOut ? "Logging out..." : "Log out"}

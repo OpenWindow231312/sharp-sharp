@@ -7,6 +7,7 @@ import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
 import { LANGUAGES } from "@/constants/languages";
 import { useAuth } from "@/context/AuthContext";
+import { db } from "@/services/firebase";
 import {
     deleteSlangTerm,
     getSlangTermById,
@@ -15,6 +16,7 @@ import {
 import type { SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { doc, onSnapshot } from "firebase/firestore";
 import { CaretLeft } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -36,6 +38,7 @@ export default function EditTermScreen() {
   const [original, setOriginal] = useState<SlangTerm | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   const [term, setTerm] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
@@ -49,6 +52,22 @@ export default function EditTermScreen() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    const unsubscribe = onSnapshot(
+      doc(db, "users", user.uid),
+      (snap) => setIsAdmin(snap.exists() && snap.data().isAdmin === true),
+      (error) => {
+        console.log("Admin check listener error:", error);
+        setIsAdmin(false);
+      },
+    );
+    return unsubscribe;
+  }, [user]);
+
+  useEffect(() => {
     if (!termId) {
       setLoadError("No term specified.");
       setIsLoading(false);
@@ -59,6 +78,11 @@ export default function EditTermScreen() {
       setIsLoading(false);
       return;
     }
+    // Wait until we know the current user's admin status before deciding
+    // access, so an admin isn't briefly blocked while that check is
+    // still in flight.
+    if (isAdmin === null) return;
+
     getSlangTermById(termId)
       .then((loaded) => {
         if (!loaded) {
@@ -67,8 +91,10 @@ export default function EditTermScreen() {
           );
           return;
         }
-        if (loaded.submittedBy !== user?.uid) {
-          setLoadError("You can only edit terms you've submitted yourself.");
+        if (loaded.submittedBy !== user?.uid && !isAdmin) {
+          setLoadError(
+            "You can only edit terms you've submitted yourself, or any term if you're an admin.",
+          );
           return;
         }
         setOriginal(loaded);
@@ -85,7 +111,7 @@ export default function EditTermScreen() {
         );
       })
       .finally(() => setIsLoading(false));
-  }, [termId, user]);
+  }, [termId, user, isAdmin]);
 
   function addExample() {
     const trimmed = exampleInput.trim();

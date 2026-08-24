@@ -20,7 +20,15 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { doc, onSnapshot, QueryDocumentSnapshot } from "firebase/firestore";
-import { CaretLeft, Trash } from "phosphor-react-native";
+import {
+  BookOpen,
+  CaretLeft,
+  CaretRight,
+  PencilSimple,
+  Quotes,
+  Trash,
+  X,
+} from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -58,7 +66,6 @@ export default function AdminDashboardScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [languageFilter, setLanguageFilter] = useState<string | null>(null);
-  const [flaggedOnly, setFlaggedOnly] = useState(false);
   const [detailTerm, setDetailTerm] = useState<SlangTerm | null>(null);
 
   useEffect(() => {
@@ -150,6 +157,12 @@ export default function AdminDashboardScreen() {
     );
   }
 
+  function openEditTerm(termId: string) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setDetailTerm(null);
+    router.push({ pathname: "/edit-term", params: { termId } });
+  }
+
   function confirmDeleteTerm(term: SlangTerm) {
     Alert.alert(
       "Delete this term?",
@@ -177,7 +190,6 @@ export default function AdminDashboardScreen() {
       return false;
     }
     if (languageFilter && term.language !== languageFilter) return false;
-    if (flaggedOnly && !(term.flagCount && term.flagCount > 0)) return false;
     return true;
   });
 
@@ -309,14 +321,6 @@ export default function AdminDashboardScreen() {
             placeholder="All languages"
           />
 
-          <View style={styles.chipWrap}>
-            <Chip
-              label="Flagged only"
-              selected={flaggedOnly}
-              onPress={() => setFlaggedOnly((prev) => !prev)}
-            />
-          </View>
-
           {isLoadingTerms ? (
             <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 24 }} />
           ) : visibleTerms.length === 0 ? (
@@ -334,19 +338,14 @@ export default function AdminDashboardScreen() {
                     <Text style={styles.termRowText} numberOfLines={1}>
                       {term.term}
                     </Text>
+                    <Chip label={term.language} selected={false} small />
                     {term.flagCount && term.flagCount > 0 ? (
                       <View style={styles.flagBadge}>
                         <Text style={styles.flagBadgeText}>{term.flagCount}</Text>
                       </View>
                     ) : null}
                   </View>
-                  <Pressable
-                    onPress={() => confirmDeleteTerm(term)}
-                    hitSlop={10}
-                    style={styles.deleteIconButton}
-                  >
-                    <Trash size={20} weight="bold" color={theme.colors.protea} />
-                  </Pressable>
+                  <CaretRight size={18} weight="bold" color={theme.colors.textMuted} />
                 </Card>
               </Pressable>
             ))
@@ -373,35 +372,73 @@ export default function AdminDashboardScreen() {
         <Pressable style={styles.backdrop} onPress={() => setDetailTerm(null)}>
           {detailTerm ? (
             <View style={styles.detailCard}>
-              <Text variant="heading" style={{ marginBottom: 4 }}>
-                {detailTerm.term}
-              </Text>
+              <Pressable
+                onPress={() => setDetailTerm(null)}
+                hitSlop={12}
+                style={styles.closeButton}
+              >
+                <X size={20} weight="bold" color={theme.colors.textMuted} />
+              </Pressable>
+
+              <Text style={styles.detailTermText}>{detailTerm.term}</Text>
               <Chip
                 label={detailTerm.language}
                 selected={false}
                 small
-                style={{ marginBottom: 12 }}
+                style={styles.detailChip}
               />
-              <ScrollView style={styles.detailScroll}>
-                <Text style={{ marginBottom: 12 }}>{detailTerm.meaning}</Text>
-                {detailTerm.examples && detailTerm.examples.length > 0
-                  ? detailTerm.examples.map((example, index) => (
-                      <Text
-                        key={index}
-                        variant="muted"
-                        style={{ marginBottom: 6, fontStyle: "italic" }}
-                      >
+
+              <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
+                <View style={styles.subheadingRow}>
+                  <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
+                  <Text variant="muted" style={styles.subheadingText}>
+                    Definition
+                  </Text>
+                </View>
+                <Text style={styles.detailMeaning}>{detailTerm.meaning}</Text>
+
+                {detailTerm.examples && detailTerm.examples.length > 0 ? (
+                  <>
+                    <View style={styles.subheadingRow}>
+                      <Quotes size={13} weight="bold" color={theme.colors.inkSoft} />
+                      <Text variant="muted" style={styles.subheadingText}>
+                        In a sentence
+                      </Text>
+                    </View>
+                    {detailTerm.examples.map((example, index) => (
+                      <Text key={index} style={styles.exampleText}>
                         &quot;{example.sentence}&quot;
                       </Text>
-                    ))
-                  : null}
+                    ))}
+                  </>
+                ) : null}
+
+                {detailTerm.region ? (
+                  <Text variant="muted" style={styles.regionText}>
+                    {detailTerm.region}
+                  </Text>
+                ) : null}
               </ScrollView>
-              <Button
-                label="Close"
-                variant="secondary"
-                onPress={() => setDetailTerm(null)}
-                style={{ marginTop: 4 }}
-              />
+
+              <View style={styles.detailActionsRow}>
+                <Pressable
+                  onPress={() => openEditTerm(detailTerm.id)}
+                  hitSlop={10}
+                  style={styles.detailActionButton}
+                >
+                  <PencilSimple size={20} weight="bold" color={theme.colors.indigo} />
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setDetailTerm(null);
+                    confirmDeleteTerm(detailTerm);
+                  }}
+                  hitSlop={10}
+                  style={styles.detailActionButton}
+                >
+                  <Trash size={20} weight="bold" color={theme.colors.protea} />
+                </Pressable>
+              </View>
             </View>
           ) : null}
         </Pressable>
@@ -449,12 +486,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginBottom: 4,
   },
-  chipWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 16,
-  },
   termRow: {
     marginBottom: 10,
     paddingVertical: 12,
@@ -471,8 +502,8 @@ const styles = StyleSheet.create({
   },
   termRowText: {
     flexShrink: 1,
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 19,
+    fontFamily: theme.fonts.bodyMedium,
+    fontSize: 17,
     color: theme.colors.text,
   },
   flagBadge: {
@@ -489,7 +520,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#FFFFFF",
   },
-  deleteIconButton: { padding: 4 },
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(36,28,21,0.5)",
@@ -503,8 +533,74 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.lg,
     padding: theme.spacing.lg,
+    ...theme.shadow.card,
+  },
+  closeButton: {
+    position: "absolute",
+    top: theme.spacing.sm,
+    right: theme.spacing.sm,
+    width: theme.tapTarget,
+    height: theme.tapTarget,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
+  detailTermText: {
+    fontFamily: theme.fonts.displaySemibold,
+    fontSize: theme.fontSize.display,
+    color: theme.colors.text,
+    marginTop: theme.spacing.md,
+    marginBottom: 4,
+    paddingRight: theme.tapTarget,
+  },
+  detailChip: {
+    alignSelf: "flex-start",
+    marginBottom: 12,
   },
   detailScroll: {
     maxHeight: 280,
+  },
+  detailMeaning: {
+    fontFamily: theme.fonts.body,
+    fontSize: 17,
+    lineHeight: 24,
+    color: theme.colors.text,
+    marginBottom: 12,
+  },
+  subheadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 4,
+  },
+  subheadingText: {
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  exampleText: {
+    fontFamily: theme.fonts.body,
+    fontStyle: "italic",
+    fontSize: 15,
+    color: theme.colors.text,
+    marginBottom: 6,
+  },
+  regionText: {
+    marginTop: theme.spacing.sm,
+  },
+  detailActionsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  detailActionButton: {
+    width: theme.tapTarget,
+    height: theme.tapTarget,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
