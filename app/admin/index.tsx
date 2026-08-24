@@ -24,6 +24,7 @@ import {
   BookOpen,
   CaretLeft,
   CaretRight,
+  Flag as FlagIcon,
   PencilSimple,
   Quotes,
   Trash,
@@ -88,7 +89,13 @@ export default function AdminDashboardScreen() {
     setIsLoadingFlags(true);
     getPendingFlags()
       .then(setFlags)
-      .catch((error) => console.log("Load flags error:", error))
+      .catch((error) => {
+        console.log("Load flags error:", error);
+        Alert.alert(
+          "Couldn't load flagged terms",
+          "Check your connection and try again.",
+        );
+      })
       .finally(() => setIsLoadingFlags(false));
   }, []);
 
@@ -340,9 +347,7 @@ export default function AdminDashboardScreen() {
                     </Text>
                     <Chip label={term.language} selected={false} small />
                     {term.flagCount && term.flagCount > 0 ? (
-                      <View style={styles.flagBadge}>
-                        <Text style={styles.flagBadgeText}>{term.flagCount}</Text>
-                      </View>
+                      <FlagIcon size={16} weight="fill" color={theme.colors.protea} />
                     ) : null}
                   </View>
                   <CaretRight size={18} weight="bold" color={theme.colors.textMuted} />
@@ -512,20 +517,6 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodyMedium,
     fontSize: 17,
     color: theme.colors.text,
-  },
-  flagBadge: {
-    backgroundColor: theme.colors.protea,
-    borderRadius: theme.radius.pill,
-    minWidth: 20,
-    height: 20,
-    paddingHorizontal: 6,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  flagBadgeText: {
-    fontFamily: theme.fonts.bodyBold,
-    fontSize: 11,
-    color: "#FFFFFF",
   },
   backdrop: {
     flex: 1,

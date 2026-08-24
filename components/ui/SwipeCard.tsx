@@ -31,6 +31,11 @@ const FLAG_REASONS: { reason: FlagReason; label: string }[] = [
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
 const CARD_HEIGHT = 400;
+const PATTERN_HEIGHT = 130;
+// Halved from full opacity so the motif reads as a calm texture rather
+// than a busy foreground element (constants/designTheme.ts has no pattern
+// opacity token to reuse).
+const PATTERN_OPACITY = 0.5;
 
 const PATTERN_VARIANTS: PatternVariant[] = [
   "chevron",
@@ -65,6 +70,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
     const [reportModalVisible, setReportModalVisible] = useState(false);
     const [isFlagging, setIsFlagging] = useState(false);
+    const [isFlipped, setIsFlipped] = useState(false);
 
     async function submitFlag(reason: FlagReason) {
       if (!user || isFlagging) return;
@@ -91,6 +97,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
     function toggleFlip() {
       flip.value = withTiming(flip.value === 0 ? 180 : 0, { duration: 450 });
+      setIsFlipped((prev) => !prev);
     }
 
     useImperativeHandle(ref, () => ({
@@ -171,6 +178,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
     return (
       <>
+      <View style={styles.cardPositioner}>
       <GestureDetector gesture={composedGesture}>
         <Animated.View style={[styles.wrapper, dragStyle]}>
           <Animated.View style={[styles.stamp, styles.saveStamp, saveStampStyle]}>
@@ -183,18 +191,15 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
           {/* Front face */}
           <Animated.View style={[styles.face, frontFaceStyle]}>
             <View style={styles.cardShell}>
-              <PatternFill variant={patternVariant} style={styles.patternZone} />
+              <PatternFill
+                variant={patternVariant}
+                style={styles.patternZone}
+                opacity={PATTERN_OPACITY}
+              />
               <View style={styles.termZone}>
                 <View style={styles.langPillWrap}>
                   <Chip label={term.language} selected />
                 </View>
-                <Pressable
-                  onPress={() => setReportModalVisible(true)}
-                  hitSlop={10}
-                  style={styles.flagButton}
-                >
-                  <FlagIcon size={18} weight="bold" color="#FFFFFF" />
-                </Pressable>
                 <Text style={styles.termText}>{term.term}</Text>
               </View>
             </View>
@@ -260,6 +265,17 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
         </Animated.View>
       </GestureDetector>
 
+      {!isFlipped ? (
+        <Pressable
+          onPress={() => setReportModalVisible(true)}
+          hitSlop={10}
+          style={styles.flagButton}
+        >
+          <FlagIcon size={18} weight="bold" color="#FFFFFF" />
+        </Pressable>
+      ) : null}
+      </View>
+
       <Modal
         visible={reportModalVisible}
         transparent
@@ -299,10 +315,18 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 );
 
 const styles = StyleSheet.create({
-  wrapper: {
+  // Establishes the card's actual position on screen. Split out from
+  // `wrapper` below so the flag button can be a sibling of the
+  // GestureDetector (not nested inside it) while still sharing the same
+  // coordinate space — nesting it inside the gesture-detected subtree was
+  // why tapping it triggered the card flip instead.
+  cardPositioner: {
     position: "absolute",
     left: theme.spacing.lg,
     right: theme.spacing.lg,
+    minHeight: CARD_HEIGHT,
+  },
+  wrapper: {
     minHeight: CARD_HEIGHT,
   },
   face: {
@@ -321,7 +345,7 @@ const styles = StyleSheet.create({
     ...theme.shadow.card,
   },
   patternZone: {
-    height: 130,
+    height: PATTERN_HEIGHT,
   },
   termZone: {
     flex: 1,
@@ -337,10 +361,13 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   flagButton: {
+    // top reproduces where this sat before, when it was positioned
+    // relative to termZone (which starts right after the pattern strip)
+    // rather than relative to the whole card as it is now.
     position: "absolute",
-    top: theme.spacing.md,
+    top: PATTERN_HEIGHT + theme.spacing.md,
     right: theme.spacing.md,
-    zIndex: 2,
+    zIndex: 10,
     padding: 6,
   },
   termText: {

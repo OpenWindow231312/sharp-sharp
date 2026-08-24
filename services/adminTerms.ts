@@ -73,13 +73,20 @@ export async function flagTerm(
 }
 
 export async function getPendingFlags(): Promise<Flag[]> {
-  const q = query(
-    collection(db, "flags"),
-    where("status", "==", "pending"),
-    orderBy("createdAt", "desc"),
-  );
+  // Deliberately no orderBy() here: combining it with the where() below
+  // would need a composite index that doesn't exist in this project (see
+  // firebase.json — no firestore.indexes.json is configured), which made
+  // this query throw on every call and silently left the Flagged Queue
+  // empty. A single equality filter only needs Firestore's automatic
+  // single-field index, so we sort client-side instead.
+  const q = query(collection(db, "flags"), where("status", "==", "pending"));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Flag);
+  const flags = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Flag);
+  return flags.sort((a, b) => {
+    const aMillis = a.createdAt?.toMillis?.() ?? 0;
+    const bMillis = b.createdAt?.toMillis?.() ?? 0;
+    return bMillis - aMillis;
+  });
 }
 
 export async function dismissFlag(flagId: string) {

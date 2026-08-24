@@ -1,6 +1,7 @@
 import { theme } from "@/constants/designTheme";
 import { useState } from "react";
 import {
+  Keyboard,
   StyleSheet,
   TextInput,
   TextInputProps,
@@ -20,11 +21,21 @@ export function Input({
   containerStyle,
   multiline,
   onContentSizeChange,
+  onSubmitEditing,
+  returnKeyType,
   ...rest
 }: InputProps) {
   const [contentHeight, setContentHeight] = useState<number | undefined>(
     undefined,
   );
+
+  // Single-line inputs dismiss the keyboard on submit by default, so
+  // pressing "done" always closes it without every screen having to wire
+  // this up itself. Multiline fields (e.g. Meaning) are left alone —
+  // return should insert a newline there, not dismiss.
+  const effectiveReturnKeyType = multiline
+    ? returnKeyType
+    : (returnKeyType ?? "done");
 
   return (
     <View style={[{ marginBottom: theme.spacing.md }, containerStyle]}>
@@ -44,6 +55,13 @@ export function Input({
         ]}
         placeholderTextColor={theme.colors.textMuted}
         multiline={multiline}
+        returnKeyType={effectiveReturnKeyType}
+        onSubmitEditing={(e) => {
+          if (!multiline && effectiveReturnKeyType === "done") {
+            Keyboard.dismiss();
+          }
+          onSubmitEditing?.(e);
+        }}
         onContentSizeChange={(e) => {
           if (multiline) {
             setContentHeight(
