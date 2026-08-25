@@ -26,7 +26,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, View } from "react-native";
-import { styles } from "./feed.styles";
+import { styles } from "@/styles/tabs/feed.styles";
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];

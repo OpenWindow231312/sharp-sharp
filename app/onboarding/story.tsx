@@ -20,7 +20,7 @@ import Animated, {
   withTiming,
   ZoomIn,
 } from "react-native-reanimated";
-import { styles } from "./story.styles";
+import { styles } from "@/styles/onboarding/story.styles";
 
 type BeatBase = { autoAdvanceMs?: number };
 type DialogueBeat = BeatBase & { kind: "dialogue"; lines: [string, string] };

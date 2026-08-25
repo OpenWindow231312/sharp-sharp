@@ -29,7 +29,7 @@ import {
   View,
 } from "react-native";
 import Animated, { FadeIn, Layout } from "react-native-reanimated";
-import { styles } from "./profile.styles";
+import { styles } from "@/styles/tabs/profile.styles";
 
 type Tab = "overview" | "myTerms";
 

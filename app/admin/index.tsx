@@ -40,7 +40,7 @@ import {
   ScrollView,
   View,
 } from "react-native";
-import { styles } from "./index.styles";
+import { styles } from "@/styles/admin/index.styles";
 
 type Tab = "queue" | "allTerms";
 

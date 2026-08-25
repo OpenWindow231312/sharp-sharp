@@ -29,7 +29,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { styles } from "./add.styles";
+import { styles } from "@/styles/tabs/add.styles";
 
 const TOTAL_STEPS = 5;
 

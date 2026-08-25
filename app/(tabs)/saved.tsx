@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
-import { styles } from "./saved.styles";
+import { styles } from "@/styles/tabs/saved.styles";
 
 export default function SavedScreen() {
   const router = useRouter();

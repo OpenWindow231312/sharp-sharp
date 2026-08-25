@@ -11,7 +11,7 @@ import {
 } from "firebase/auth";
 import { useState } from "react";
 import { Alert, Pressable, View } from "react-native";
-import { styles } from "./login.styles";
+import { styles } from "@/styles/auth/login.styles";
 
 export default function LoginScreen() {
   const router = useRouter();

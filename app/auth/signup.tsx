@@ -9,7 +9,7 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import { View } from "react-native";
-import { styles } from "./signup.styles";
+import { styles } from "@/styles/auth/signup.styles";
 
 export default function SignupScreen() {
   const router = useRouter();
