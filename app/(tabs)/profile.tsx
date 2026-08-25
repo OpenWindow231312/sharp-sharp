@@ -1,4 +1,4 @@
-import { BadgeShelf } from "@/components/ui/BadgeShelf";
+import { BadgeMedallion } from "@/components/ui/BadgeMedallion";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
@@ -6,7 +6,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
-import { getLevelInfo } from "@/constants/levels";
+import { getLevelInfo, LEVELS } from "@/constants/levels";
 import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
 import { auth, db } from "@/services/firebase";
@@ -31,6 +31,16 @@ import Animated, { FadeIn, Layout } from "react-native-reanimated";
 
 type Tab = "overview" | "myTerms";
 
+// Placeholder copy for now — no real per-level unlock mechanics exist yet.
+const LEVEL_UNLOCK_TEXT: Record<string, string> = {
+  "Eish!": "Just getting started — keep swiping to earn XP.",
+  "Ubuntu": "You're learning the community's words.",
+  "Lekker": "Solid progress — you're getting the hang of this.",
+  "Ayoba": "You know your stuff. Keep going.",
+  "Local Legend": "You've earned real street cred.",
+  "Sharp Sharp": "Maximum level. You're fluent in the culture.",
+};
+
 function getInitial(nameOrEmail: string | null | undefined): string {
   const trimmed = (nameOrEmail ?? "").trim();
   return trimmed ? trimmed[0].toUpperCase() : "?";
@@ -49,6 +59,7 @@ export default function ProfileScreen() {
 
   const [myTerms, setMyTerms] = useState<SlangTerm[]>([]);
   const [isLoadingTerms, setIsLoadingTerms] = useState(true);
+  const [expandedLevel, setExpandedLevel] = useState<string | null>(null);
 
   useEffect(() => {
     if (USE_MOCK_DATA) {
@@ -264,15 +275,39 @@ export default function ProfileScreen() {
             variant="heading"
             style={{ marginTop: 24, marginBottom: 12 }}
           >
-            Badges
+            Levels
           </Text>
-          <BadgeShelf
-            stats={{
-              submittedCount: myTerms.length,
-              savedCount,
-              xp,
-            }}
-          />
+          <View style={{ gap: 10 }}>
+            {LEVELS.map((level) => {
+              const unlocked = xp >= level.threshold;
+              const isExpanded = expandedLevel === level.title;
+              return (
+                <Pressable
+                  key={level.title}
+                  onPress={() =>
+                    setExpandedLevel(isExpanded ? null : level.title)
+                  }
+                >
+                  <Card>
+                    <View style={styles.levelListRow}>
+                      <BadgeMedallion
+                        variant={level.pattern}
+                        shape={level.shape}
+                        unlocked={unlocked}
+                        size={44}
+                      />
+                      <Text style={styles.levelListTitle}>{level.title}</Text>
+                    </View>
+                    {isExpanded ? (
+                      <Text variant="muted" style={styles.levelUnlockText}>
+                        {LEVEL_UNLOCK_TEXT[level.title]}
+                      </Text>
+                    ) : null}
+                  </Card>
+                </Pressable>
+              );
+            })}
+          </View>
 
           <Button
             label={isLoggingOut ? "Logging out..." : "Log out"}
@@ -382,6 +417,14 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   emptyCard: { alignItems: "center", padding: 32 },
+  levelListRow: { flexDirection: "row", alignItems: "center" },
+  levelListTitle: {
+    fontFamily: theme.fonts.bodyBold,
+    fontSize: 16,
+    color: theme.colors.text,
+    marginLeft: 12,
+  },
+  levelUnlockText: { marginTop: 10, fontSize: 13 },
   termCard: { marginBottom: 12 },
   cardTop: {
     flexDirection: "row",
