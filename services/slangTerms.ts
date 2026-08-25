@@ -1,15 +1,14 @@
 import type { NewSlangTerm, SlangExample, SlangTerm } from "@/types/slangTerm";
 import {
   addDoc,
-  arrayUnion,
   collection,
   deleteDoc,
   doc,
   getDoc,
+  getDocFromServer,
   getDocs,
   query,
   serverTimestamp,
-  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -42,13 +41,15 @@ export async function addSlangTerm(data: NewSlangTerm) {
 
   const docRef = await addDoc(collection(db, "slang_terms"), payload);
 
-  await setDoc(
-    doc(db, "users", data.submittedBy),
-    {
-      learnedTerms: arrayUnion(docRef.id),
-    },
-    { merge: true },
-  );
+  // addDoc() can resolve from Firestore's local mutation cache before the
+  // write has actually round-tripped to the backend. Forcing a
+  // server-only re-read here turns a silent "queued but never synced"
+  // failure into a real thrown error the caller can surface, instead of
+  // the app reporting success for a term that never left the device.
+  const serverSnap = await getDocFromServer(docRef);
+  if (!serverSnap.exists()) {
+    throw new Error("Term did not sync to the server. Please try again.");
+  }
 
   return docRef.id;
 }
