@@ -13,6 +13,7 @@ import {
   dismissFlag,
   getAllTermsPaginated,
   getPendingFlags,
+  type FlagWithDetails,
 } from "@/services/adminTerms";
 import { db } from "@/services/firebase";
 import type { Flag, SlangTerm } from "@/types/slangTerm";
@@ -57,8 +58,9 @@ export default function AdminDashboardScreen() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("queue");
 
-  const [flags, setFlags] = useState<Flag[]>([]);
+  const [flags, setFlags] = useState<FlagWithDetails[]>([]);
   const [isLoadingFlags, setIsLoadingFlags] = useState(true);
+  const [flagDetail, setFlagDetail] = useState<FlagWithDetails | null>(null);
 
   const [terms, setTerms] = useState<SlangTerm[]>([]);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
@@ -283,36 +285,20 @@ export default function AdminDashboardScreen() {
         ) : (
           <ScrollView showsVerticalScrollIndicator={false}>
             {flags.map((flag) => (
-              <Card key={flag.id} style={[styles.flagCard, theme.shadow.card]}>
-                <Text style={styles.termText}>{flag.termSnapshot}</Text>
-                <Text variant="muted" style={{ marginBottom: 2 }}>
-                  Reason: {FLAG_REASON_LABEL[flag.reason]}
-                </Text>
-                {flag.comment ? (
-                  <Text variant="muted" style={styles.flagComment}>
-                    &quot;{flag.comment}&quot;
-                  </Text>
-                ) : null}
-                <Text variant="muted" style={{ marginBottom: 12 }}>
-                  Reported by {flag.reportedBy}
-                </Text>
-                <View style={styles.flagActionsRow}>
-                  <Button
-                    label="Delete term"
-                    variant="primary"
-                    size="compact"
-                    onPress={() => confirmDeleteFlaggedTerm(flag)}
-                    style={{ flex: 1, marginRight: 8 }}
-                  />
-                  <Button
-                    label="Dismiss"
-                    variant="secondary"
-                    size="compact"
-                    onPress={() => confirmDismiss(flag.id)}
-                    style={{ flex: 1 }}
-                  />
-                </View>
-              </Card>
+              <Pressable key={flag.id} onPress={() => setFlagDetail(flag)}>
+                <Card style={[styles.flagCard, theme.shadow.card]}>
+                  <View style={styles.flagRow}>
+                    <View style={styles.flagRowMain}>
+                      <Text style={styles.termText}>{flag.termSnapshot}</Text>
+                      <Text variant="muted" style={{ marginBottom: 2 }}>
+                        {FLAG_REASON_LABEL[flag.reason]}
+                      </Text>
+                      <Text variant="muted">Reported by {flag.reporterName}</Text>
+                    </View>
+                    <CaretRight size={18} weight="bold" color={theme.colors.textMuted} />
+                  </View>
+                </Card>
+              </Pressable>
             ))}
           </ScrollView>
         )
@@ -467,6 +453,120 @@ export default function AdminDashboardScreen() {
           ) : null}
         </Pressable>
       </Modal>
+
+      <Modal
+        visible={flagDetail !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFlagDetail(null)}
+      >
+        <Pressable style={styles.backdrop} onPress={() => setFlagDetail(null)}>
+          {flagDetail ? (
+            <View style={styles.detailCard}>
+              <Pressable
+                onPress={() => setFlagDetail(null)}
+                hitSlop={12}
+                style={styles.closeButton}
+              >
+                <X size={20} weight="bold" color={theme.colors.textMuted} />
+              </Pressable>
+
+              <Text style={styles.detailTermText}>
+                {flagDetail.term?.term ?? flagDetail.termSnapshot}
+              </Text>
+              {flagDetail.term ? (
+                <Chip
+                  label={flagDetail.term.language}
+                  selected={false}
+                  small
+                  style={styles.detailChip}
+                />
+              ) : null}
+
+              <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
+                {flagDetail.term ? (
+                  <>
+                    <View style={styles.subheadingRow}>
+                      <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
+                      <Text variant="muted" style={styles.subheadingText}>
+                        Definition
+                      </Text>
+                    </View>
+                    <Text style={styles.detailMeaning}>{flagDetail.term.meaning}</Text>
+
+                    {flagDetail.term.examples && flagDetail.term.examples.length > 0 ? (
+                      <>
+                        <View style={styles.subheadingRow}>
+                          <Quotes size={13} weight="bold" color={theme.colors.inkSoft} />
+                          <Text variant="muted" style={styles.subheadingText}>
+                            In a sentence
+                          </Text>
+                        </View>
+                        {flagDetail.term.examples.map((example, index) => (
+                          <View
+                            key={index}
+                            style={index > 0 ? styles.exampleBlockSpacing : undefined}
+                          >
+                            <Text style={styles.exampleText}>
+                              &quot;{example.sentence}&quot;
+                            </Text>
+                            {example.context ? (
+                              <Text variant="muted" style={styles.exampleContextText}>
+                                {example.context}
+                              </Text>
+                            ) : null}
+                          </View>
+                        ))}
+                      </>
+                    ) : null}
+                  </>
+                ) : (
+                  <Text variant="muted">
+                    This term may have already been deleted.
+                  </Text>
+                )}
+
+                <View style={styles.subheadingRow}>
+                  <FlagIcon size={13} weight="bold" color={theme.colors.inkSoft} />
+                  <Text variant="muted" style={styles.subheadingText}>
+                    Flag reason
+                  </Text>
+                </View>
+                <Text style={styles.detailMeaning}>
+                  {FLAG_REASON_LABEL[flagDetail.reason]}
+                </Text>
+
+                <Text variant="muted" style={styles.flagReporterText}>
+                  Reported by {flagDetail.reporterName}
+                </Text>
+              </ScrollView>
+
+              <View style={styles.flagDetailActionsRow}>
+                <Button
+                  label="Dismiss"
+                  variant="secondary"
+                  onPress={() => {
+                    const flag = flagDetail;
+                    setFlagDetail(null);
+                    confirmDismiss(flag.id);
+                  }}
+                  style={{ flex: 1, marginRight: 8 }}
+                />
+                <Button
+                  label="Delete"
+                  variant="primary"
+                  onPress={() => {
+                    const flag = flagDetail;
+                    setFlagDetail(null);
+                    confirmDeleteFlaggedTerm(flag);
+                  }}
+                  style={{ flex: 1 }}
+                />
+              </View>
+            </View>
+          ) : null}
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -503,8 +603,25 @@ const styles = StyleSheet.create({
   tabButtonActive: { backgroundColor: theme.colors.primary },
   emptyCard: { alignItems: "center", padding: 32 },
   flagCard: { marginBottom: 12 },
-  flagComment: { fontStyle: "italic", marginBottom: 6 },
-  flagActionsRow: { flexDirection: "row" },
+  flagRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  flagRowMain: {
+    flex: 1,
+    marginRight: 12,
+  },
+  flagReporterText: {
+    marginTop: theme.spacing.sm,
+  },
+  flagDetailActionsRow: {
+    flexDirection: "row",
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 20,
