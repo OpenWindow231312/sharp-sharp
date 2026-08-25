@@ -14,6 +14,12 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import { CaretLeft, CaretRight, X } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import Animated, {
+  FadeInLeft,
+  FadeInRight,
+  FadeOutLeft,
+  FadeOutRight,
+} from "react-native-reanimated";
 
 export default function LearnScreen() {
   const { user } = useAuth();
@@ -21,6 +27,9 @@ export default function LearnScreen() {
   const [terms, setTerms] = useState<SlangTerm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState<"forward" | "backward">(
+    "forward",
+  );
 
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -53,7 +62,18 @@ export default function LearnScreen() {
         console.log("Mark learned error:", error),
       );
     }
+    setDirection("forward");
     setCurrentIndex((i) => i + 1);
+  }
+
+  // Awaiting the unlock before navigating (rather than relying solely on
+  // the effect cleanup below) avoids the visible stutter of the exit
+  // transition starting before the device has finished rotating back.
+  async function handleExit() {
+    await ScreenOrientation.lockAsync(
+      ScreenOrientation.OrientationLock.PORTRAIT_UP,
+    );
+    safeBack("/(tabs)");
   }
 
   const currentTerm = terms[currentIndex];
@@ -62,12 +82,8 @@ export default function LearnScreen() {
 
   return (
     <View style={styles.container}>
-      <Pressable
-        onPress={() => safeBack("/(tabs)")}
-        style={styles.closeButton}
-        hitSlop={12}
-      >
-        <X size={22} color={theme.colors.ink} />
+      <Pressable onPress={handleExit} style={styles.closeButton} hitSlop={12}>
+        <X size={28} color={theme.colors.ink} />
       </Pressable>
 
       {isLoading ? (
@@ -83,7 +99,7 @@ export default function LearnScreen() {
           <Button
             label="Back to Feed"
             variant="primary"
-            onPress={() => safeBack("/(tabs)")}
+            onPress={handleExit}
           />
         </Card>
       ) : isDone ? (
@@ -94,38 +110,51 @@ export default function LearnScreen() {
           <Text variant="muted" style={{ marginBottom: 16 }}>
             You've been through all {terms.length} saved terms.
           </Text>
-          <Button
-            label="Done"
-            variant="primary"
-            onPress={() => safeBack("/(tabs)")}
-          />
+          <Button label="Done" variant="primary" onPress={handleExit} />
         </Card>
       ) : (
         <>
           <Text variant="muted" style={styles.progress}>
             {currentIndex + 1} of {terms.length}
           </Text>
-          <StudyCard
+          <Animated.View
             key={currentTerm.id}
-            term={currentTerm}
-            onSwipe={handleSwipe}
-          />
+            entering={
+              direction === "forward"
+                ? FadeInRight.duration(250)
+                : FadeInLeft.duration(250)
+            }
+            exiting={
+              direction === "forward"
+                ? FadeOutLeft.duration(250)
+                : FadeOutRight.duration(250)
+            }
+            style={styles.cardWrap}
+          >
+            <StudyCard term={currentTerm} onSwipe={handleSwipe} />
+          </Animated.View>
           <View style={styles.arrowRow}>
             <Pressable
-              onPress={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+              onPress={() => {
+                setDirection("backward");
+                setCurrentIndex((i) => Math.max(0, i - 1));
+              }}
               disabled={currentIndex === 0}
               style={[
                 styles.arrowButton,
                 currentIndex === 0 && styles.arrowDisabled,
               ]}
             >
-              <CaretLeft size={22} color={theme.colors.ink} />
+              <CaretLeft size={32} color={theme.colors.ink} />
             </Pressable>
             <Pressable
-              onPress={() => setCurrentIndex((i) => i + 1)}
+              onPress={() => {
+                setDirection("forward");
+                setCurrentIndex((i) => i + 1);
+              }}
               style={styles.arrowButton}
             >
-              <CaretRight size={22} color={theme.colors.ink} />
+              <CaretRight size={32} color={theme.colors.ink} />
             </Pressable>
           </View>
         </>
@@ -144,14 +173,17 @@ const styles = StyleSheet.create({
   closeButton: {
     position: "absolute",
     top: 16,
-    left: 16,
+    right: 16,
     zIndex: 10,
     width: theme.tapTarget,
     height: theme.tapTarget,
+    borderRadius: theme.tapTarget / 2,
+    backgroundColor: "rgba(36,28,21,0.15)",
     alignItems: "center",
     justifyContent: "center",
   },
   progress: { position: "absolute", top: 16, alignSelf: "center" },
+  cardWrap: { flex: 1 },
   arrowRow: {
     position: "absolute",
     bottom: 16,
@@ -161,8 +193,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   arrowButton: {
-    width: theme.tapTarget,
-    height: theme.tapTarget,
+    width: theme.tapTarget + 8,
+    height: theme.tapTarget + 8,
     alignItems: "center",
     justifyContent: "center",
   },
