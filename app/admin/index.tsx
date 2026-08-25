@@ -339,20 +339,27 @@ export default function AdminDashboardScreen() {
             </Card>
           ) : (
             visibleTerms.map((term) => (
-              <Pressable key={term.id} onPress={() => setDetailTerm(term)}>
-                <Card style={styles.termRow}>
-                  <View style={styles.termRowMain}>
-                    <Text style={styles.termRowText} numberOfLines={1}>
-                      {term.term}
-                    </Text>
-                    <Chip label={term.language} selected={false} small />
-                    {term.flagCount && term.flagCount > 0 ? (
-                      <FlagIcon size={16} weight="fill" color={theme.colors.protea} />
-                    ) : null}
-                  </View>
+              <Card key={term.id} style={styles.termRow}>
+                <Pressable
+                  onPress={() => setDetailTerm(term)}
+                  style={styles.termRowMain}
+                >
+                  <Text style={styles.termRowText} numberOfLines={1}>
+                    {term.term}
+                  </Text>
+                  {term.flagCount && term.flagCount > 0 ? (
+                    <FlagIcon size={16} weight="fill" color={theme.colors.protea} />
+                  ) : null}
                   <CaretRight size={18} weight="bold" color={theme.colors.textMuted} />
-                </Card>
-              </Pressable>
+                </Pressable>
+                <Pressable
+                  onPress={() => confirmDeleteTerm(term)}
+                  hitSlop={10}
+                  style={styles.termRowDelete}
+                >
+                  <Trash size={20} weight="bold" color={theme.colors.protea} />
+                </Pressable>
+              </Card>
             ))
           )}
 
@@ -514,9 +521,12 @@ const styles = StyleSheet.create({
   },
   termRowText: {
     flexShrink: 1,
-    fontFamily: theme.fonts.bodyMedium,
-    fontSize: 17,
+    fontFamily: theme.fonts.bodyBold,
+    fontSize: 18,
     color: theme.colors.text,
+  },
+  termRowDelete: {
+    padding: 4,
   },
   backdrop: {
     flex: 1,
