@@ -148,13 +148,14 @@ export default function FeedScreen() {
         Feed
       </Text>
 
+      {/* TODO: re-enable when quiz feature is built
       <Button
         label="Quiz"
         variant="secondary"
         size="compact"
         onPress={() => Alert.alert("Coming soon", "Quizzes coming soon!")}
         style={styles.quizButton}
-      />
+      /> */}
 
       <FeedHeader
         levelTitle={levelInfo.title}
