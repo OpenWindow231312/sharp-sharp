@@ -2,15 +2,15 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
-import { PatternFill } from "@/components/ui/PatternFill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SwipeCard } from "@/components/ui/SwipeCard";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { LANGUAGES, OTHER_LANGUAGE_OPTION } from "@/constants/languages";
 import { useAuth } from "@/context/AuthContext";
 import { addSlangTerm } from "@/services/slangTerms";
 import { addXp } from "@/services/xp";
-import type { SlangExample } from "@/types/slangTerm";
+import type { SlangExample, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { CaretLeft, X } from "phosphor-react-native";
@@ -100,6 +100,20 @@ export default function AddTermScreen() {
 
   const finalLanguage =
     language === OTHER_LANGUAGE_OPTION ? customLanguage.trim() : language;
+
+  // No Firestore doc exists yet at this step, so this is a local stand-in
+  // just to feed SwipeCard the shape of data it expects — colorwayForTerm
+  // just needs *a* stable string to hash, not the eventual real doc id.
+  const previewTerm: SlangTerm = {
+    id: term.trim() || "preview",
+    term: term.trim(),
+    meaning: meaning.trim(),
+    examples,
+    language: finalLanguage!,
+    submittedBy: user?.uid ?? "preview",
+    submittedByName: user?.displayName || "You",
+    createdAt: null,
+  };
 
   function resetForm() {
     setStep(0);
@@ -310,31 +324,9 @@ export default function AddTermScreen() {
             title="Ready to teach Sharp Sharp?"
             subtitle="Here's what people will see."
           >
-            <Card style={styles.previewCard}>
-              <PatternFill variant="diamond" style={styles.previewStrip} />
-              <View style={styles.previewBody}>
-                <View style={{ flexDirection: "row", marginBottom: 12 }}>
-                  <Chip label={finalLanguage!} selected />
-                </View>
-                <Text style={styles.previewTerm}>{term}</Text>
-                <Text style={{ marginTop: 8 }}>{meaning}</Text>
-                {examples.length > 0 ? (
-                  <View style={{ marginTop: 8 }}>
-                    <Text variant="muted" style={{ fontStyle: "italic" }}>
-                      "{examples[0].sentence}"
-                    </Text>
-                    {examples[0].context ? (
-                      <Text
-                        variant="muted"
-                        style={{ fontSize: 12, marginTop: 2 }}
-                      >
-                        {examples[0].context}
-                      </Text>
-                    ) : null}
-                  </View>
-                ) : null}
-              </View>
-            </Card>
+            <View style={{ position: "relative", minHeight: 400 }}>
+              <SwipeCard term={previewTerm} interactive={false} />
+            </View>
           </StepBlock>
         )}
 
