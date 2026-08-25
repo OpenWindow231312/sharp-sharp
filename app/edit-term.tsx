@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
-import { LANGUAGES } from "@/constants/languages";
+import { LANGUAGES, OTHER_LANGUAGE_OPTION } from "@/constants/languages";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/services/firebase";
 import {
@@ -42,6 +42,7 @@ export default function EditTermScreen() {
 
   const [term, setTerm] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
+  const [customLanguage, setCustomLanguage] = useState("");
   const [meaning, setMeaning] = useState("");
   const [exampleSentence, setExampleSentence] = useState("");
   const [exampleContext, setExampleContext] = useState("");
@@ -99,7 +100,12 @@ export default function EditTermScreen() {
         }
         setOriginal(loaded);
         setTerm(loaded.term);
-        setLanguage(loaded.language);
+        if (LANGUAGES.includes(loaded.language)) {
+          setLanguage(loaded.language);
+        } else {
+          setLanguage(OTHER_LANGUAGE_OPTION);
+          setCustomLanguage(loaded.language);
+        }
         setMeaning(loaded.meaning);
         setExamples(loaded.examples ?? []);
       })
@@ -134,14 +140,19 @@ export default function EditTermScreen() {
     setErrorMsg("");
     if (!term.trim()) return setErrorMsg("The term can't be empty.");
     if (!language) return setErrorMsg("Pick a language.");
+    if (language === OTHER_LANGUAGE_OPTION && !customLanguage.trim())
+      return setErrorMsg("Type the language name.");
     if (!meaning.trim()) return setErrorMsg("Add a meaning.");
+
+    const finalLanguage =
+      language === OTHER_LANGUAGE_OPTION ? customLanguage.trim() : language;
 
     setIsSaving(true);
     try {
       await updateSlangTerm(original.id, {
         term: term.trim(),
         meaning: meaning.trim(),
-        language,
+        language: finalLanguage,
         examples,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -248,10 +259,17 @@ export default function EditTermScreen() {
         <Dropdown
           label="Language"
           value={language}
-          options={LANGUAGES}
+          options={[...LANGUAGES, OTHER_LANGUAGE_OPTION]}
           onChange={setLanguage}
           placeholder="Choose a language"
         />
+        {language === OTHER_LANGUAGE_OPTION ? (
+          <Input
+            placeholder="e.g. Hebrew"
+            value={customLanguage}
+            onChangeText={setCustomLanguage}
+          />
+        ) : null}
 
         <Input
           label="Meaning"

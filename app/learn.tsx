@@ -6,7 +6,7 @@ import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
 import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
-import { getSavedTerms } from "@/services/savedTerms";
+import { getSavedTerms, markTermLearned } from "@/services/savedTerms";
 import type { SlangTerm } from "@/types/slangTerm";
 import { safeBack } from "@/utils/navigation";
 import { useLocalSearchParams } from "expo-router";
@@ -48,6 +48,11 @@ export default function LearnScreen() {
   }, [user, startId]);
 
   function handleSwipe() {
+    if (!USE_MOCK_DATA && user && currentTerm) {
+      markTermLearned(user.uid, currentTerm.id).catch((error) =>
+        console.log("Mark learned error:", error),
+      );
+    }
     setCurrentIndex((i) => i + 1);
   }
 

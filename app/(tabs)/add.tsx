@@ -6,7 +6,7 @@ import { PatternFill } from "@/components/ui/PatternFill";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
-import { LANGUAGES } from "@/constants/languages";
+import { LANGUAGES, OTHER_LANGUAGE_OPTION } from "@/constants/languages";
 import { useAuth } from "@/context/AuthContext";
 import { addSlangTerm } from "@/services/slangTerms";
 import { addXp } from "@/services/xp";
@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import { CaretLeft, X } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -39,6 +40,7 @@ export default function AddTermScreen() {
   const [step, setStep] = useState(0);
   const [term, setTerm] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
+  const [customLanguage, setCustomLanguage] = useState("");
   const [meaning, setMeaning] = useState("");
   const [exampleSentence, setExampleSentence] = useState("");
   const [exampleContext, setExampleContext] = useState("");
@@ -52,6 +54,12 @@ export default function AddTermScreen() {
     if (step === 0 && !term.trim())
       return setErrorMsg("Type a word or phrase first.");
     if (step === 1 && !language) return setErrorMsg("Pick a language.");
+    if (
+      step === 1 &&
+      language === OTHER_LANGUAGE_OPTION &&
+      !customLanguage.trim()
+    )
+      return setErrorMsg("Type the language name.");
     if (step === 2 && !meaning.trim()) return setErrorMsg("Add a meaning.");
     if (step === 3 && examples.length === 0)
       return setErrorMsg("Add at least one example, or tap Skip.");
@@ -90,10 +98,14 @@ export default function AddTermScreen() {
     setExamples((prev) => prev.filter((_, i) => i !== index));
   }
 
+  const finalLanguage =
+    language === OTHER_LANGUAGE_OPTION ? customLanguage.trim() : language;
+
   function resetForm() {
     setStep(0);
     setTerm("");
     setLanguage(null);
+    setCustomLanguage("");
     setMeaning("");
     setExampleSentence("");
     setExampleContext("");
@@ -113,7 +125,7 @@ export default function AddTermScreen() {
         term: term.trim(),
         meaning: meaning.trim(),
         examples,
-        language: language!,
+        language: finalLanguage!,
         submittedBy: user.uid,
         submittedByName: user.displayName || "Anonymous",
       });
@@ -122,9 +134,11 @@ export default function AddTermScreen() {
       setIsDone(true);
     } catch (error) {
       console.log("Add term error:", error);
+      const detail = error instanceof Error ? error.message : String(error);
       setErrorMsg(
         "Couldn't add the term. Check your connection and try again.",
       );
+      Alert.alert("Couldn't add the term", detail);
     } finally {
       setIsSubmitting(false);
     }
@@ -134,7 +148,7 @@ export default function AddTermScreen() {
     return (
       <CelebrationScreen
         term={term}
-        language={language!}
+        language={finalLanguage!}
         onAddAnother={resetForm}
         onGoToFeed={() => {
           resetForm();
@@ -199,7 +213,22 @@ export default function AddTermScreen() {
                   delay={i * 25}
                 />
               ))}
+              <Chip
+                label={OTHER_LANGUAGE_OPTION}
+                selected={language === OTHER_LANGUAGE_OPTION}
+                onPress={() => setLanguage(OTHER_LANGUAGE_OPTION)}
+                delay={LANGUAGES.length * 25}
+              />
             </View>
+            {language === OTHER_LANGUAGE_OPTION ? (
+              <Input
+                placeholder="e.g. Hebrew"
+                value={customLanguage}
+                onChangeText={setCustomLanguage}
+                autoFocus
+                containerStyle={{ marginTop: 16 }}
+              />
+            ) : null}
           </StepBlock>
         )}
 
@@ -285,7 +314,7 @@ export default function AddTermScreen() {
               <PatternFill variant="diamond" style={styles.previewStrip} />
               <View style={styles.previewBody}>
                 <View style={{ flexDirection: "row", marginBottom: 12 }}>
-                  <Chip label={language!} selected />
+                  <Chip label={finalLanguage!} selected />
                 </View>
                 <Text style={styles.previewTerm}>{term}</Text>
                 <Text style={{ marginTop: 8 }}>{meaning}</Text>

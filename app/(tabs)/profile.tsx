@@ -44,6 +44,7 @@ export default function ProfileScreen() {
 
   const [xp, setXp] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
+  const [learnedCount, setLearnedCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const [myTerms, setMyTerms] = useState<SlangTerm[]>([]);
@@ -53,6 +54,7 @@ export default function ProfileScreen() {
     if (USE_MOCK_DATA) {
       setXp(35);
       setSavedCount(3);
+      setLearnedCount(1);
       return;
     }
     if (!user) return;
@@ -62,6 +64,7 @@ export default function ProfileScreen() {
         const data = snap.exists() ? snap.data() : {};
         setXp(data.xp ?? 0);
         setSavedCount((data.savedTerms ?? []).length);
+        setLearnedCount((data.learnedTerms ?? []).length);
         setIsAdmin(data.isAdmin === true);
       },
       (error) => console.log("Profile stats listener error:", error),
@@ -247,6 +250,12 @@ export default function ProfileScreen() {
               <Text style={styles.statNumber}>{savedCount}</Text>
               <Text variant="muted" style={{ fontSize: 12 }}>
                 Terms saved
+              </Text>
+            </Card>
+            <Card style={[styles.statCard, { marginLeft: 12 }]}>
+              <Text style={styles.statNumber}>{learnedCount}</Text>
+              <Text variant="muted" style={{ fontSize: 12 }}>
+                Terms learned
               </Text>
             </Card>
           </View>
