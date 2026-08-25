@@ -28,6 +28,7 @@ export type Flag = {
   termSnapshot: string; // the term's word/phrase at time of flagging, for display without a join
   reportedBy: string;
   reason: FlagReason;
+  comment?: string;
   status: FlagStatus;
   createdAt: any;
 };

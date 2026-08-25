@@ -45,8 +45,9 @@ export async function flagTerm(
   termSnapshot: string,
   reportedBy: string,
   reason: FlagReason,
+  comment?: string,
 ) {
-  const payload = {
+  const payload: Record<string, any> = {
     termId,
     termSnapshot,
     reportedBy,
@@ -54,6 +55,12 @@ export async function flagTerm(
     status: "pending",
     createdAt: serverTimestamp(),
   };
+  // Firestore throws if any field is `undefined` — so the comment is only
+  // added to the payload when it actually has a value, rather than always
+  // being present (possibly as an empty string).
+  if (comment && comment.trim()) {
+    payload.comment = comment.trim();
+  }
 
   await addDoc(collection(db, "flags"), payload);
 

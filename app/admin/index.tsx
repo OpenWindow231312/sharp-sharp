@@ -288,6 +288,11 @@ export default function AdminDashboardScreen() {
                 <Text variant="muted" style={{ marginBottom: 2 }}>
                   Reason: {FLAG_REASON_LABEL[flag.reason]}
                 </Text>
+                {flag.comment ? (
+                  <Text variant="muted" style={styles.flagComment}>
+                    &quot;{flag.comment}&quot;
+                  </Text>
+                ) : null}
                 <Text variant="muted" style={{ marginBottom: 12 }}>
                   Reported by {flag.reportedBy}
                 </Text>
@@ -498,6 +503,7 @@ const styles = StyleSheet.create({
   tabButtonActive: { backgroundColor: theme.colors.primary },
   emptyCard: { alignItems: "center", padding: 32 },
   flagCard: { marginBottom: 12 },
+  flagComment: { fontStyle: "italic", marginBottom: 6 },
   flagActionsRow: { flexDirection: "row" },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,

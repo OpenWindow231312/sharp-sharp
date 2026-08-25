@@ -3,9 +3,17 @@ import { useAuth } from "@/context/AuthContext";
 import { flagTerm } from "@/services/adminTerms";
 import type { FlagReason, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
-import { BookOpen, Quotes } from "phosphor-react-native";
+import { BookOpen, Quotes, X } from "phosphor-react-native";
 import { forwardRef, useId, useImperativeHandle, useMemo, useState } from "react";
-import { Alert, Dimensions, Modal, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
@@ -18,6 +26,8 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
 import { Button } from "./Button";
+import { Dropdown } from "./Dropdown";
+import { Input } from "./Input";
 import { Text } from "./Text";
 
 const FLAG_REASONS: { reason: FlagReason; label: string }[] = [
@@ -26,6 +36,8 @@ const FLAG_REASONS: { reason: FlagReason; label: string }[] = [
   { reason: "spam", label: "Spam" },
   { reason: "other", label: "Other" },
 ];
+
+const FLAG_REASON_LABELS = FLAG_REASONS.map((r) => r.label);
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
@@ -151,15 +163,34 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
     const flip = useSharedValue(0);
 
     const [reportModalVisible, setReportModalVisible] = useState(false);
+    const [reportReasonLabel, setReportReasonLabel] = useState<string | null>(
+      null,
+    );
+    const [reportComment, setReportComment] = useState("");
     const [isFlagging, setIsFlagging] = useState(false);
 
-    async function submitFlag(reason: FlagReason) {
-      if (!user || isFlagging) return;
+    function closeReportModal() {
+      setReportModalVisible(false);
+      setReportReasonLabel(null);
+      setReportComment("");
+    }
+
+    async function submitFlag() {
+      const reasonEntry = FLAG_REASONS.find(
+        (r) => r.label === reportReasonLabel,
+      );
+      if (!user || !reasonEntry || isFlagging) return;
       setIsFlagging(true);
       try {
-        await flagTerm(term.id, term.term, user.uid, reason);
+        await flagTerm(
+          term.id,
+          term.term,
+          user.uid,
+          reasonEntry.reason,
+          reportComment,
+        );
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        setReportModalVisible(false);
+        closeReportModal();
         Alert.alert("Reported", "Thanks — our team will take a look.");
         // Flagging behaves like a skip for the rest of this session — the
         // term leaves the visible stack rather than sitting there looking
@@ -368,31 +399,48 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
         visible={reportModalVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setReportModalVisible(false)}
+        onRequestClose={closeReportModal}
       >
         <View style={styles.backdrop}>
           <View style={styles.reportCard}>
+            <Pressable
+              onPress={closeReportModal}
+              hitSlop={12}
+              style={styles.reportCloseButton}
+            >
+              <X size={20} weight="bold" color={theme.colors.textMuted} />
+            </Pressable>
+
             <Text variant="heading" style={styles.reportTitle}>
               Report this term
             </Text>
             <Text variant="muted" style={styles.reportSubtitle}>
               Why are you flagging &quot;{term.term}&quot;?
             </Text>
-            {FLAG_REASONS.map(({ reason, label }) => (
-              <Button
-                key={reason}
-                label={label}
-                variant="secondary"
-                disabled={isFlagging}
-                onPress={() => submitFlag(reason)}
-                style={{ marginTop: theme.spacing.sm }}
-              />
-            ))}
+
+            <Dropdown
+              label="Reason"
+              value={reportReasonLabel}
+              options={FLAG_REASON_LABELS}
+              onChange={setReportReasonLabel}
+              placeholder="Select a reason"
+            />
+
+            <Input
+              label="Anything else? (optional)"
+              value={reportComment}
+              onChangeText={setReportComment}
+              multiline
+              numberOfLines={3}
+              style={styles.reportCommentInput}
+            />
+
             <Button
-              label="Cancel"
-              variant="secondary"
-              onPress={() => setReportModalVisible(false)}
-              style={{ marginTop: theme.spacing.md, opacity: 0.7 }}
+              label="Submit"
+              variant="primary"
+              disabled={!reportReasonLabel || isFlagging}
+              onPress={submitFlag}
+              style={{ marginTop: theme.spacing.xs }}
             />
           </View>
         </View>
@@ -592,11 +640,26 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     padding: theme.spacing.lg,
   },
+  reportCloseButton: {
+    position: "absolute",
+    top: theme.spacing.sm,
+    right: theme.spacing.sm,
+    width: theme.tapTarget,
+    height: theme.tapTarget,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
   reportTitle: {
     textAlign: "center",
+    marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.xs,
   },
   reportSubtitle: {
     textAlign: "center",
+    marginBottom: theme.spacing.md,
+  },
+  reportCommentInput: {
+    minHeight: 72,
   },
 });
