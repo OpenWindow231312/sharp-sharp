@@ -9,6 +9,7 @@ type FeedHeaderProps = {
   xp: number;
   avatarInitial: string;
   photoBase64?: string;
+  name: string;
 };
 
 export function FeedHeader({
@@ -17,6 +18,7 @@ export function FeedHeader({
   xp,
   avatarInitial,
   photoBase64,
+  name,
 }: FeedHeaderProps) {
   return (
     <View style={styles.container}>
@@ -27,6 +29,12 @@ export function FeedHeader({
           ) : (
             <Text style={styles.avatarText}>{avatarInitial}</Text>
           )}
+        </View>
+        <View style={styles.greetingBlock}>
+          <Text style={styles.greetingText}>Hey, {name}!</Text>
+          <Text variant="muted" style={styles.greetingSubtext}>
+            Time to learn Sharp Sharp.
+          </Text>
         </View>
       </View>
       <Text variant="muted" style={styles.subLabel}>
@@ -45,27 +53,40 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
-    marginBottom: theme.spacing.xs,
+    justifyContent: "flex-start",
+    marginBottom: theme.spacing.sm,
   },
   avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: theme.colors.indigo,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
   },
   avatarImage: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
   },
   avatarText: {
     fontFamily: theme.fonts.displayBold,
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 26,
+  },
+  greetingBlock: {
+    marginLeft: theme.spacing.md,
+    flex: 1,
+  },
+  greetingText: {
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 18,
+    color: theme.colors.text,
+  },
+  greetingSubtext: {
+    fontSize: 13,
+    marginTop: 2,
   },
   subLabel: {
     fontFamily: theme.fonts.mono,

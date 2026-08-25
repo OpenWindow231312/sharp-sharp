@@ -234,11 +234,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Text variant="display" style={{ marginBottom: 24 }}>
-        Profile
-      </Text>
-
-      <View style={{ alignItems: "center", marginBottom: 24 }}>
+      <View style={{ alignItems: "center", marginTop: 16, marginBottom: 24 }}>
         <View
           style={{
             width: 120,

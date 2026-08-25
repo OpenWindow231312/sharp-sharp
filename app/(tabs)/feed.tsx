@@ -47,6 +47,7 @@ export default function FeedScreen() {
   const [photoBase64, setPhotoBase64] = useState<string | undefined>(
     undefined,
   );
+  const [name, setName] = useState<string | undefined>(undefined);
   const [toast, setToast] = useState<{ id: number; amount: number } | null>(
     null,
   );
@@ -68,6 +69,7 @@ export default function FeedScreen() {
       setSavedCount(saved.length);
       setXp(data.xp ?? 0);
       setPhotoBase64(data.photoBase64 ?? undefined);
+      setName(data.name ?? undefined);
     }
     loadInitial();
   }, [user]);
@@ -148,7 +150,14 @@ export default function FeedScreen() {
     <View style={styles.container}>
       <FirstTimeTutorial />
 
-      <Text variant="display" style={{ marginBottom: 4, fontSize: 35 }}>
+      <Text
+        variant="display"
+        style={{
+          marginBottom: 4,
+          fontSize: 35,
+          paddingHorizontal: theme.spacing.lg,
+        }}
+      >
         Feed
       </Text>
 
@@ -167,6 +176,7 @@ export default function FeedScreen() {
         xp={xp}
         avatarInitial={user?.email?.[0]?.toUpperCase() ?? "?"}
         photoBase64={photoBase64}
+        name={name || user?.displayName || "there"}
       />
 
       <View style={styles.stack}>
