@@ -32,8 +32,10 @@ type HeroBeat = BeatBase & {
 };
 type MechanicsBeat = BeatBase & {
   kind: "mechanics";
-  heading: string;
-  text: string;
+  headingBefore: string;
+  headingAccent: string;
+  textLine1: string;
+  textLine2: string;
 };
 type ClosingBeat = BeatBase & {
   kind: "closing";
@@ -71,8 +73,10 @@ const BEATS: Beat[] = [
   {
     kind: "mechanics",
     autoAdvanceMs: 4000,
-    heading: "Learn South African slang in real time",
-    text: "Swipe right to save a word, swipe left to skip it.",
+    headingBefore: "Learn South African slang in ",
+    headingAccent: "real time",
+    textLine1: "Swipe right to save a word.",
+    textLine2: "Swipe left to skip it.",
   },
   {
     // No autoAdvanceMs — this beat is manual only, it ends on "Let's go".
@@ -141,8 +145,10 @@ export default function OnboardingStoryScreen() {
         ) : beat.kind === "mechanics" ? (
           <MechanicsBeatView
             key={stepIndex}
-            heading={beat.heading}
-            text={beat.text}
+            headingBefore={beat.headingBefore}
+            headingAccent={beat.headingAccent}
+            textLine1={beat.textLine1}
+            textLine2={beat.textLine2}
           />
         ) : (
           <ClosingBeatView
@@ -278,11 +284,15 @@ function HeroBeatView({
 }
 
 function MechanicsBeatView({
-  heading,
-  text,
+  headingBefore,
+  headingAccent,
+  textLine1,
+  textLine2,
 }: {
-  heading: string;
-  text: string;
+  headingBefore: string;
+  headingAccent: string;
+  textLine1: string;
+  textLine2: string;
 }) {
   return (
     <View style={styles.mechanicsWrap}>
@@ -290,13 +300,22 @@ function MechanicsBeatView({
         entering={FadeIn.duration(350)}
         style={styles.mechanicsHeading}
       >
-        {heading}
+        {headingBefore}
+        <Animated.Text style={styles.mechanicsHeadingAccent}>
+          {headingAccent}
+        </Animated.Text>
       </Animated.Text>
       <Animated.Text
         entering={FadeIn.delay(150).duration(350)}
         style={styles.mechanicsText}
       >
-        {text}
+        {textLine1}
+      </Animated.Text>
+      <Animated.Text
+        entering={FadeIn.delay(150).duration(350)}
+        style={styles.mechanicsTextLine2}
+      >
+        {textLine2}
       </Animated.Text>
     </View>
   );

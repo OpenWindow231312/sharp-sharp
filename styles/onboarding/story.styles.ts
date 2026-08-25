@@ -94,9 +94,12 @@ export const styles = StyleSheet.create({
   },
   mechanicsHeading: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 35,
+    lineHeight: 42,
     color: theme.colors.text,
+  },
+  mechanicsHeadingAccent: {
+    color: theme.colors.marigold,
   },
   mechanicsText: {
     fontFamily: theme.fonts.bodyMedium,
@@ -104,6 +107,13 @@ export const styles = StyleSheet.create({
     lineHeight: 26,
     color: theme.colors.textMuted,
     marginTop: theme.spacing.xl,
+  },
+  mechanicsTextLine2: {
+    fontFamily: theme.fonts.bodyMedium,
+    fontSize: 18,
+    lineHeight: 26,
+    color: theme.colors.textMuted,
+    marginTop: 2,
   },
   closingWrap: {
     flex: 1,
