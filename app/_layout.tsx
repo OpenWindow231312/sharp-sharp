@@ -24,10 +24,11 @@ import { Stack } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 
+import { AnimatedIntro } from "@/components/ui/AnimatedIntro";
 import { AuthProvider } from "@/context/AuthContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
@@ -35,6 +36,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [introDone, setIntroDone] = useState(false);
 
   const [baloo2Loaded] = useBaloo2Fonts({
     Baloo2_600SemiBold,
@@ -65,6 +67,14 @@ export default function RootLayout() {
 
   if (!fontsLoaded) {
     return null;
+  }
+
+  // Native splash (Stage 1) has already hidden by this point — this
+  // renders in its place immediately, sharing the same paper background,
+  // so there's no visible jump between the two. Existing routing (the
+  // auth-check redirect in app/index.tsx) only mounts once this finishes.
+  if (!introDone) {
+    return <AnimatedIntro onFinish={() => setIntroDone(true)} />;
   }
 
   return (

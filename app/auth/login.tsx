@@ -5,9 +5,14 @@ import { theme } from "@/constants/designTheme";
 import { auth } from "@/services/firebase";
 import { getAuthErrorMessage } from "@/utils/authErrors";
 import { Link, useRouter } from "expo-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Alert, Pressable, View } from "react-native";
+import { styles } from "@/styles/auth/login.styles";
+
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -29,6 +34,28 @@ export default function LoginScreen() {
     } finally {
       setIsLoading(false);
     }
+  }
+  function handleForgotPassword() {
+    Alert.prompt(
+      "Reset password",
+      "Enter your email address and we'll send you a reset link.",
+      async (inputEmail) => {
+        const targetEmail = (inputEmail ?? "").trim();
+        if (!targetEmail) return;
+        try {
+          await sendPasswordResetEmail(auth, targetEmail);
+        } catch (error) {
+          console.log("Password reset error:", error);
+        } finally {
+          Alert.alert(
+            "Check your email",
+            "If an account exists for this email, a reset link has been sent.",
+          );
+        }
+      },
+      "plain-text",
+      email.trim(),
+    );
   }
   return (
     <View style={styles.container}>
@@ -53,6 +80,14 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
       />
+      <Pressable
+        onPress={handleForgotPassword}
+        style={{ alignSelf: "flex-end", marginBottom: 16 }}
+      >
+        <Text variant="muted" style={{ textDecorationLine: "underline" }}>
+          Forgot password?
+        </Text>
+      </Pressable>
       {errorMsg ? (
         <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>
           {errorMsg}
@@ -74,15 +109,3 @@ export default function LoginScreen() {
     </View>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    paddingTop: 100,
-    backgroundColor: theme.colors.background,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-});

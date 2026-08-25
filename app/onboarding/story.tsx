@@ -7,7 +7,7 @@ import { theme } from "@/constants/designTheme";
 import { useRouter } from "expo-router";
 import { ArrowBendDownLeft, Flag as FlagIcon } from "phosphor-react-native";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import Animated, {
   Easing,
   FadeIn,
@@ -20,6 +20,7 @@ import Animated, {
   withTiming,
   ZoomIn,
 } from "react-native-reanimated";
+import { styles } from "@/styles/onboarding/story.styles";
 
 type BeatBase = { autoAdvanceMs?: number };
 type DialogueBeat = BeatBase & { kind: "dialogue"; lines: [string, string] };
@@ -31,8 +32,10 @@ type HeroBeat = BeatBase & {
 };
 type MechanicsBeat = BeatBase & {
   kind: "mechanics";
-  heading: string;
-  text: string;
+  headingBefore: string;
+  headingAccent: string;
+  textLine1: string;
+  textLine2: string;
 };
 type ClosingBeat = BeatBase & {
   kind: "closing";
@@ -70,8 +73,10 @@ const BEATS: Beat[] = [
   {
     kind: "mechanics",
     autoAdvanceMs: 4000,
-    heading: "Learn South African slang in real time",
-    text: "Swipe right to save a word, swipe left to skip it.",
+    headingBefore: "Learn South African slang in ",
+    headingAccent: "real time",
+    textLine1: "Swipe right to save a word.",
+    textLine2: "Swipe left to skip it.",
   },
   {
     // No autoAdvanceMs — this beat is manual only, it ends on "Let's go".
@@ -121,11 +126,7 @@ export default function OnboardingStoryScreen() {
     <Pressable style={styles.container} onPress={advance}>
       <ProgressBar progress={(stepIndex + 1) / BEATS.length} />
 
-      <Pressable
-        onPress={goToLanguages}
-        hitSlop={12}
-        style={styles.skipButton}
-      >
+      <Pressable onPress={goToLanguages} hitSlop={12} style={styles.skipButton}>
         <Text variant="muted" style={styles.skipText}>
           Skip
         </Text>
@@ -144,8 +145,10 @@ export default function OnboardingStoryScreen() {
         ) : beat.kind === "mechanics" ? (
           <MechanicsBeatView
             key={stepIndex}
-            heading={beat.heading}
-            text={beat.text}
+            headingBefore={beat.headingBefore}
+            headingAccent={beat.headingAccent}
+            textLine1={beat.textLine1}
+            textLine2={beat.textLine2}
           />
         ) : (
           <ClosingBeatView
@@ -281,11 +284,15 @@ function HeroBeatView({
 }
 
 function MechanicsBeatView({
-  heading,
-  text,
+  headingBefore,
+  headingAccent,
+  textLine1,
+  textLine2,
 }: {
-  heading: string;
-  text: string;
+  headingBefore: string;
+  headingAccent: string;
+  textLine1: string;
+  textLine2: string;
 }) {
   return (
     <View style={styles.mechanicsWrap}>
@@ -293,13 +300,22 @@ function MechanicsBeatView({
         entering={FadeIn.duration(350)}
         style={styles.mechanicsHeading}
       >
-        {heading}
+        {headingBefore}
+        <Animated.Text style={styles.mechanicsHeadingAccent}>
+          {headingAccent}
+        </Animated.Text>
       </Animated.Text>
       <Animated.Text
         entering={FadeIn.delay(150).duration(350)}
         style={styles.mechanicsText}
       >
-        {text}
+        {textLine1}
+      </Animated.Text>
+      <Animated.Text
+        entering={FadeIn.delay(150).duration(350)}
+        style={styles.mechanicsTextLine2}
+      >
+        {textLine2}
       </Animated.Text>
     </View>
   );
@@ -354,8 +370,6 @@ function ClosingBeatView({
   );
 }
 
-const MINI_PATTERN_HEIGHT = 28;
-
 function MiniFlagCard() {
   const nudge = useSharedValue(0);
 
@@ -397,180 +411,12 @@ function MiniFlagCard() {
         </View>
       </View>
       <Animated.View style={[styles.miniArrowWrap, arrowStyle]}>
-        <ArrowBendDownLeft size={26} weight="bold" color={theme.colors.marigold} />
+        <ArrowBendDownLeft
+          size={26}
+          weight="bold"
+          color={theme.colors.marigold}
+        />
       </Animated.View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: theme.spacing.lg,
-    paddingTop: 60,
-    backgroundColor: theme.colors.background,
-  },
-  skipButton: {
-    position: "absolute",
-    top: 56,
-    right: theme.spacing.md,
-    minWidth: theme.tapTarget,
-    minHeight: theme.tapTarget,
-    alignItems: "flex-end",
-    justifyContent: "center",
-    zIndex: 10,
-  },
-  skipText: {
-    fontFamily: theme.fonts.bodySemibold,
-    fontSize: 14,
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  dialogueWrap: {
-    gap: theme.spacing.sm,
-  },
-  bubbleRow: {
-    flexDirection: "row",
-  },
-  bubble: {
-    maxWidth: "84%",
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.radius.md,
-  },
-  bubbleReceived: {
-    backgroundColor: theme.colors.surface,
-  },
-  bubbleReply: {
-    backgroundColor: theme.colors.indigo,
-  },
-  bubbleTailLeft: {
-    borderBottomLeftRadius: theme.radius.sm / 2,
-  },
-  bubbleTailRight: {
-    borderBottomRightRadius: theme.radius.sm / 2,
-  },
-  bubbleTextReceived: {
-    fontFamily: theme.fonts.bodyMedium,
-    fontSize: 17,
-    lineHeight: 24,
-    color: theme.colors.text,
-  },
-  bubbleTextReply: {
-    fontFamily: theme.fonts.bodyMedium,
-    fontSize: 17,
-    lineHeight: 24,
-    color: "#FFFFFF",
-  },
-  heroWrap: {},
-  heroBigLine: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 92,
-    // lineHeight must comfortably exceed fontSize for a display weight this
-    // large — anything close to or under fontSize gets the top of the
-    // glyphs clipped by the Text node's own line box on native.
-    lineHeight: 106,
-    color: theme.colors.marigold,
-  },
-  heroSmallLine: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 32,
-    lineHeight: 38,
-    color: theme.colors.indigo,
-    marginTop: theme.spacing.sm,
-  },
-  heroBody: {
-    fontFamily: theme.fonts.body,
-    fontSize: 17,
-    lineHeight: 25,
-    color: theme.colors.text,
-    marginTop: theme.spacing.md,
-  },
-  mechanicsWrap: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  mechanicsHeading: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 30,
-    lineHeight: 36,
-    color: theme.colors.text,
-  },
-  mechanicsText: {
-    fontFamily: theme.fonts.bodyMedium,
-    fontSize: 18,
-    lineHeight: 26,
-    color: theme.colors.textMuted,
-    marginTop: theme.spacing.xl,
-  },
-  closingWrap: {
-    flex: 1,
-    alignItems: "center",
-    paddingBottom: theme.spacing.xl,
-  },
-  closingContentGroup: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: theme.spacing.xl,
-  },
-  closingHeadline: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 32,
-    lineHeight: 38,
-    color: theme.colors.indigo,
-    textAlign: "center",
-  },
-  closingHeadlineAccent: {
-    color: theme.colors.marigold,
-  },
-  closingCaption: {
-    fontFamily: theme.fonts.bodyMedium,
-    fontSize: 16,
-    lineHeight: 22,
-    color: theme.colors.textMuted,
-    textAlign: "center",
-    paddingHorizontal: theme.spacing.md,
-  },
-  closingButtonWrap: {
-    alignSelf: "stretch",
-    marginTop: theme.spacing.sm,
-  },
-  miniCardWrap: {
-    alignSelf: "center",
-    marginVertical: theme.spacing.xs,
-  },
-  miniCard: {
-    width: 170,
-    borderRadius: theme.radius.md,
-    overflow: "hidden",
-    backgroundColor: theme.colors.card,
-    ...theme.shadow.soft,
-  },
-  miniCardPattern: {
-    height: MINI_PATTERN_HEIGHT,
-  },
-  miniCardTermZone: {
-    height: 78,
-    backgroundColor: theme.colors.indigo,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  miniCardTerm: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 20,
-    color: "#FFFFFF",
-  },
-  miniFlagIconWrap: {
-    position: "absolute",
-    top: MINI_PATTERN_HEIGHT + theme.spacing.xs,
-    right: theme.spacing.xs,
-  },
-  miniArrowWrap: {
-    position: "absolute",
-    top: -8,
-    right: -28,
-  },
-});

@@ -1,35 +1,47 @@
-import { BadgeShelf } from "@/components/ui/BadgeShelf";
+import { BadgeMedallion } from "@/components/ui/BadgeMedallion";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
-import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
-import { getLevelInfo } from "@/constants/levels";
+import { LEVELS } from "@/constants/levels";
 import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
 import { auth, db } from "@/services/firebase";
 import { deleteSlangTerm, getUserSubmittedTerms } from "@/services/slangTerms";
+import { styles } from "@/styles/tabs/profile.styles";
 import type { SlangTerm } from "@/types/slangTerm";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
-import { Trash } from "phosphor-react-native";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { PencilSimple, Trash } from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
-  StyleSheet,
   View,
 } from "react-native";
 import Animated, { FadeIn, Layout } from "react-native-reanimated";
 
 type Tab = "overview" | "myTerms";
+
+// Placeholder copy for now — no real per-level unlock mechanics exist yet.
+const LEVEL_UNLOCK_TEXT: Record<string, string> = {
+  "Eish!": "Just getting started — keep swiping to earn XP.",
+  Ubuntu: "You're learning the community's words.",
+  Lekker: "Solid progress — you're getting the hang of this.",
+  Ayoba: "You know your stuff. Keep going.",
+  "Local Legend": "You've earned real street cred.",
+  "Sharp Sharp": "Maximum level. You're fluent in the culture.",
+};
 
 function getInitial(nameOrEmail: string | null | undefined): string {
   const trimmed = (nameOrEmail ?? "").trim();
@@ -44,15 +56,21 @@ export default function ProfileScreen() {
 
   const [xp, setXp] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
+  const [learnedCount, setLearnedCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const [myTerms, setMyTerms] = useState<SlangTerm[]>([]);
   const [isLoadingTerms, setIsLoadingTerms] = useState(true);
+  const [expandedLevel, setExpandedLevel] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(null);
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   useEffect(() => {
     if (USE_MOCK_DATA) {
       setXp(35);
       setSavedCount(3);
+      setLearnedCount(1);
       return;
     }
     if (!user) return;
@@ -62,7 +80,10 @@ export default function ProfileScreen() {
         const data = snap.exists() ? snap.data() : {};
         setXp(data.xp ?? 0);
         setSavedCount((data.savedTerms ?? []).length);
+        setLearnedCount((data.learnedTerms ?? []).length);
         setIsAdmin(data.isAdmin === true);
+        setName(data.name ?? null);
+        setPhotoBase64(data.photoBase64 ?? null);
       },
       (error) => console.log("Profile stats listener error:", error),
     );
@@ -88,6 +109,81 @@ export default function ProfileScreen() {
       loadMyTerms();
     }, [loadMyTerms]),
   );
+
+  async function handlePickPhoto() {
+    if (!user) return;
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission needed",
+        "Allow photo library access to set a profile photo.",
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+    if (result.canceled || !result.assets[0]) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const manipulated = await manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 200, height: 200 } }],
+        { compress: 0.7, format: SaveFormat.JPEG, base64: true },
+      );
+      if (!manipulated.base64) {
+        throw new Error("No base64 data returned from image manipulator.");
+      }
+      const dataUri = `data:image/jpeg;base64,${manipulated.base64}`;
+      // Same users/{uid} merge-write pattern as services/xp.ts and
+      // services/savedTerms.ts, for consistency with how this doc is
+      // updated elsewhere.
+      await setDoc(
+        doc(db, "users", user.uid),
+        { photoBase64: dataUri },
+        { merge: true },
+      );
+    } catch (error) {
+      console.log("Photo upload error:", error);
+      Alert.alert(
+        "Couldn't update photo",
+        "Check your connection and try again.",
+      );
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  }
+
+  function handleEditName() {
+    if (!user) return;
+    Alert.prompt(
+      "Edit name",
+      "Enter your name.",
+      async (inputName) => {
+        const trimmed = (inputName ?? "").trim();
+        if (!trimmed) return;
+        try {
+          await setDoc(
+            doc(db, "users", user.uid),
+            { name: trimmed },
+            { merge: true },
+          );
+        } catch (error) {
+          console.log("Update name error:", error);
+          Alert.alert(
+            "Couldn't update name",
+            "Check your connection and try again.",
+          );
+        }
+      },
+      "plain-text",
+      displayName,
+    );
+  }
 
   async function handleLogout() {
     setIsLoggingOut(true);
@@ -133,38 +229,76 @@ export default function ProfileScreen() {
     }
   }
 
-  const levelInfo = getLevelInfo(xp);
-  const displayName = user?.displayName || user?.email || "Sharp Sharp user";
+  const displayName =
+    name || user?.displayName || user?.email || "Sharp Sharp user";
 
   return (
     <View style={styles.container}>
-      <Text variant="display" style={{ marginBottom: 24 }}>
-        Profile
-      </Text>
-
-      <View style={styles.headerRow}>
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarInitial}>
-            {getInitial(user?.displayName || user?.email)}
-          </Text>
+      <View style={{ alignItems: "center", marginTop: 16, marginBottom: 24 }}>
+        <View
+          style={{
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            backgroundColor: theme.colors.primary,
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}
+        >
+          {isUploadingPhoto ? (
+            <ActivityIndicator size="small" color={theme.colors.primaryText} />
+          ) : photoBase64 ? (
+            <Image
+              source={{ uri: photoBase64 }}
+              style={{ width: 120, height: 120, borderRadius: 60 }}
+            />
+          ) : (
+            <Text
+              style={{
+                fontFamily: theme.fonts.displayExtraBold,
+                fontSize: 44,
+                color: theme.colors.primaryText,
+              }}
+            >
+              {getInitial(displayName)}
+            </Text>
+          )}
         </View>
-        <View style={{ marginLeft: 16, flex: 1 }}>
+
+        <Pressable
+          onPress={handlePickPhoto}
+          disabled={isUploadingPhoto}
+          hitSlop={8}
+          style={{ marginTop: 8 }}
+        >
+          <Text
+            variant="muted"
+            style={{ fontSize: 12, textDecorationLine: "underline" }}
+          >
+            {isUploadingPhoto ? "Uploading..." : "Change photo"}
+          </Text>
+        </Pressable>
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: 12,
+          }}
+        >
           <Text
             style={{ fontFamily: theme.fonts.bodyBold, fontSize: 17 }}
             numberOfLines={1}
           >
             {displayName}
           </Text>
-          <Text variant="muted" numberOfLines={1}>
-            {user?.email}
-          </Text>
-          <Pressable disabled hitSlop={8} style={{ marginTop: 4 }}>
-            <Text
-              variant="muted"
-              style={{ fontSize: 12, textDecorationLine: "underline" }}
-            >
-              Change photo (coming soon)
-            </Text>
+          <Pressable
+            onPress={handleEditName}
+            hitSlop={8}
+            style={{ marginLeft: 6 }}
+          >
+            <PencilSimple size={16} color={theme.colors.textMuted} />
           </Pressable>
         </View>
       </View>
@@ -221,21 +355,6 @@ export default function ProfileScreen() {
             />
           ) : null}
 
-          <Card style={{ marginBottom: 16 }}>
-            <View style={styles.levelRow}>
-              <Text style={{ fontFamily: theme.fonts.bodyBold }}>
-                {levelInfo.title}
-              </Text>
-              <Text variant="muted">{xp} XP</Text>
-            </View>
-            <ProgressBar progress={levelInfo.progress} />
-            <Text variant="muted" style={{ marginTop: 8, fontSize: 12 }}>
-              {levelInfo.isMaxLevel
-                ? "You've hit the top level — Sharp Sharp!"
-                : `${levelInfo.xpForNextLevel - levelInfo.xpIntoLevel} XP to next level`}
-            </Text>
-          </Card>
-
           <View style={styles.statsRow}>
             <Card style={styles.statCard}>
               <Text style={styles.statNumber}>{myTerms.length}</Text>
@@ -249,21 +368,48 @@ export default function ProfileScreen() {
                 Terms saved
               </Text>
             </Card>
+            <Card style={[styles.statCard, { marginLeft: 12 }]}>
+              <Text style={styles.statNumber}>{learnedCount}</Text>
+              <Text variant="muted" style={{ fontSize: 12 }}>
+                Terms learned
+              </Text>
+            </Card>
           </View>
 
-          <Text
-            variant="heading"
-            style={{ marginTop: 24, marginBottom: 12 }}
-          >
-            Badges
+          <Text variant="heading" style={{ marginTop: 24, marginBottom: 12 }}>
+            Levels
           </Text>
-          <BadgeShelf
-            stats={{
-              submittedCount: myTerms.length,
-              savedCount,
-              xp,
-            }}
-          />
+          <View style={{ gap: 10 }}>
+            {LEVELS.map((level) => {
+              const unlocked = xp >= level.threshold;
+              const isExpanded = expandedLevel === level.title;
+              return (
+                <Pressable
+                  key={level.title}
+                  onPress={() =>
+                    setExpandedLevel(isExpanded ? null : level.title)
+                  }
+                >
+                  <Card>
+                    <View style={styles.levelListRow}>
+                      <BadgeMedallion
+                        variant={level.pattern}
+                        shape={level.shape}
+                        unlocked={unlocked}
+                        size={44}
+                      />
+                      <Text style={styles.levelListTitle}>{level.title}</Text>
+                    </View>
+                    {isExpanded ? (
+                      <Text variant="muted" style={styles.levelUnlockText}>
+                        {LEVEL_UNLOCK_TEXT[level.title]}
+                      </Text>
+                    ) : null}
+                  </Card>
+                </Pressable>
+              );
+            })}
+          </View>
 
           <Button
             label={isLoggingOut ? "Logging out..." : "Log out"}
@@ -324,67 +470,3 @@ export default function ProfileScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    paddingTop: 70,
-    backgroundColor: theme.colors.background,
-  },
-  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 24 },
-  avatarCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarInitial: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 26,
-    color: theme.colors.primaryText,
-  },
-  tabRow: {
-    flexDirection: "row",
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.pill,
-    padding: 4,
-    marginBottom: 20,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: theme.radius.pill,
-    alignItems: "center",
-  },
-  tabButtonActive: { backgroundColor: theme.colors.primary },
-  levelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  statsRow: { flexDirection: "row" },
-  statCard: { flex: 1, alignItems: "center", paddingVertical: 20 },
-  statNumber: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 28,
-    color: theme.colors.text,
-  },
-  emptyCard: { alignItems: "center", padding: 32 },
-  termCard: { marginBottom: 12 },
-  cardTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  deleteIconButton: { padding: 4 },
-  termText: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 20,
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
-});

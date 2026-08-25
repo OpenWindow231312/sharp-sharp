@@ -1,3 +1,6 @@
+import type { PatternVariant } from "@/components/ui/PatternFill";
+import type { BadgeShape } from "@/components/ui/BadgeMedallion";
+
 export type LevelInfo = {
   level: number;
   title: string;
@@ -8,12 +11,24 @@ export type LevelInfo = {
   isMaxLevel: boolean;
 };
 
-const LEVELS = [
-  { title: "Newbie", threshold: 0 },
-  { title: "Fresh", threshold: 50 },
-  { title: "Local Legend", threshold: 150 },
-  { title: "Sharp", threshold: 300 },
-  { title: "Sharp Sharp", threshold: 500 },
+export type LevelDefinition = {
+  title: string;
+  threshold: number;
+  pattern: PatternVariant;
+  shape: BadgeShape;
+};
+
+// The 6 levels, named after the badges they absorbed (badges no longer
+// exist as a separate unlockable system — see constants/badges.ts). Pattern
+// and shape are copied from the matching badge by name, so the medallion
+// each level shows on the Levels list is identical to the old badge art.
+export const LEVELS: LevelDefinition[] = [
+  { title: "Eish!", threshold: 0, pattern: "diamond", shape: "circle" },
+  { title: "Ubuntu", threshold: 100, pattern: "diamond", shape: "hexagon" },
+  { title: "Lekker", threshold: 250, pattern: "beadscatter", shape: "circle" },
+  { title: "Ayoba", threshold: 500, pattern: "beadscatter", shape: "hexagon" },
+  { title: "Local Legend", threshold: 900, pattern: "triangle", shape: "shield" },
+  { title: "Sharp Sharp", threshold: 1500, pattern: "chevron", shape: "burst" },
 ];
 
 export function getLevelInfo(xp: number): LevelInfo {

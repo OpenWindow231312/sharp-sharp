@@ -189,7 +189,11 @@ function renderTextureDef(variant: TextureVariant, id: string) {
 
 type SwipeCardProps = {
   term: SlangTerm;
-  onSwipe: (direction: "left" | "right") => void;
+  onSwipe?: (direction: "left" | "right") => void;
+  // Defaults to true (existing Feed behavior). Set false to render a
+  // static preview — e.g. the Add wizard's review step — with swiping
+  // and flagging disabled. Tap-to-flip still works either way.
+  interactive?: boolean;
 };
 
 export type SwipeCardHandle = {
@@ -198,7 +202,7 @@ export type SwipeCardHandle = {
 };
 
 export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
-  function SwipeCard({ term, onSwipe }, ref) {
+  function SwipeCard({ term, onSwipe = () => {}, interactive = true }, ref) {
     const { user } = useAuth();
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
@@ -284,7 +288,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
         runOnJS(toggleFlip)();
       });
 
-    const composedGesture = Gesture.Race(pan, tap);
+    const composedGesture = interactive ? Gesture.Race(pan, tap) : tap;
 
     const dragStyle = useAnimatedStyle(() => {
       const rotate = interpolate(

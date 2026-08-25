@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FeedControls } from "@/components/ui/FeedControls";
 import { FeedHeader } from "@/components/ui/FeedHeader";
@@ -24,7 +25,8 @@ import {
   query,
 } from "firebase/firestore";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
+import { styles } from "@/styles/tabs/feed.styles";
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];
@@ -42,6 +44,10 @@ export default function FeedScreen() {
   const [savedCount, setSavedCount] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [xp, setXp] = useState(0);
+  const [photoBase64, setPhotoBase64] = useState<string | undefined>(
+    undefined,
+  );
+  const [name, setName] = useState<string | undefined>(undefined);
   const [toast, setToast] = useState<{ id: number; amount: number } | null>(
     null,
   );
@@ -62,6 +68,8 @@ export default function FeedScreen() {
       setExcludedIds(new Set([...saved, ...learned]));
       setSavedCount(saved.length);
       setXp(data.xp ?? 0);
+      setPhotoBase64(data.photoBase64 ?? undefined);
+      setName(data.name ?? undefined);
     }
     loadInitial();
   }, [user]);
@@ -133,18 +141,42 @@ export default function FeedScreen() {
   // How many faint cards to hint at behind the top one — purely decorative,
   // doesn't need real term data, just enough to read as "a deck" rather
   // than "one card floating alone."
-  const peekCount = Math.min(2, Math.max(0, feedTerms.length - currentIndex - 1));
+  const peekCount = Math.min(
+    2,
+    Math.max(0, feedTerms.length - currentIndex - 1),
+  );
 
   return (
     <View style={styles.container}>
       <FirstTimeTutorial />
 
+      <Text
+        variant="display"
+        style={{
+          marginBottom: 4,
+          fontSize: 35,
+          paddingHorizontal: theme.spacing.lg,
+        }}
+      >
+        Feed
+      </Text>
+
+      {/* TODO: re-enable when quiz feature is built
+      <Button
+        label="Quiz"
+        variant="secondary"
+        size="compact"
+        onPress={() => Alert.alert("Coming soon", "Quizzes coming soon!")}
+        style={styles.quizButton}
+      /> */}
+
       <FeedHeader
         levelTitle={levelInfo.title}
         progress={levelInfo.progress}
         xp={xp}
-        savedCount={savedCount}
         avatarInitial={user?.email?.[0]?.toUpperCase() ?? "?"}
+        photoBase64={photoBase64}
+        name={name || user?.displayName || "there"}
       />
 
       <View style={styles.stack}>
@@ -201,32 +233,3 @@ export default function FeedScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 70,
-    backgroundColor: theme.colors.background,
-  },
-  stack: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  peekWrapper: {
-    position: "absolute",
-    left: theme.spacing.lg,
-    right: theme.spacing.lg,
-  },
-  peekWrapperNear: {
-    top: 8,
-    transform: [{ scale: 0.96 }],
-    opacity: 0.6,
-  },
-  peekWrapperFar: {
-    top: 16,
-    transform: [{ scale: 0.92 }],
-    opacity: 0.32,
-  },
-  peekCard: { minHeight: 340 },
-  emptyCard: { alignItems: "center", padding: 32 },
-});

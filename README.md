@@ -189,4 +189,3 @@ types/                TypeScript type definitions
 ## Data sources
 
 Seed terms were sourced from real, commonly used South African slang across eight languages and dialects. Where a term's accuracy or community origin couldn't be confidently verified, it was excluded rather than included with a guess, quality over quantity was prioritised throughout.
-
