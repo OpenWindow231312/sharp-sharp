@@ -44,6 +44,9 @@ export default function FeedScreen() {
   const [savedCount, setSavedCount] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [xp, setXp] = useState(0);
+  const [photoBase64, setPhotoBase64] = useState<string | undefined>(
+    undefined,
+  );
   const [toast, setToast] = useState<{ id: number; amount: number } | null>(
     null,
   );
@@ -64,6 +67,7 @@ export default function FeedScreen() {
       setExcludedIds(new Set([...saved, ...learned]));
       setSavedCount(saved.length);
       setXp(data.xp ?? 0);
+      setPhotoBase64(data.photoBase64 ?? undefined);
     }
     loadInitial();
   }, [user]);
@@ -144,7 +148,7 @@ export default function FeedScreen() {
     <View style={styles.container}>
       <FirstTimeTutorial />
 
-      <Text variant="display" style={{ marginBottom: 4 }}>
+      <Text variant="display" style={{ marginBottom: 4, fontSize: 35 }}>
         Feed
       </Text>
 
@@ -161,8 +165,8 @@ export default function FeedScreen() {
         levelTitle={levelInfo.title}
         progress={levelInfo.progress}
         xp={xp}
-        savedCount={savedCount}
         avatarInitial={user?.email?.[0]?.toUpperCase() ?? "?"}
+        photoBase64={photoBase64}
       />
 
       <View style={styles.stack}>
