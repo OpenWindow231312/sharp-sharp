@@ -3,9 +3,9 @@ import { useAuth } from "@/context/AuthContext";
 import { flagTerm } from "@/services/adminTerms";
 import type { FlagReason, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
-import { BookOpen, Flag as FlagIcon, Quotes } from "phosphor-react-native";
-import { forwardRef, useImperativeHandle, useState } from "react";
-import { Alert, Dimensions, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { BookOpen, Quotes } from "phosphor-react-native";
+import { forwardRef, useId, useImperativeHandle, useMemo, useState } from "react";
+import { Alert, Dimensions, Modal, ScrollView, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
@@ -16,9 +16,8 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import Svg, { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
 import { Button } from "./Button";
-import { Chip } from "./Chip";
-import { PatternFill, type PatternVariant } from "./PatternFill";
 import { Text } from "./Text";
 
 const FLAG_REASONS: { reason: FlagReason; label: string }[] = [
@@ -31,25 +30,107 @@ const FLAG_REASONS: { reason: FlagReason; label: string }[] = [
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
 const CARD_HEIGHT = 400;
-const PATTERN_HEIGHT = 130;
-// Halved from full opacity so the motif reads as a calm texture rather
-// than a busy foreground element (constants/designTheme.ts has no pattern
-// opacity token to reuse).
-const PATTERN_OPACITY = 0.5;
 
-const PATTERN_VARIANTS: PatternVariant[] = [
-  "chevron",
-  "diamond",
-  "triangle",
-  "beadscatter",
+// The enamel-plaque accent (border, rivets, front language tag, back
+// border) is the same marigold across every colorway — only the plaque
+// background and its texture rotate.
+const ACCENT = theme.colors.marigold;
+const TEXTURE_COLOR = theme.colors.paper;
+const TEXTURE_OPACITY = 0.07;
+
+type TextureVariant = "hairline" | "triangleBand" | "diamondGrid" | "herringbone";
+
+type CardColorway = {
+  background: string;
+  texture: TextureVariant;
+};
+
+const CARD_COLORWAYS: CardColorway[] = [
+  { background: theme.colors.indigo, texture: "hairline" },
+  { background: theme.colors.highveld, texture: "triangleBand" },
+  { background: theme.colors.beadwork, texture: "diamondGrid" },
+  { background: theme.colors.charcoal, texture: "herringbone" },
 ];
 
-function patternForTerm(term: string): PatternVariant {
+// Stable per term id so a given card doesn't change color as the user
+// swipes back and forth or the feed list re-renders.
+function colorwayForTerm(id: string): CardColorway {
   let hash = 0;
-  for (let i = 0; i < term.length; i++) {
-    hash = (hash * 31 + term.charCodeAt(i)) >>> 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
   }
-  return PATTERN_VARIANTS[hash % PATTERN_VARIANTS.length];
+  return CARD_COLORWAYS[hash % CARD_COLORWAYS.length];
+}
+
+function CardTexture({ variant }: { variant: TextureVariant }) {
+  const id = `swipecard-texture-${variant}-${useId()}`;
+  return (
+    <Svg
+      width="100%"
+      height="100%"
+      style={[StyleSheet.absoluteFill, { opacity: TEXTURE_OPACITY }]}
+    >
+      <Defs>{renderTextureDef(variant, id)}</Defs>
+      <Rect x={0} y={0} width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+}
+
+function renderTextureDef(variant: TextureVariant, id: string) {
+  switch (variant) {
+    case "hairline":
+      // Fine diagonal repeating lines, brushed-metal style.
+      return (
+        <Pattern
+          id={id}
+          patternUnits="userSpaceOnUse"
+          width={6}
+          height={6}
+          patternTransform="rotate(45)"
+        >
+          <Line x1={3} y1={0} x2={3} y2={6} stroke={TEXTURE_COLOR} strokeWidth={0.6} />
+        </Pattern>
+      );
+    case "triangleBand":
+      return (
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={18} height={18}>
+          <Path
+            d="M0 18 L9 2 L18 18 Z"
+            stroke={TEXTURE_COLOR}
+            strokeWidth={0.75}
+            fill="none"
+          />
+        </Pattern>
+      );
+    case "diamondGrid":
+      return (
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={14} height={14}>
+          <Path
+            d="M7 0 L14 7 L7 14 L0 7 Z"
+            stroke={TEXTURE_COLOR}
+            strokeWidth={0.75}
+            fill="none"
+          />
+        </Pattern>
+      );
+    case "herringbone":
+      return (
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={16} height={8}>
+          <Path
+            d="M0 8 L4 0 L8 8"
+            stroke={TEXTURE_COLOR}
+            strokeWidth={0.6}
+            fill="none"
+          />
+          <Path
+            d="M8 8 L12 0 L16 8"
+            stroke={TEXTURE_COLOR}
+            strokeWidth={0.6}
+            fill="none"
+          />
+        </Pattern>
+      );
+  }
 }
 
 type SwipeCardProps = {
@@ -59,6 +140,7 @@ type SwipeCardProps = {
 
 export type SwipeCardHandle = {
   flip: () => void;
+  openReportModal: () => void;
 };
 
 export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
@@ -70,7 +152,6 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
     const [reportModalVisible, setReportModalVisible] = useState(false);
     const [isFlagging, setIsFlagging] = useState(false);
-    const [isFlipped, setIsFlipped] = useState(false);
 
     async function submitFlag(reason: FlagReason) {
       if (!user || isFlagging) return;
@@ -97,11 +178,11 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
     function toggleFlip() {
       flip.value = withTiming(flip.value === 0 ? 180 : 0, { duration: 450 });
-      setIsFlipped((prev) => !prev);
     }
 
     useImperativeHandle(ref, () => ({
       flip: toggleFlip,
+      openReportModal: () => setReportModalVisible(true),
     }));
 
     const pan = Gesture.Pan()
@@ -174,7 +255,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
       ),
     }));
 
-    const patternVariant = patternForTerm(term.term);
+    const colorway = useMemo(() => colorwayForTerm(term.id), [term.id]);
 
     return (
       <>
@@ -190,17 +271,27 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
           {/* Front face */}
           <Animated.View style={[styles.face, frontFaceStyle]}>
-            <View style={styles.cardShell}>
-              <PatternFill
-                variant={patternVariant}
-                style={styles.patternZone}
-                opacity={PATTERN_OPACITY}
-              />
-              <View style={styles.termZone}>
-                <View style={styles.langPillWrap}>
-                  <Chip label={term.language} selected />
+            <View style={[styles.cardShell, { backgroundColor: colorway.background }]}>
+              <CardTexture variant={colorway.texture} />
+
+              <View style={[styles.rivet, styles.rivetTL]} />
+              <View style={[styles.rivet, styles.rivetTR]} />
+              <View style={[styles.rivet, styles.rivetBL]} />
+              <View style={[styles.rivet, styles.rivetBR]} />
+
+              <View style={styles.plaqueContent}>
+                <Text style={styles.langTag}>{term.language.toUpperCase()}</Text>
+
+                <View style={styles.termCenterZone}>
+                  <Text style={[styles.termText, styles.termTextHighlight]}>
+                    {term.term}
+                  </Text>
+                  <Text style={[styles.termText, styles.termTextMain]}>
+                    {term.term}
+                  </Text>
                 </View>
-                <Text style={styles.termText}>{term.term}</Text>
+
+                <Text style={styles.flipHint}>Tap to flip</Text>
               </View>
             </View>
           </Animated.View>
@@ -209,11 +300,18 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
           <Animated.View
             style={[styles.face, styles.backFacePosition, backFaceStyle]}
           >
-            <View style={styles.cardShell}>
+            <View style={[styles.cardShell, styles.backCardShell]}>
               <ScrollView
                 contentContainerStyle={styles.backContent}
                 showsVerticalScrollIndicator={false}
               >
+                <View style={styles.backHeaderRow}>
+                  <Text style={styles.backTermName}>{term.term}</Text>
+                  <Text style={styles.backLangTag}>
+                    {term.language.toUpperCase()}
+                  </Text>
+                </View>
+
                 <View style={styles.subheadingRow}>
                   <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
                   <Text variant="muted" style={styles.subheadingText}>
@@ -264,16 +362,6 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
           </Animated.View>
         </Animated.View>
       </GestureDetector>
-
-      {!isFlipped ? (
-        <Pressable
-          onPress={() => setReportModalVisible(true)}
-          hitSlop={10}
-          style={styles.flagButton}
-        >
-          <FlagIcon size={18} weight="bold" color="#FFFFFF" />
-        </Pressable>
-      ) : null}
       </View>
 
       <Modal
@@ -315,11 +403,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 );
 
 const styles = StyleSheet.create({
-  // Establishes the card's actual position on screen. Split out from
-  // `wrapper` below so the flag button can be a sibling of the
-  // GestureDetector (not nested inside it) while still sharing the same
-  // coordinate space — nesting it inside the gesture-detected subtree was
-  // why tapping it triggered the card flip instead.
+  // Establishes the card's actual position on screen.
   cardPositioner: {
     position: "absolute",
     left: theme.spacing.lg,
@@ -341,40 +425,88 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     borderRadius: theme.radius.lg,
     overflow: "hidden",
-    backgroundColor: theme.colors.card,
+    borderWidth: 3,
+    borderColor: ACCENT,
     ...theme.shadow.card,
   },
-  patternZone: {
-    height: PATTERN_HEIGHT,
+  backCardShell: {
+    backgroundColor: theme.colors.card,
   },
-  termZone: {
+  rivet: {
+    position: "absolute",
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
+    backgroundColor: ACCENT,
+    borderWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.55)",
+    borderLeftColor: "rgba(255,255,255,0.55)",
+    borderBottomColor: "rgba(0,0,0,0.3)",
+    borderRightColor: "rgba(0,0,0,0.3)",
+  },
+  rivetTL: { top: 10, left: 10 },
+  rivetTR: { top: 10, right: 10 },
+  rivetBL: { bottom: 10, left: 10 },
+  rivetBR: { bottom: 10, right: 10 },
+  plaqueContent: {
     flex: 1,
-    backgroundColor: theme.colors.indigo,
+    alignItems: "center",
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  langTag: {
+    fontFamily: theme.fonts.mono,
+    fontSize: 12,
+    letterSpacing: 2,
+    color: ACCENT,
+  },
+  termCenterZone: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    padding: theme.spacing.lg,
-  },
-  langPillWrap: {
-    position: "absolute",
-    top: theme.spacing.md,
-    left: theme.spacing.md,
-    zIndex: 2,
-  },
-  flagButton: {
-    // top reproduces where this sat before, when it was positioned
-    // relative to termZone (which starts right after the pattern strip)
-    // rather than relative to the whole card as it is now.
-    position: "absolute",
-    top: PATTERN_HEIGHT + theme.spacing.md,
-    right: theme.spacing.md,
-    zIndex: 10,
-    padding: 6,
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 34,
-    color: "#FFFFFF",
     textAlign: "center",
+  },
+  termTextHighlight: {
+    position: "absolute",
+    color: "rgba(255,255,255,0.35)",
+    transform: [{ translateX: -1 }, { translateY: -1 }],
+  },
+  termTextMain: {
+    color: theme.colors.paper,
+    textShadowColor: "rgba(0,0,0,0.3)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 0,
+  },
+  flipHint: {
+    fontFamily: theme.fonts.mono,
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    color: theme.colors.paper,
+    opacity: 0.45,
+  },
+  backHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: theme.spacing.sm,
+  },
+  backTermName: {
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 20,
+    color: theme.colors.text,
+    flexShrink: 1,
+  },
+  backLangTag: {
+    fontFamily: theme.fonts.mono,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    color: ACCENT,
+    marginLeft: theme.spacing.sm,
   },
   backContent: {
     padding: theme.spacing.lg,

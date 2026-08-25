@@ -182,8 +182,8 @@ export default function FeedScreen() {
       {showControls ? (
         <FeedControls
           onSkip={() => handleSwipe("left")}
-          onFlip={() => cardRef.current?.flip()}
           onSave={() => handleSwipe("right")}
+          onFlag={() => cardRef.current?.openReportModal()}
         />
       ) : null}
     </View>

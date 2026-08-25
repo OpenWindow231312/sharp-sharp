@@ -10,6 +10,7 @@ export const theme = {
     protea: '#FF5F45',
     highveld: '#1FA45C',
     beadwork: '#E63888',
+    charcoal: '#3A322C',
     paper: '#FFF8EC',
     paperAlt: '#FBEFD6',
     card: '#FFFFFF',

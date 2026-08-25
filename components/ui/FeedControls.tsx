@@ -1,14 +1,14 @@
 import { theme } from "@/constants/designTheme";
-import { ArrowCounterClockwise, BookmarkSimple, X } from "phosphor-react-native";
+import { BookmarkSimple, Flag, X } from "phosphor-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 type FeedControlsProps = {
   onSkip: () => void;
-  onFlip: () => void;
   onSave: () => void;
+  onFlag: () => void;
 };
 
-export function FeedControls({ onSkip, onFlip, onSave }: FeedControlsProps) {
+export function FeedControls({ onSkip, onSave, onFlag }: FeedControlsProps) {
   return (
     <View style={styles.row}>
       <Pressable
@@ -22,16 +22,6 @@ export function FeedControls({ onSkip, onFlip, onSave }: FeedControlsProps) {
         <X size={20} weight="bold" color={theme.colors.protea} />
       </Pressable>
       <Pressable
-        onPress={onFlip}
-        style={({ pressed }) => [
-          styles.circle,
-          styles.flipCircle,
-          pressed && styles.pressed,
-        ]}
-      >
-        <ArrowCounterClockwise size={22} weight="bold" color={theme.colors.ink} />
-      </Pressable>
-      <Pressable
         onPress={onSave}
         style={({ pressed }) => [
           styles.circle,
@@ -40,6 +30,16 @@ export function FeedControls({ onSkip, onFlip, onSave }: FeedControlsProps) {
         ]}
       >
         <BookmarkSimple size={20} weight="bold" color={theme.colors.highveld} />
+      </Pressable>
+      <Pressable
+        onPress={onFlag}
+        style={({ pressed }) => [
+          styles.circle,
+          styles.flagCircle,
+          pressed && styles.pressed,
+        ]}
+      >
+        <Flag size={20} weight="bold" color={theme.colors.marigold} />
       </Pressable>
     </View>
   );
@@ -69,11 +69,9 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     borderColor: theme.colors.highveld,
   },
-  flipCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: theme.colors.marigold,
+  flagCircle: {
+    borderWidth: 2.5,
+    borderColor: theme.colors.marigold,
   },
   pressed: {
     opacity: 0.8,
