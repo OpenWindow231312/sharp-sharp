@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FeedControls } from "@/components/ui/FeedControls";
 import { FeedHeader } from "@/components/ui/FeedHeader";
@@ -24,7 +25,7 @@ import {
   query,
 } from "firebase/firestore";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];
@@ -139,6 +140,18 @@ export default function FeedScreen() {
     <View style={styles.container}>
       <FirstTimeTutorial />
 
+      <Text variant="display" style={{ marginBottom: 4 }}>
+        Feed
+      </Text>
+
+      <Button
+        label="Quiz"
+        variant="secondary"
+        size="compact"
+        onPress={() => Alert.alert("Coming soon", "Quizzes coming soon!")}
+        style={styles.quizButton}
+      />
+
       <FeedHeader
         levelTitle={levelInfo.title}
         progress={levelInfo.progress}
@@ -211,6 +224,10 @@ const styles = StyleSheet.create({
   stack: {
     flex: 1,
     justifyContent: "center",
+  },
+  quizButton: {
+    alignSelf: "center",
+    marginBottom: theme.spacing.sm,
   },
   peekWrapper: {
     position: "absolute",
