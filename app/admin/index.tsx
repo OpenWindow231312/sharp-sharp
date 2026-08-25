@@ -38,9 +38,9 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   View,
 } from "react-native";
+import { styles } from "./index.styles";
 
 type Tab = "queue" | "allTerms";
 
@@ -125,7 +125,8 @@ export default function AdminDashboardScreen() {
     if (!lastDoc || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const { terms: loaded, lastDoc: last } = await getAllTermsPaginated(lastDoc);
+      const { terms: loaded, lastDoc: last } =
+        await getAllTermsPaginated(lastDoc);
       setTerms((prev) => [...prev, ...loaded]);
       setLastDoc(last);
       setHasMore(loaded.length > 0);
@@ -195,7 +196,10 @@ export default function AdminDashboardScreen() {
   }
 
   const visibleTerms = terms.filter((term) => {
-    if (searchText.trim() && !term.term.toLowerCase().includes(searchText.trim().toLowerCase())) {
+    if (
+      searchText.trim() &&
+      !term.term.toLowerCase().includes(searchText.trim().toLowerCase())
+    ) {
       return false;
     }
     if (languageFilter && term.language !== languageFilter) return false;
@@ -214,10 +218,16 @@ export default function AdminDashboardScreen() {
     return (
       <View style={[styles.container, styles.centered]}>
         <Card style={{ alignItems: "center", padding: 32 }}>
-          <Text variant="heading" style={{ marginBottom: 8, textAlign: "center" }}>
+          <Text
+            variant="heading"
+            style={{ marginBottom: 8, textAlign: "center" }}
+          >
             You don&apos;t have access to this page
           </Text>
-          <Text variant="muted" style={{ textAlign: "center", marginBottom: 20 }}>
+          <Text
+            variant="muted"
+            style={{ textAlign: "center", marginBottom: 20 }}
+          >
             This screen is only for Sharp Sharp admins.
           </Text>
           <Button
@@ -233,7 +243,11 @@ export default function AdminDashboardScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={12}>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+          hitSlop={12}
+        >
           <CaretLeft size={22} color={theme.colors.ink} />
         </Pressable>
         <Text variant="heading" style={{ marginLeft: 4 }}>
@@ -244,13 +258,18 @@ export default function AdminDashboardScreen() {
       <View style={styles.tabRow}>
         <Pressable
           onPress={() => setActiveTab("queue")}
-          style={[styles.tabButton, activeTab === "queue" && styles.tabButtonActive]}
+          style={[
+            styles.tabButton,
+            activeTab === "queue" && styles.tabButtonActive,
+          ]}
         >
           <Text
             style={{
               fontFamily: theme.fonts.bodySemibold,
               color:
-                activeTab === "queue" ? theme.colors.primaryText : theme.colors.secondaryText,
+                activeTab === "queue"
+                  ? theme.colors.primaryText
+                  : theme.colors.secondaryText,
             }}
           >
             Flagged Queue{flags.length > 0 ? ` (${flags.length})` : ""}
@@ -258,13 +277,18 @@ export default function AdminDashboardScreen() {
         </Pressable>
         <Pressable
           onPress={() => setActiveTab("allTerms")}
-          style={[styles.tabButton, activeTab === "allTerms" && styles.tabButtonActive]}
+          style={[
+            styles.tabButton,
+            activeTab === "allTerms" && styles.tabButtonActive,
+          ]}
         >
           <Text
             style={{
               fontFamily: theme.fonts.bodySemibold,
               color:
-                activeTab === "allTerms" ? theme.colors.primaryText : theme.colors.secondaryText,
+                activeTab === "allTerms"
+                  ? theme.colors.primaryText
+                  : theme.colors.secondaryText,
             }}
           >
             All Terms
@@ -274,13 +298,19 @@ export default function AdminDashboardScreen() {
 
       {activeTab === "queue" ? (
         isLoadingFlags ? (
-          <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 40 }} />
+          <ActivityIndicator
+            size="large"
+            color={theme.colors.primary}
+            style={{ marginTop: 40 }}
+          />
         ) : flags.length === 0 ? (
           <Card style={styles.emptyCard}>
             <Text variant="heading" style={{ marginBottom: 8 }}>
               Nothing flagged
             </Text>
-            <Text variant="muted">Flagged terms from the Feed will show up here.</Text>
+            <Text variant="muted">
+              Flagged terms from the Feed will show up here.
+            </Text>
           </Card>
         ) : (
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -293,9 +323,15 @@ export default function AdminDashboardScreen() {
                       <Text variant="muted" style={{ marginBottom: 2 }}>
                         {FLAG_REASON_LABEL[flag.reason]}
                       </Text>
-                      <Text variant="muted">Reported by {flag.reporterName}</Text>
+                      <Text variant="muted">
+                        Reported by {flag.reporterName}
+                      </Text>
                     </View>
-                    <CaretRight size={18} weight="bold" color={theme.colors.textMuted} />
+                    <CaretRight
+                      size={18}
+                      weight="bold"
+                      color={theme.colors.textMuted}
+                    />
                   </View>
                 </Card>
               </Pressable>
@@ -320,7 +356,11 @@ export default function AdminDashboardScreen() {
           />
 
           {isLoadingTerms ? (
-            <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 24 }} />
+            <ActivityIndicator
+              size="large"
+              color={theme.colors.primary}
+              style={{ marginTop: 24 }}
+            />
           ) : visibleTerms.length === 0 ? (
             <Card style={styles.emptyCard}>
               <Text variant="heading" style={{ marginBottom: 8 }}>
@@ -339,9 +379,17 @@ export default function AdminDashboardScreen() {
                     {term.term}
                   </Text>
                   {term.flagCount && term.flagCount > 0 ? (
-                    <FlagIcon size={16} weight="fill" color={theme.colors.protea} />
+                    <FlagIcon
+                      size={16}
+                      weight="fill"
+                      color={theme.colors.protea}
+                    />
                   ) : null}
-                  <CaretRight size={18} weight="bold" color={theme.colors.textMuted} />
+                  <CaretRight
+                    size={18}
+                    weight="bold"
+                    color={theme.colors.textMuted}
+                  />
                 </Pressable>
                 <Pressable
                   onPress={() => confirmDeleteTerm(term)}
@@ -391,9 +439,16 @@ export default function AdminDashboardScreen() {
                 style={styles.detailChip}
               />
 
-              <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
+              <ScrollView
+                style={styles.detailScroll}
+                showsVerticalScrollIndicator={false}
+              >
                 <View style={styles.subheadingRow}>
-                  <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
+                  <BookOpen
+                    size={13}
+                    weight="bold"
+                    color={theme.colors.inkSoft}
+                  />
                   <Text variant="muted" style={styles.subheadingText}>
                     Definition
                   </Text>
@@ -403,18 +458,30 @@ export default function AdminDashboardScreen() {
                 {detailTerm.examples && detailTerm.examples.length > 0 ? (
                   <>
                     <View style={styles.subheadingRow}>
-                      <Quotes size={13} weight="bold" color={theme.colors.inkSoft} />
+                      <Quotes
+                        size={13}
+                        weight="bold"
+                        color={theme.colors.inkSoft}
+                      />
                       <Text variant="muted" style={styles.subheadingText}>
                         In a sentence
                       </Text>
                     </View>
                     {detailTerm.examples.map((example, index) => (
-                      <View key={index} style={index > 0 ? styles.exampleBlockSpacing : undefined}>
+                      <View
+                        key={index}
+                        style={
+                          index > 0 ? styles.exampleBlockSpacing : undefined
+                        }
+                      >
                         <Text style={styles.exampleText}>
                           &quot;{example.sentence}&quot;
                         </Text>
                         {example.context ? (
-                          <Text variant="muted" style={styles.exampleContextText}>
+                          <Text
+                            variant="muted"
+                            style={styles.exampleContextText}
+                          >
                             {example.context}
                           </Text>
                         ) : null}
@@ -436,7 +503,11 @@ export default function AdminDashboardScreen() {
                   hitSlop={10}
                   style={styles.detailActionButton}
                 >
-                  <PencilSimple size={20} weight="bold" color={theme.colors.indigo} />
+                  <PencilSimple
+                    size={20}
+                    weight="bold"
+                    color={theme.colors.indigo}
+                  />
                 </Pressable>
                 <Pressable
                   onPress={() => {
@@ -483,21 +554,35 @@ export default function AdminDashboardScreen() {
                 />
               ) : null}
 
-              <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
+              <ScrollView
+                style={styles.detailScroll}
+                showsVerticalScrollIndicator={false}
+              >
                 {flagDetail.term ? (
                   <>
                     <View style={styles.subheadingRow}>
-                      <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
+                      <BookOpen
+                        size={13}
+                        weight="bold"
+                        color={theme.colors.inkSoft}
+                      />
                       <Text variant="muted" style={styles.subheadingText}>
                         Definition
                       </Text>
                     </View>
-                    <Text style={styles.detailMeaning}>{flagDetail.term.meaning}</Text>
+                    <Text style={styles.detailMeaning}>
+                      {flagDetail.term.meaning}
+                    </Text>
 
-                    {flagDetail.term.examples && flagDetail.term.examples.length > 0 ? (
+                    {flagDetail.term.examples &&
+                    flagDetail.term.examples.length > 0 ? (
                       <>
                         <View style={styles.subheadingRow}>
-                          <Quotes size={13} weight="bold" color={theme.colors.inkSoft} />
+                          <Quotes
+                            size={13}
+                            weight="bold"
+                            color={theme.colors.inkSoft}
+                          />
                           <Text variant="muted" style={styles.subheadingText}>
                             In a sentence
                           </Text>
@@ -505,13 +590,18 @@ export default function AdminDashboardScreen() {
                         {flagDetail.term.examples.map((example, index) => (
                           <View
                             key={index}
-                            style={index > 0 ? styles.exampleBlockSpacing : undefined}
+                            style={
+                              index > 0 ? styles.exampleBlockSpacing : undefined
+                            }
                           >
                             <Text style={styles.exampleText}>
                               &quot;{example.sentence}&quot;
                             </Text>
                             {example.context ? (
-                              <Text variant="muted" style={styles.exampleContextText}>
+                              <Text
+                                variant="muted"
+                                style={styles.exampleContextText}
+                              >
                                 {example.context}
                               </Text>
                             ) : null}
@@ -527,7 +617,11 @@ export default function AdminDashboardScreen() {
                 )}
 
                 <View style={styles.subheadingRow}>
-                  <FlagIcon size={13} weight="bold" color={theme.colors.inkSoft} />
+                  <FlagIcon
+                    size={13}
+                    weight="bold"
+                    color={theme.colors.inkSoft}
+                  />
                   <Text variant="muted" style={styles.subheadingText}>
                     Flag reason
                   </Text>
@@ -570,175 +664,3 @@ export default function AdminDashboardScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    paddingTop: 70,
-    backgroundColor: theme.colors.background,
-  },
-  centered: { justifyContent: "center", alignItems: "center" },
-  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  backButton: {
-    width: theme.tapTarget,
-    height: theme.tapTarget,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -12,
-  },
-  tabRow: {
-    flexDirection: "row",
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.pill,
-    padding: 4,
-    marginBottom: 20,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: theme.radius.pill,
-    alignItems: "center",
-  },
-  tabButtonActive: { backgroundColor: theme.colors.primary },
-  emptyCard: { alignItems: "center", padding: 32 },
-  flagCard: { marginBottom: 12 },
-  flagRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  flagRowMain: {
-    flex: 1,
-    marginRight: 12,
-  },
-  flagReporterText: {
-    marginTop: theme.spacing.sm,
-  },
-  flagDetailActionsRow: {
-    flexDirection: "row",
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  termText: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 20,
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
-  termRow: {
-    marginBottom: 10,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  termRowMain: {
-    flex: 1,
-    marginRight: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  termRowText: {
-    flexShrink: 1,
-    fontFamily: theme.fonts.bodyBold,
-    fontSize: 18,
-    color: theme.colors.text,
-  },
-  termRowDelete: {
-    padding: 4,
-  },
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(36,28,21,0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: theme.spacing.lg,
-  },
-  detailCard: {
-    width: "100%",
-    maxWidth: 320,
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
-    ...theme.shadow.card,
-  },
-  closeButton: {
-    position: "absolute",
-    top: theme.spacing.sm,
-    right: theme.spacing.sm,
-    width: theme.tapTarget,
-    height: theme.tapTarget,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 2,
-  },
-  detailTermText: {
-    fontFamily: theme.fonts.displaySemibold,
-    fontSize: theme.fontSize.display,
-    color: theme.colors.text,
-    marginTop: theme.spacing.md,
-    marginBottom: 4,
-    paddingRight: theme.tapTarget,
-  },
-  detailChip: {
-    alignSelf: "flex-start",
-    marginBottom: 12,
-  },
-  detailScroll: {
-    maxHeight: 280,
-  },
-  detailMeaning: {
-    fontFamily: theme.fonts.body,
-    fontSize: 17,
-    lineHeight: 24,
-    color: theme.colors.text,
-    marginBottom: 12,
-  },
-  subheadingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
-  },
-  subheadingText: {
-    fontSize: 11,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  exampleText: {
-    fontFamily: theme.fonts.body,
-    fontStyle: "italic",
-    fontSize: 15,
-    color: theme.colors.text,
-  },
-  exampleBlockSpacing: {
-    marginTop: theme.spacing.sm,
-  },
-  exampleContextText: {
-    fontSize: 13,
-    fontStyle: "italic",
-    marginTop: 2,
-  },
-  regionText: {
-    marginTop: theme.spacing.sm,
-  },
-  detailActionsRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: theme.spacing.md,
-    marginTop: theme.spacing.md,
-    paddingTop: theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  detailActionButton: {
-    width: theme.tapTarget,
-    height: theme.tapTarget,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

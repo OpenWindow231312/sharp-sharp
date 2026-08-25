@@ -5,9 +5,14 @@ import { theme } from "@/constants/designTheme";
 import { auth } from "@/services/firebase";
 import { getAuthErrorMessage } from "@/utils/authErrors";
 import { Link, useRouter } from "expo-router";
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Alert, Pressable, View } from "react-native";
+import { styles } from "./login.styles";
+
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -104,15 +109,3 @@ export default function LoginScreen() {
     </View>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    paddingTop: 100,
-    backgroundColor: theme.colors.background,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-});

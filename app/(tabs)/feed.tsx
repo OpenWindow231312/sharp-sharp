@@ -25,7 +25,8 @@ import {
   query,
 } from "firebase/firestore";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
+import { styles } from "./feed.styles";
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];
@@ -134,7 +135,10 @@ export default function FeedScreen() {
   // How many faint cards to hint at behind the top one — purely decorative,
   // doesn't need real term data, just enough to read as "a deck" rather
   // than "one card floating alone."
-  const peekCount = Math.min(2, Math.max(0, feedTerms.length - currentIndex - 1));
+  const peekCount = Math.min(
+    2,
+    Math.max(0, feedTerms.length - currentIndex - 1),
+  );
 
   return (
     <View style={styles.container}>
@@ -214,36 +218,3 @@ export default function FeedScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 70,
-    backgroundColor: theme.colors.background,
-  },
-  stack: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  quizButton: {
-    alignSelf: "center",
-    marginBottom: theme.spacing.sm,
-  },
-  peekWrapper: {
-    position: "absolute",
-    left: theme.spacing.lg,
-    right: theme.spacing.lg,
-  },
-  peekWrapperNear: {
-    top: 8,
-    transform: [{ scale: 0.96 }],
-    opacity: 0.6,
-  },
-  peekWrapperFar: {
-    top: 16,
-    transform: [{ scale: 0.92 }],
-    opacity: 0.32,
-  },
-  peekCard: { minHeight: 340 },
-  emptyCard: { alignItems: "center", padding: 32 },
-});
