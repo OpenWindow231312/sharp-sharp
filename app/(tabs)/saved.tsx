@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/Card";
-import { Chip } from "@/components/ui/Chip";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
@@ -10,7 +9,13 @@ import type { SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  View,
+} from "react-native";
 import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import { styles } from "@/styles/tabs/saved.styles";
 
@@ -46,6 +51,22 @@ export default function SavedScreen() {
     router.push({ pathname: "/learn", params: { startId: termId } });
   }
 
+  function confirmRemove(term: SlangTerm) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      "Remove from saved?",
+      `"${term.term}" will be removed from your dictionary.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => handleRemove(term.id),
+        },
+      ],
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text variant="display" style={{ marginBottom: 4 }}>
@@ -77,28 +98,12 @@ export default function SavedScreen() {
               exiting={FadeOut}
               layout={Layout.springify()}
             >
-              <Pressable onPress={() => handleOpen(term.id)}>
+              <Pressable
+                onPress={() => handleOpen(term.id)}
+                onLongPress={() => confirmRemove(term)}
+              >
                 <Card style={styles.termCard}>
-                  <View style={styles.cardTop}>
-                    <Chip label={term.language} selected={false} />
-                    <Pressable
-                      onPress={() => handleRemove(term.id)}
-                      hitSlop={10}
-                    >
-                      <Text
-                        style={{
-                          color: theme.colors.protea,
-                          fontFamily: theme.fonts.bodyBold,
-                        }}
-                      >
-                        Remove
-                      </Text>
-                    </Pressable>
-                  </View>
                   <Text style={styles.termText}>{term.term}</Text>
-                  <Text variant="muted" numberOfLines={2}>
-                    {term.meaning}
-                  </Text>
                 </Card>
               </Pressable>
             </Animated.View>
