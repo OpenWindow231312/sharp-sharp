@@ -82,11 +82,6 @@ Saved terms can be reviewed in a dedicated landscape flashcard mode, an intentio
 
 A moderation layer sits behind the scenes. Admin accounts can browse every term ever submitted across the app (searchable and filterable by language), and review a dedicated flagged queue where community reports can be inspected in full before being dismissed or deleted.
 
-<p align="center">
-  <img src="screenshots/admin-all-terms.png" width="260">
-  <img src="screenshots/admin-flagged-detail.png" width="260">
-</p>
-
 <p align="center"><img src="screenshots/profile-admin-overview.png" width="260"></p>
 
 ---
