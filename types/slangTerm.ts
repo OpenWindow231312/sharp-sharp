@@ -12,6 +12,11 @@ export type SlangTerm = {
   region?: string;
   submittedBy: string;
   submittedByName: string;
+  // Display-only override for the "Added by" credit, used exclusively by
+  // seeded demo content so each seeded term can show a distinct fake
+  // contributor name instead of one uniform submittedByName. Real user
+  // submissions through the Add wizard never set this.
+  authorDisplayName?: string;
   createdAt: any;
   flagCount?: number;
 };

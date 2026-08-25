@@ -386,7 +386,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                   </Text>
                 ) : null}
                 <Text variant="muted" style={styles.addedBy}>
-                  Added by {term.submittedByName}
+                  Added by {term.authorDisplayName ?? term.submittedByName}
                 </Text>
               </ScrollView>
             </View>

@@ -26,6 +26,15 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
+function shuffle<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export default function FeedScreen() {
   const { user } = useAuth();
   const [allTerms, setAllTerms] = useState<SlangTerm[]>([]);
@@ -73,7 +82,10 @@ export default function FeedScreen() {
         const terms = snapshot.docs.map(
           (d) => ({ id: d.id, ...d.data() }) as SlangTerm,
         );
-        setAllTerms(terms);
+        // Shuffled here, once per snapshot (not on every render), so the
+        // Feed reads as randomized per session instead of submission
+        // order, without reshuffling mid-swipe on unrelated re-renders.
+        setAllTerms(shuffle(terms));
       },
       (error) => {
         console.log("Feed listener error:", error.message);
