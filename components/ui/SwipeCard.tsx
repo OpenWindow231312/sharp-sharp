@@ -3,7 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { flagTerm } from "@/services/adminTerms";
 import type { FlagReason, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
-import { BookOpen, Quotes, X } from "phosphor-react-native";
+import { X } from "phosphor-react-native";
 import { forwardRef, useId, useImperativeHandle, useMemo, useState } from "react";
 import {
   Alert,
@@ -43,25 +43,66 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
 const CARD_HEIGHT = 400;
 
-// The enamel-plaque accent (border, rivets, front language tag, back
-// border) is the same marigold across every colorway — only the plaque
-// background and its texture rotate.
+// The enamel-plaque accent (front border, rivets, front language tag) is
+// the same marigold across every colorway. The back face instead borders
+// in that colorway's own base hue — see CARD_COLORWAYS.background below,
+// reused directly as the back border/term-small color.
 const ACCENT = theme.colors.marigold;
-const TEXTURE_COLOR = theme.colors.paper;
-const TEXTURE_OPACITY = 0.07;
 
-type TextureVariant = "hairline" | "triangleBand" | "diamondGrid" | "herringbone";
+type TextureVariant = "hairline" | "ndebele" | "diamond" | "herringbone";
 
 type CardColorway = {
   background: string;
   texture: TextureVariant;
+  // Exact per-colorway values lifted from the approved HTML reference's
+  // .term text-shadow (two offsets) and .rivet inset box-shadow (two
+  // edges) — RN has no multi-shadow or inset-shadow primitive, so these
+  // are reproduced via a duplicate offset text layer / per-edge border
+  // color respectively (see CardTermText and the rivet style below).
+  termShadowLight: string;
+  termShadowDark: string;
+  rivetLight: string;
+  rivetDark: string;
+  flipCueColor: string;
 };
 
 const CARD_COLORWAYS: CardColorway[] = [
-  { background: theme.colors.indigo, texture: "hairline" },
-  { background: theme.colors.highveld, texture: "triangleBand" },
-  { background: theme.colors.beadwork, texture: "diamondGrid" },
-  { background: theme.colors.charcoal, texture: "herringbone" },
+  {
+    background: theme.colors.indigo,
+    texture: "hairline",
+    termShadowLight: "rgba(255,255,255,0.2)",
+    termShadowDark: "rgba(0,0,0,0.45)",
+    rivetLight: "rgba(255,255,255,0.25)",
+    rivetDark: "rgba(0,0,0,0.3)",
+    flipCueColor: "rgba(255,248,236,0.55)",
+  },
+  {
+    background: theme.colors.highveld,
+    texture: "ndebele",
+    termShadowLight: "rgba(255,255,255,0.15)",
+    termShadowDark: "rgba(0,60,30,0.4)",
+    rivetLight: "rgba(255,255,255,0.25)",
+    rivetDark: "rgba(0,0,0,0.3)",
+    flipCueColor: "rgba(255,248,236,0.6)",
+  },
+  {
+    background: theme.colors.beadwork,
+    texture: "diamond",
+    termShadowLight: "rgba(255,255,255,0.18)",
+    termShadowDark: "rgba(80,10,40,0.4)",
+    rivetLight: "rgba(255,255,255,0.25)",
+    rivetDark: "rgba(0,0,0,0.25)",
+    flipCueColor: "rgba(255,248,236,0.6)",
+  },
+  {
+    background: theme.colors.charcoal,
+    texture: "herringbone",
+    termShadowLight: "rgba(255,255,255,0.12)",
+    termShadowDark: "rgba(0,0,0,0.55)",
+    rivetLight: "rgba(255,255,255,0.2)",
+    rivetDark: "rgba(0,0,0,0.4)",
+    flipCueColor: "rgba(255,248,236,0.45)",
+  },
 ];
 
 // Stable per term id so a given card doesn't change color as the user
@@ -74,16 +115,14 @@ function colorwayForTerm(id: string): CardColorway {
   return CARD_COLORWAYS[hash % CARD_COLORWAYS.length];
 }
 
+// Exact tile specs and opacities are copied from the approved HTML
+// reference's per-colorway CSS pattern definitions.
 function CardTexture({ variant }: { variant: TextureVariant }) {
   const id = `swipecard-texture-${variant}-${useId()}`;
   return (
-    <Svg
-      width="100%"
-      height="100%"
-      style={[StyleSheet.absoluteFill, { opacity: TEXTURE_OPACITY }]}
-    >
+    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>{renderTextureDef(variant, id)}</Defs>
-      <Rect x={0} y={0} width="100%" height="100%" fill={`url(#${id})`} />
+      <Rect width="100%" height="100%" fill={`url(#${id})`} />
     </Svg>
   );
 }
@@ -91,54 +130,57 @@ function CardTexture({ variant }: { variant: TextureVariant }) {
 function renderTextureDef(variant: TextureVariant, id: string) {
   switch (variant) {
     case "hairline":
-      // Fine diagonal repeating lines, brushed-metal style.
+      // repeating-linear-gradient(115deg, white 3.5% 0-1px, transparent
+      // 1-4px) — one diagonal hairline per 4px tile, rotated via
+      // patternTransform to reproduce the 115deg repeat angle.
       return (
         <Pattern
           id={id}
           patternUnits="userSpaceOnUse"
-          width={6}
-          height={6}
-          patternTransform="rotate(45)"
+          width={4}
+          height={4}
+          patternTransform="rotate(115)"
         >
-          <Line x1={3} y1={0} x2={3} y2={6} stroke={TEXTURE_COLOR} strokeWidth={0.6} />
+          <Line x1={0} y1={0} x2={0} y2={4} stroke="white" strokeOpacity={0.035} strokeWidth={1} />
         </Pattern>
       );
-    case "triangleBand":
+    case "ndebele":
       return (
-        <Pattern id={id} patternUnits="userSpaceOnUse" width={18} height={18}>
-          <Path
-            d="M0 18 L9 2 L18 18 Z"
-            stroke={TEXTURE_COLOR}
-            strokeWidth={0.75}
-            fill="none"
-          />
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={48} height={24}>
+          <Path d="M0 24 L12 0 L24 24 Z" fill="white" fillOpacity={0.07} />
+          <Path d="M24 24 L36 0 L48 24 Z" fill="white" fillOpacity={0.07} />
+          <Path d="M0 0 L12 24 L24 0 Z" fill="white" fillOpacity={0.045} />
+          <Path d="M24 0 L36 24 L48 0 Z" fill="white" fillOpacity={0.045} />
         </Pattern>
       );
-    case "diamondGrid":
+    case "diamond":
       return (
-        <Pattern id={id} patternUnits="userSpaceOnUse" width={14} height={14}>
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={30} height={30}>
           <Path
-            d="M7 0 L14 7 L7 14 L0 7 Z"
-            stroke={TEXTURE_COLOR}
-            strokeWidth={0.75}
+            d="M15 1 L29 15 L15 29 L1 15 Z"
             fill="none"
+            stroke="white"
+            strokeOpacity={0.08}
+            strokeWidth={1}
           />
         </Pattern>
       );
     case "herringbone":
       return (
-        <Pattern id={id} patternUnits="userSpaceOnUse" width={16} height={8}>
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={24} height={24}>
           <Path
-            d="M0 8 L4 0 L8 8"
-            stroke={TEXTURE_COLOR}
-            strokeWidth={0.6}
+            d="M0 12 L12 0 L24 12"
             fill="none"
+            stroke="white"
+            strokeOpacity={0.06}
+            strokeWidth={1.5}
           />
           <Path
-            d="M8 8 L12 0 L16 8"
-            stroke={TEXTURE_COLOR}
-            strokeWidth={0.6}
+            d="M0 24 L12 12 L24 24"
             fill="none"
+            stroke="white"
+            strokeOpacity={0.06}
+            strokeWidth={1.5}
           />
         </Pattern>
       );
@@ -302,27 +344,65 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
           {/* Front face */}
           <Animated.View style={[styles.face, frontFaceStyle]}>
-            <View style={[styles.cardShell, { backgroundColor: colorway.background }]}>
+            <View style={[styles.cardShell, styles.frontCardShell, { backgroundColor: colorway.background }]}>
               <CardTexture variant={colorway.texture} />
 
-              <View style={[styles.rivet, styles.rivetTL]} />
-              <View style={[styles.rivet, styles.rivetTR]} />
-              <View style={[styles.rivet, styles.rivetBL]} />
-              <View style={[styles.rivet, styles.rivetBR]} />
+              <View
+                style={[
+                  styles.rivet,
+                  styles.rivetTL,
+                  { borderTopColor: colorway.rivetLight, borderLeftColor: colorway.rivetLight, borderBottomColor: colorway.rivetDark, borderRightColor: colorway.rivetDark },
+                ]}
+              />
+              <View
+                style={[
+                  styles.rivet,
+                  styles.rivetTR,
+                  { borderTopColor: colorway.rivetLight, borderLeftColor: colorway.rivetLight, borderBottomColor: colorway.rivetDark, borderRightColor: colorway.rivetDark },
+                ]}
+              />
+              <View
+                style={[
+                  styles.rivet,
+                  styles.rivetBL,
+                  { borderTopColor: colorway.rivetLight, borderLeftColor: colorway.rivetLight, borderBottomColor: colorway.rivetDark, borderRightColor: colorway.rivetDark },
+                ]}
+              />
+              <View
+                style={[
+                  styles.rivet,
+                  styles.rivetBR,
+                  { borderTopColor: colorway.rivetLight, borderLeftColor: colorway.rivetLight, borderBottomColor: colorway.rivetDark, borderRightColor: colorway.rivetDark },
+                ]}
+              />
 
               <View style={styles.plaqueContent}>
                 <Text style={styles.langTag}>{term.language.toUpperCase()}</Text>
 
-                <View style={styles.termCenterZone}>
-                  <Text style={[styles.termText, styles.termTextHighlight]}>
+                <View style={styles.termWrap}>
+                  <Text
+                    style={[
+                      styles.termText,
+                      styles.termTextHighlight,
+                      { color: colorway.termShadowLight },
+                    ]}
+                  >
                     {term.term}
                   </Text>
-                  <Text style={[styles.termText, styles.termTextMain]}>
+                  <Text
+                    style={[
+                      styles.termText,
+                      styles.termTextMain,
+                      { textShadowColor: colorway.termShadowDark },
+                    ]}
+                  >
                     {term.term}
                   </Text>
                 </View>
 
-                <Text style={styles.flipHint}>Tap to flip</Text>
+                <Text style={[styles.flipHint, { color: colorway.flipCueColor }]}>
+                  Tap to flip
+                </Text>
               </View>
             </View>
           </Animated.View>
@@ -331,49 +411,35 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
           <Animated.View
             style={[styles.face, styles.backFacePosition, backFaceStyle]}
           >
-            <View style={[styles.cardShell, styles.backCardShell]}>
+            <View style={[styles.cardShell, styles.backCardShell, { borderColor: colorway.background }]}>
               <ScrollView
                 contentContainerStyle={styles.backContent}
                 showsVerticalScrollIndicator={false}
               >
-                <View style={styles.backHeaderRow}>
-                  <Text style={styles.backTermName}>{term.term}</Text>
-                  <Text style={styles.backLangTag}>
-                    {term.language.toUpperCase()}
+                <View style={styles.backTermRow}>
+                  <Text style={[styles.backTermSmall, { color: colorway.background }]}>
+                    {term.term}
                   </Text>
+                  <Text style={styles.backLangSmall}>{term.language}</Text>
                 </View>
+                <View style={styles.backDivider} />
 
-                <View style={styles.subheadingRow}>
-                  <BookOpen size={13} weight="bold" color={theme.colors.inkSoft} />
-                  <Text variant="muted" style={styles.subheadingText}>
-                    Definition
-                  </Text>
-                </View>
-                <Text style={styles.meaningText}>{term.meaning}</Text>
+                <Text style={styles.backSectionLabel}>Meaning</Text>
+                <Text style={styles.backMeaning}>{term.meaning}</Text>
 
                 {term.examples && term.examples.length > 0 ? (
                   <>
-                    <View style={styles.subheadingRow}>
-                      <Quotes size={13} weight="bold" color={theme.colors.inkSoft} />
-                      <Text variant="muted" style={styles.subheadingText}>
-                        In a sentence
-                      </Text>
-                    </View>
+                    <Text style={styles.backSectionLabel}>Example</Text>
                     {term.examples.map((example, index) => (
                       <View
                         key={index}
-                        style={[
-                          styles.exampleBlock,
-                          index > 0 && styles.exampleBlockSpacing,
-                        ]}
+                        style={index > 0 ? styles.backExampleSpacing : undefined}
                       >
-                        <Text style={styles.exampleText}>
-                          "{example.sentence}"
+                        <Text style={styles.backExample}>
+                          &quot;{example.sentence}&quot;
                         </Text>
                         {example.context ? (
-                          <Text variant="muted" style={styles.exampleContextText}>
-                            {example.context}
-                          </Text>
+                          <Text style={styles.backContext}>{example.context}</Text>
                         ) : null}
                       </View>
                     ))}
@@ -381,11 +447,9 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 ) : null}
 
                 {term.region ? (
-                  <Text variant="muted" style={styles.regionText}>
-                    {term.region}
-                  </Text>
+                  <Text style={styles.backContext}>{term.region}</Text>
                 ) : null}
-                <Text variant="muted" style={styles.addedBy}>
+                <Text style={styles.backContext}>
                   Added by {term.authorDisplayName ?? term.submittedByName}
                 </Text>
               </ScrollView>
@@ -471,11 +535,13 @@ const styles = StyleSheet.create({
   },
   cardShell: {
     height: CARD_HEIGHT,
-    borderRadius: theme.radius.lg,
+    borderRadius: 18,
     overflow: "hidden",
     borderWidth: 3,
-    borderColor: ACCENT,
     ...theme.shadow.card,
+  },
+  frontCardShell: {
+    borderColor: ACCENT,
   },
   backCardShell: {
     backgroundColor: theme.colors.card,
@@ -487,10 +553,6 @@ const styles = StyleSheet.create({
     borderRadius: 4.5,
     backgroundColor: ACCENT,
     borderWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.55)",
-    borderLeftColor: "rgba(255,255,255,0.55)",
-    borderBottomColor: "rgba(0,0,0,0.3)",
-    borderRightColor: "rgba(0,0,0,0.3)",
   },
   rivetTL: { top: 10, left: 10 },
   rivetTR: { top: 10, right: 10 },
@@ -499,108 +561,103 @@ const styles = StyleSheet.create({
   plaqueContent: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.lg,
+    justifyContent: "space-between",
+    paddingVertical: 24,
+    paddingHorizontal: 20,
   },
   langTag: {
     fontFamily: theme.fonts.mono,
-    fontSize: 12,
-    letterSpacing: 2,
+    fontSize: 10,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
     color: ACCENT,
+    alignSelf: "center",
   },
-  termCenterZone: {
-    flex: 1,
+  termWrap: {
     alignItems: "center",
     justifyContent: "center",
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 34,
+    fontSize: 42,
     textAlign: "center",
   },
   termTextHighlight: {
     position: "absolute",
-    color: "rgba(255,255,255,0.35)",
     transform: [{ translateX: -1 }, { translateY: -1 }],
   },
   termTextMain: {
     color: theme.colors.paper,
-    textShadowColor: "rgba(0,0,0,0.3)",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 0,
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 1,
   },
   flipHint: {
     fontFamily: theme.fonts.mono,
-    fontSize: 11,
-    letterSpacing: 1,
+    fontSize: 9,
+    letterSpacing: 0.9,
     textTransform: "uppercase",
-    color: theme.colors.paper,
-    opacity: 0.45,
+    textAlign: "center",
   },
-  backHeaderRow: {
+  backTermRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
     justifyContent: "space-between",
-    marginBottom: theme.spacing.sm,
+    marginBottom: 4,
   },
-  backTermName: {
+  backTermSmall: {
     fontFamily: theme.fonts.displayBold,
     fontSize: 20,
-    color: theme.colors.text,
     flexShrink: 1,
   },
-  backLangTag: {
+  backLangSmall: {
     fontFamily: theme.fonts.mono,
-    fontSize: 11,
-    letterSpacing: 1.5,
-    color: ACCENT,
+    fontSize: 9,
+    letterSpacing: 0.72,
+    textTransform: "uppercase",
+    color: theme.colors.textMuted,
     marginLeft: theme.spacing.sm,
   },
+  backDivider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    marginVertical: 10,
+  },
   backContent: {
-    padding: theme.spacing.lg,
+    paddingVertical: 22,
+    paddingHorizontal: 20,
     flexGrow: 1,
   },
-  subheadingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
-    marginTop: theme.spacing.sm,
-  },
-  subheadingText: {
-    fontSize: 11,
-    letterSpacing: 0.5,
+  backSectionLabel: {
+    fontFamily: theme.fonts.mono,
+    fontSize: 9,
+    letterSpacing: 0.9,
     textTransform: "uppercase",
+    color: theme.colors.textMuted,
+    marginBottom: 4,
   },
-  meaningText: {
+  backMeaning: {
     fontFamily: theme.fonts.body,
-    fontSize: 17,
-    lineHeight: 24,
+    fontSize: 13.5,
+    lineHeight: 19.6,
     color: theme.colors.text,
+    marginBottom: 14,
   },
-  exampleBlock: {},
-  exampleBlockSpacing: {
+  backExampleSpacing: {
     marginTop: theme.spacing.sm,
-    paddingTop: theme.spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
   },
-  exampleText: {
+  backExample: {
     fontFamily: theme.fonts.body,
     fontStyle: "italic",
-    fontSize: 15,
-    color: theme.colors.text,
-  },
-  exampleContextText: {
     fontSize: 13,
-    fontStyle: "italic",
-    marginTop: 2,
+    lineHeight: 18.2,
+    color: theme.colors.text,
+    marginBottom: 4,
   },
-  regionText: {
-    marginTop: theme.spacing.md,
-  },
-  addedBy: {
-    marginTop: theme.spacing.md,
+  backContext: {
+    fontFamily: theme.fonts.body,
+    fontSize: 11.5,
+    lineHeight: 15.5,
+    color: theme.colors.textMuted,
   },
   stamp: {
     position: "absolute",
