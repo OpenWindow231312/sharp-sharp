@@ -1,3 +1,5 @@
+// Deprecated: badges merged into constants/levels.ts. Kept for reference
+// only, not imported elsewhere.
 import type { PatternVariant } from "@/components/ui/PatternFill";
 import type { BadgeShape } from "@/components/ui/BadgeMedallion";
 
