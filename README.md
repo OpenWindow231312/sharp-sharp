@@ -46,7 +46,7 @@ These three attributes shape everything about how the app works:
 
 ## Demonstration video
 
-**[Watch the full walkthrough on Google Drive](https://drive.google.com/drive/folders/1rM9hthB09ExNsGo49vPFtPxBbVTAqaVC?usp=sharing)**
+**[Watch the full walkthrough on Google Drive, by clicking on this Google Drive Link](https://drive.google.com/drive/folders/1rM9hthB09ExNsGo49vPFtPxBbVTAqaVC?usp=sharing)**
 
 ---
 
@@ -176,6 +176,7 @@ EXPO_PUBLIC_FIREBASE_APP_ID=
 ```
 
 Fill these in with your own Firebase project's config values, found in the Firebase Console under Project Settings.
+To find a copy of the original .env file used for this project, please refer to the Google Drive Link.
 
 ### 3. Run the app
 
