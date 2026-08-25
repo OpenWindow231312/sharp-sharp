@@ -1,86 +1,150 @@
-# Sharp Sharp 🇿🇦
+# Sharp Sharp
 
 **Real slang. Real South Africa.**
 
-Sharp Sharp is a mobile app that teaches the real, _spoken_ slang, idioms, and everyday phrases of South Africa's local languages — the version people actually use, not the textbook one. Formal language learning teaches grammatically "correct" Zulu, Afrikaans, Xhosa, and others; real conversation is full of informal slang that varies by community and is rarely documented anywhere.
+Sharp Sharp is a mobile app that teaches the real, spoken slang, idioms, and everyday phrases of South Africa's local languages, the version people actually speak, not the textbook one. Users swipe through a live feed of slang terms submitted by other users, save the ones they want to learn, and contribute words of their own.
 
-Sharp Sharp turns learning this informal layer into a swipe-based, gamified experience: users swipe through a live-updating feed of slang terms submitted by other users, save the ones they want to learn, and contribute words of their own.
+Built for Interactive Development 300 at Open Window.
 
-Built for **Interactive Development 300** at Open Window, structured around three randomly-drawn inspiration cards:
+<p align="center">
+  <img src="https://img.shields.io/badge/Learn_Something-2A2E8F?style=for-the-badge&logoColor=white" alt="Learn Something">
+  <img src="https://img.shields.io/badge/Real--Time_Data-F5A623?style=for-the-badge&logoColor=white" alt="Real-Time Data">
+  <img src="https://img.shields.io/badge/Landscape_Support-E63888?style=for-the-badge&logoColor=white" alt="Landscape Support">
+</p>
 
-| Inspiration Card                        | How Sharp Sharp answers it                                                                                      |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Learn Something** (goal)              | Teaches real, spoken SA slang across multiple languages                                                         |
-| **Real-Time Data** (device interaction) | Live-updating term feed via Firestore `onSnapshot` — new submissions from other users appear without refreshing |
-| **Landscape Support** (constraint)      | Dedicated "Learn Mode" flashcard study screen is landscape-locked                                               |
+These three attributes shape everything about how the app works:
 
----
-
-## ✨ Features
-
-- **Authentication** — email/password sign-up and login via Firebase Auth, with persistent sessions (stays logged in between app opens)
-- **Onboarding** — first-time flow: pick the languages you're interested in, then your reason for learning
-- **Swipeable Feed** — live Firestore-backed deck of slang terms; swipe right to save (+5 XP), swipe left to skip, with haptic feedback on both
-- **Add a Term** — 5-step guided wizard for submitting your own slang term (word → language → meaning → example sentences → preview), rewarded with +20 XP and a celebration screen
-- **Saved Terms** — your personal dictionary of everything you've swiped right on
-- **Learn Mode** — landscape-locked flashcard study screen that quizzes you on your saved terms
-- **My Terms (Profile)** — full CRUD on your own submissions: view, edit, and delete any term you've added
-- **XP & Levelling** — a 5-tier rank system (Newbie → Sharp Sharp) driven by an XP economy tied to swiping and contributing
-- **Badges** — unlockable achievement medallions (four distinct shapes escalating by tier) tied to real usage stats — no extra data fields required
-- **Micro-interactions** — animated progress bars, XP toasts, swipe-card physics, wizard step transitions, and a celebration screen on term submission
+- **Learn Something** — the entire app is built around teaching real, community-sourced slang that doesn't exist in a textbook.
+- **Real-Time Data** — the term feed updates live via Firestore listeners as other users add and flag content; nothing is static.
+- **Landscape Support** — saved terms can be studied in a dedicated landscape flashcard mode, built specifically to use the phone sideways as a real interaction, not a fallback.
 
 ---
 
-## 📱 Screenshots
+## How it works
 
-> _TODO: add screenshots/mockups here before submission — the brief requires visual mockups or diagrams in the README. Recommended: one screenshot per major screen (Login, Onboarding, Feed, Add, Saved, Learn Mode, Profile), plus a simple user-flow diagram._
+### 1. Log in or sign up
+
+Email and password authentication with a persistent session, so you stay logged in between app launches. Forgot your password? There's a reset flow that emails you a secure link.
+
+<p align="center"><img src="screenshots/onboarding-03-sharpsharp.png" width="260"></p>
+
+### 2. Meet the app
+
+A short, character-driven onboarding walks new users through what "real" South African slang actually sounds like before they ever see the feed.
+
+<p align="center">
+  <img src="screenshots/onboarding-01-story.png" width="260">
+  <img src="screenshots/onboarding-02-story.png" width="260">
+</p>
+
+### 3. Swipe through the feed
+
+Terms appear one at a time as enamel-plaque style cards, colour-coded per term. Swipe right to save a term (and earn XP), swipe left to skip it. Tap a card to flip it and see the full meaning, an example sentence, and who added it.
+
+<p align="center">
+  <img src="screenshots/feed-01-front.png" width="260">
+  <img src="screenshots/feed-02-flipped.png" width="260">
+</p>
+
+If a term looks wrong, offensive, or inaccurate, flag it directly from the feed with a reason and an optional comment. It's reviewed by an admin before anything is removed.
+
+<p align="center"><img src="screenshots/feed-03-report-modal.png" width="260"></p>
+
+### 4. Add your own words
+
+Know a term that's not in the app yet? Add it in three quick steps: the word itself, what it means in plain language, and which language or dialect it belongs to.
+
+<p align="center">
+  <img src="screenshots/add-01-word.png" width="260">
+  <img src="screenshots/add-02-meaning.png" width="260">
+  <img src="screenshots/add-03-language.png" width="260">
+</p>
+
+### 5. Earn XP and level up
+
+Every saved term and every contribution earns XP. As XP builds up, you climb a six-tier ladder named after real South African slang itself: **Eish! → Ubuntu → Lekker → Ayoba → Local Legend → Sharp Sharp**. Your profile shows exactly how much XP each tier needs and what you've unlocked so far.
+
+<p align="center">
+  <img src="screenshots/profile-regular-levels.png" width="260">
+  <img src="screenshots/profile-regular-myterms.png" width="260">
+</p>
+
+### 6. Study in Dictionary Mode
+
+Saved terms can be reviewed in a dedicated landscape flashcard mode, an intentional use of Landscape Support: turning the phone sideways switches into a focused, distraction-free study session with larger cards, swipeable navigation, and full definitions on demand.
+
+<p align="center">
+  <img src="screenshots/dictionary-mode-01-ubuntu.png" width="420">
+  <img src="screenshots/dictionary-mode-02-agman.png" width="420">
+</p>
+
+### 7. Admin controls
+
+A moderation layer sits behind the scenes. Admin accounts can browse every term ever submitted across the app (searchable and filterable by language), and review a dedicated flagged queue where community reports can be inspected in full before being dismissed or deleted.
+
+<p align="center">
+  <img src="screenshots/admin-all-terms.png" width="260">
+  <img src="screenshots/admin-flagged-detail.png" width="260">
+</p>
+
+<p align="center"><img src="screenshots/profile-admin-overview.png" width="260"></p>
 
 ---
 
-## 🛠 Tech Stack
+## Future iterations
 
-- **Framework:** [React Native](https://reactnative.dev/) (TypeScript) via [Expo](https://expo.dev) (SDK 54), [Expo Router](https://docs.expo.dev/router/introduction/) for file-based navigation
-- **Backend:** [Firebase](https://firebase.google.com/) — Authentication (email/password), Firestore (real-time data), with Firebase Storage available if needed
-- **Key libraries:**
-  - `react-native-deck-swiper` — swipeable card feed
-  - `expo-haptics` — tactile feedback on swipe/save actions
-  - `expo-screen-orientation` — landscape lock for Learn Mode
-  - `react-native-reanimated` + `react-native-svg` — animations and badge medallion graphics
-  - `phosphor-react-native` — icon set
-  - `@react-native-async-storage/async-storage` — persists Firebase Auth sessions between app launches
-  - `@expo-google-fonts/*` (Baloo 2, IBM Plex Mono, Plus Jakarta Sans) — custom type system
-- **Design system:** a lightweight custom theme (`constants/designTheme.ts`) with reusable `Button`, `Text`, `Card`, `Input`, and `Chip` components — deliberately wireframe-styled while the functional core is built out; visual branding is layered in afterward
-- **Version control:** Git via GitHub Desktop
+A few features are designed but not yet built, and are honestly flagged here rather than glossed over:
+
+- **Quiz Center** — a level-gated quiz system where certain quizzes unlock as you climb the XP ladder, testing recall of saved terms rather than just recognition.
+- **Google Sign-In** — the button exists on the login screen but is disabled pending a development build (Expo Go doesn't support native Google auth).
+- **Profile picture via Firebase Storage** — currently profile photos are stored as compressed base64 strings directly in Firestore to avoid requiring a paid Firebase billing plan; migrating to Storage is a possible future improvement.
+- **Community guidelines page** — a short explainer on what gets a term flagged, linked from the report modal.
 
 ---
 
-## 🚀 Getting Started
+## Tech stack
+
+| Layer             | Technology                                                                                                           |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Frontend          | React Native (TypeScript) via Expo, Expo Router for file-based navigation                                            |
+| Backend           | Firebase Authentication (email/password), Firestore (real-time via `onSnapshot`)                                     |
+| State & animation | React Context, `react-native-reanimated`                                                                             |
+| UI                | Custom design system (`constants/designTheme.ts`), Phosphor Icons                                                    |
+| Key libraries     | `react-native-deck-swiper`, `expo-haptics`, `expo-screen-orientation`, `expo-image-picker`, `expo-image-manipulator` |
+| Version control   | Git via GitHub Desktop                                                                                               |
+
+---
+
+## Getting started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (LTS recommended)
-- [Expo Go](https://expo.dev/go) app on your iOS or Android device, **or** an iOS Simulator / Android Emulator set up locally
-- A [Firebase](https://firebase.google.com/) project (or use the local emulator — see below)
+- Node.js and npm
+- Expo Go installed on a physical iOS or Android device
+- A Firebase project (or use the local emulator suite for development)
 
 ### 1. Clone and install
 
 ```bash
-git clone <your-repo-url>
+git clone <this-repo-url>
 cd sharp-sharp
 npm install
 ```
 
 ### 2. Set up environment variables
 
-Create a `.env` file in the project root with your Firebase project's config values:
-EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+Create a `.env` file in the project root with the following variable names. **Never commit this file** — it's already listed in `.gitignore`.
 
-You'll find these values in your Firebase project settings under **Project settings → General → Your apps**.
+```
+EXPO_PUBLIC_FIREBASE_API_KEY=
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+EXPO_PUBLIC_FIREBASE_APP_ID=
+```
+
+Fill these in with your own Firebase project's config values, found in the Firebase Console under Project Settings.
 
 ### 3. Run the app
 
@@ -88,58 +152,40 @@ You'll find these values in your Firebase project settings under **Project setti
 npx expo start
 ```
 
-Scan the QR code with **Expo Go** (physical device) or press `i` / `a` in the terminal to launch the iOS Simulator / Android Emulator.
+Scan the QR code with Expo Go on your physical device. This project is developed and tested exclusively on physical devices via Expo Go, not the iOS Simulator or a web browser.
 
-### Optional: run against the local Firebase Emulator instead of the cloud project
+---
 
-For offline development without touching real production data:
+## Test credentials
 
-```bash
-firebase emulators:start
+These accounts exist in the seeded dataset for testing and grading purposes only.
+
+| Role         | Email                   | Password                                |
+| ------------ | ----------------------- | --------------------------------------- |
+| Regular user | `seed@sharpsharp.local` | `seed@sharpsharp`                       |
+| Admin        | `admin@mail.com`        | _(provided separately to the lecturer)_ |
+
+The admin account has an `isAdmin: true` flag on its Firestore user document, which unlocks the Control Center from the Profile screen.
+
+---
+
+## Project structure
+
+```
+app/                  Screens (Expo Router file-based routing)
+  (tabs)/             Feed, Add, Saved, Profile
+  admin/              Control Center (admin-only)
+  auth/                Login, Signup
+  onboarding/         Onboarding flow
+components/ui/        Shared UI components (Button, Card, Text, StudyCard, etc.)
+constants/            Design tokens, levels, badges, language list
+services/             Firebase read/write logic (slang terms, XP, saved terms)
+styles/               Screen-specific stylesheets
+types/                TypeScript type definitions
 ```
 
-Leave that running in its own terminal tab, then run `npx expo start` in a separate tab as normal. The app auto-detects and connects to the emulator when running in development mode — no config changes needed. Note: emulator data is **not persisted** between restarts unless exported manually.
-
 ---
 
-## 📂 Project Structure (high level)
+## Data sources
 
-app/
-auth/ → login, signup
-onboarding/ → language picker, motivation step
-(tabs)/ → Feed, Add, Saved, Profile (bottom tab navigation)
-learn.tsx → landscape-locked flashcard study mode
-edit-term.tsx → edit screen for user-submitted terms
-constants/ → design theme, XP levels, badge definitions, mock data
-components/ui/ → reusable design system components
-context/ → Auth and Onboarding React context providers
-services/ → Firebase config + Firestore read/write helpers
-scripts/ → one-off utilities (e.g. Firestore seed script)
-
----
-
-## ⚠️ Known Limitations / Roadmap
-
-Being upfront about what's still in progress:
-
-- **Dashboard Summary screen** — not yet implemented as a dedicated screen (currently, level/badge info lives inside the Profile tab)
-- **Android testing** — primarily tested on a physical iPhone via Expo Go so far; Android-specific testing in progress
-- **Google Sign-In** — button is present on the login screen but currently disabled ("coming soon")
-- **App icon & splash screen** — currently using Expo's default placeholders; custom branding is planned
-- **Firestore security rules** — current rules are permissive for development (`allow read, write: if request.auth != null`); tightened, production-ready rules are planned before any public launch
-- **Language coverage** — Zulu, Afrikaans, and Xhosa are the most reliably sourced languages in the seed data. Sepedi, Setswana, Sesotho, Xitsonga, siSwati, and Tshivenda terms were intentionally excluded from the seed set where accuracy couldn't be verified, rather than risk teaching incorrect slang
-- **Streak tracking** — not yet implemented (would require an additional `lastActiveDate` field on the user profile)
-
----
-
-## 👥 Contributions
-
-Anika de Beer
-
----
-
-## 🙏 Acknowledgements
-
-- Open Window, Lecturer Tsungai Katsuro
-- [Expo](https://expo.dev) and [Firebase](https://firebase.google.com) documentation
-- Everyone who contributed real, spoken slang terms to the seed data
+Seed terms were sourced from real, commonly used South African slang across eight languages and dialects. Where a term's accuracy or community origin couldn't be confidently verified, it was excluded rather than included with a guess, quality over quantity was prioritised throughout.
