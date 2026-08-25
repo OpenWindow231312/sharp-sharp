@@ -24,11 +24,11 @@ export type LevelDefinition = {
 // each level shows on the Levels list is identical to the old badge art.
 export const LEVELS: LevelDefinition[] = [
   { title: "Eish!", threshold: 0, pattern: "diamond", shape: "circle" },
-  { title: "Ubuntu", threshold: 50, pattern: "diamond", shape: "hexagon" },
-  { title: "Lekker", threshold: 150, pattern: "beadscatter", shape: "circle" },
-  { title: "Ayoba", threshold: 300, pattern: "beadscatter", shape: "hexagon" },
-  { title: "Local Legend", threshold: 400, pattern: "triangle", shape: "shield" },
-  { title: "Sharp Sharp", threshold: 500, pattern: "chevron", shape: "burst" },
+  { title: "Ubuntu", threshold: 100, pattern: "diamond", shape: "hexagon" },
+  { title: "Lekker", threshold: 250, pattern: "beadscatter", shape: "circle" },
+  { title: "Ayoba", threshold: 500, pattern: "beadscatter", shape: "hexagon" },
+  { title: "Local Legend", threshold: 900, pattern: "triangle", shape: "shield" },
+  { title: "Sharp Sharp", threshold: 1500, pattern: "chevron", shape: "burst" },
 ];
 
 export function getLevelInfo(xp: number): LevelInfo {
