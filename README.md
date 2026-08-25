@@ -1,6 +1,16 @@
-# Sharp Sharp
+<p align="center">
+  <img src="logo.svg" width="360" alt="Sharp Sharp logo">
+</p>
 
-**Real slang. Real South Africa.**
+<h1 align="center">Sharp Sharp</h1>
+<p align="center"><b>Real slang. Real South Africa.</b></p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React_Native-2A2E8F?style=flat-square&logoColor=white" alt="React Native">
+  <img src="https://img.shields.io/badge/Expo-F5A623?style=flat-square&logoColor=white" alt="Expo">
+  <img src="https://img.shields.io/badge/Firebase-E63888?style=flat-square&logoColor=white" alt="Firebase">
+  <img src="https://img.shields.io/badge/TypeScript-1FA45C?style=flat-square&logoColor=white" alt="TypeScript">
+</p>
 
 Sharp Sharp is a mobile app that teaches the real, spoken slang, idioms, and everyday phrases of South Africa's local languages, the version people actually speak, not the textbook one. Users swipe through a live feed of slang terms submitted by other users, save the ones they want to learn, and contribute words of their own.
 
@@ -17,6 +27,32 @@ These three attributes shape everything about how the app works:
 - **Learn Something** — the entire app is built around teaching real, community-sourced slang that doesn't exist in a textbook.
 - **Real-Time Data** — the term feed updates live via Firestore listeners as other users add and flag content; nothing is static.
 - **Landscape Support** — saved terms can be studied in a dedicated landscape flashcard mode, built specifically to use the phone sideways as a real interaction, not a fallback.
+
+---
+
+## Contents
+
+- [Demonstration video](#demonstration-video)
+- [Platform](#platform)
+- [How it works](#how-it-works)
+- [Future iterations](#future-iterations)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Test credentials](#test-credentials)
+- [Project structure](#project-structure)
+- [Data sources](#data-sources)
+
+---
+
+## Demonstration video
+
+**[Watch the full walkthrough on Google Drive](https://drive.google.com/drive/folders/1rM9hthB09ExNsGo49vPFtPxBbVTAqaVC?usp=sharing)**
+
+---
+
+## Platform
+
+Sharp Sharp is a cross-platform mobile app built entirely in **React Native**, interfacing with **Google Firebase** as its backend service (Authentication and Firestore). It is built with Expo, which compiles a single codebase for deployment on both **Android and iOS**, satisfying the assignment's cross-platform requirement without maintaining separate native codebases for each platform.
 
 ---
 
@@ -133,7 +169,7 @@ npm install
 
 ### 2. Set up environment variables
 
-Create a `.env` file in the project root with the following variable names. **Never commit this file** — it's already listed in `.gitignore`.
+Create a `.env` file in the project root with the following variable names. **Never commit this file**, it's already listed in `.gitignore`.
 
 ```
 EXPO_PUBLIC_FIREBASE_API_KEY=
