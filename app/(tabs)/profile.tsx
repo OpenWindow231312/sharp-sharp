@@ -10,11 +10,12 @@ import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
 import { auth, db } from "@/services/firebase";
 import { deleteSlangTerm, getUserSubmittedTerms } from "@/services/slangTerms";
+import { styles } from "@/styles/tabs/profile.styles";
 import type { SlangTerm } from "@/types/slangTerm";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
-import * as ImagePicker from "expo-image-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
@@ -29,7 +30,6 @@ import {
   View,
 } from "react-native";
 import Animated, { FadeIn, Layout } from "react-native-reanimated";
-import { styles } from "@/styles/tabs/profile.styles";
 
 type Tab = "overview" | "myTerms";
 
@@ -293,7 +293,11 @@ export default function ProfileScreen() {
           >
             {displayName}
           </Text>
-          <Pressable onPress={handleEditName} hitSlop={8} style={{ marginLeft: 6 }}>
+          <Pressable
+            onPress={handleEditName}
+            hitSlop={8}
+            style={{ marginLeft: 6 }}
+          >
             <PencilSimple size={16} color={theme.colors.textMuted} />
           </Pressable>
         </View>

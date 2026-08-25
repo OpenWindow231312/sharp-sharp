@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   emptyCard: { alignItems: "center", padding: 32 },
-  termCard: { marginBottom: 12 },
+  termCard: { marginBottom: 16 },
   cardTop: {
     flexDirection: "row",
     justifyContent: "space-between",
