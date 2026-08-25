@@ -79,7 +79,7 @@ const BEATS: Beat[] = [
     headlineBefore: "Keep it ",
     headlineAccent: "real",
     headlineAfter: ", not rude.",
-    caption: "See something off? Tap the flag. We'll take a look.",
+    caption: "See something off? Tap the flag.\nWe'll take a look.",
   },
 ];
 
@@ -320,27 +320,29 @@ function ClosingBeatView({
 }) {
   return (
     <View style={styles.closingWrap}>
-      <Animated.Text
-        entering={ZoomIn.duration(350)}
-        style={styles.closingHeadline}
-      >
-        {headlineBefore}
-        <Animated.Text style={styles.closingHeadlineAccent}>
-          {headlineAccent}
+      <View style={styles.closingContentGroup}>
+        <Animated.Text
+          entering={ZoomIn.duration(350)}
+          style={styles.closingHeadline}
+        >
+          {headlineBefore}
+          <Animated.Text style={styles.closingHeadlineAccent}>
+            {headlineAccent}
+          </Animated.Text>
+          {headlineAfter}
         </Animated.Text>
-        {headlineAfter}
-      </Animated.Text>
 
-      <Animated.View entering={ZoomIn.delay(180).duration(350)}>
-        <MiniFlagCard />
-      </Animated.View>
+        <Animated.View entering={ZoomIn.delay(180).duration(350)}>
+          <MiniFlagCard />
+        </Animated.View>
 
-      <Animated.Text
-        entering={FadeIn.delay(380).duration(300)}
-        style={styles.closingCaption}
-      >
-        {caption}
-      </Animated.Text>
+        <Animated.Text
+          entering={FadeIn.delay(380).duration(300)}
+          style={styles.closingCaption}
+        >
+          {caption}
+        </Animated.Text>
+      </View>
 
       <Animated.View
         entering={FadeIn.delay(520).duration(300)}
@@ -466,7 +468,10 @@ const styles = StyleSheet.create({
   heroBigLine: {
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 92,
-    lineHeight: 86,
+    // lineHeight must comfortably exceed fontSize for a display weight this
+    // large — anything close to or under fontSize gets the top of the
+    // glyphs clipped by the Text node's own line box on native.
+    lineHeight: 106,
     color: theme.colors.marigold,
   },
   heroSmallLine: {
@@ -485,7 +490,7 @@ const styles = StyleSheet.create({
   },
   mechanicsWrap: {
     flex: 1,
-    paddingTop: theme.spacing.sm,
+    justifyContent: "center",
   },
   mechanicsHeading: {
     fontFamily: theme.fonts.displayExtraBold,
@@ -501,8 +506,15 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xl,
   },
   closingWrap: {
+    flex: 1,
     alignItems: "center",
-    gap: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
+  },
+  closingContentGroup: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xl,
   },
   closingHeadline: {
     fontFamily: theme.fonts.displayExtraBold,
