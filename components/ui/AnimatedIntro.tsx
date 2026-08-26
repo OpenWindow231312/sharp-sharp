@@ -1,5 +1,5 @@
 import { theme } from "@/constants/designTheme";
-import { useEffect, useId } from "react";
+import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -20,8 +20,14 @@ type AnimatedIntroProps = {
 // components/ui/SwipeCard.tsx's per-term card system, and already reused
 // as-is in app/auth/login.tsx (LoginTexture) since this splash and the
 // login screen share the same indigo colorway.
+//
+// Uses a fixed id rather than React's useId() — useId() returns strings
+// containing colons (e.g. ":r3:"), and a colon in an SVG id referenced via
+// url(#id) fails to resolve in react-native-svg, silently dropping the
+// pattern fill entirely. Only one SplashTexture ever renders at a time, so
+// a static id is safe.
 function SplashTexture() {
-  const id = `splash-hairline-${useId()}`;
+  const id = "splash-hairline";
   return (
     <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>

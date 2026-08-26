@@ -8,7 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, useRouter } from "expo-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Svg, { Defs, Path, Pattern, Rect } from "react-native-svg";
 import { styles } from "@/styles/auth/signup.styles";
@@ -16,8 +16,14 @@ import { styles } from "@/styles/auth/signup.styles";
 // Same ndebele texture used for the Highveld colorway in
 // components/ui/SwipeCard.tsx's per-term card system, copied inline since
 // that component doesn't export its pattern-rendering pieces.
+//
+// Uses a fixed id rather than React's useId() — useId() returns strings
+// containing colons (e.g. ":r3:"), and a colon in an SVG id referenced via
+// url(#id) fails to resolve in react-native-svg, silently dropping the
+// pattern fill entirely. Only one SignupTexture ever renders at a time, so
+// a static id is safe.
 function SignupTexture() {
-  const id = `signup-ndebele-${useId()}`;
+  const id = "signup-ndebele";
   return (
     <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>
