@@ -30,6 +30,7 @@ import "react-native-reanimated";
 
 import { AnimatedIntro } from "@/components/ui/AnimatedIntro";
 import { AuthProvider } from "@/context/AuthContext";
+import { theme } from "@/constants/designTheme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 SplashScreen.preventAutoHideAsync();
@@ -84,9 +85,28 @@ export default function RootLayout() {
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
           <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-            <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="index"
+              options={{
+                headerShown: false,
+                contentStyle: { backgroundColor: theme.colors.indigo },
+              }}
+            />
+            <Stack.Screen
+              name="auth/login"
+              options={{
+                headerShown: false,
+                contentStyle: { backgroundColor: theme.colors.indigo },
+                animation: "fade",
+              }}
+            />
+            <Stack.Screen
+              name="auth/signup"
+              options={{
+                headerShown: false,
+                contentStyle: { backgroundColor: theme.colors.highveld },
+              }}
+            />
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="learn" options={{ headerShown: false }} />
