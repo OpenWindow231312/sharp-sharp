@@ -14,7 +14,7 @@
 
 Sharp Sharp is a mobile app that teaches the real, spoken slang, idioms, and everyday phrases of South Africa's local languages, the version people actually speak, not the textbook one. Users swipe through a live feed of slang terms submitted by other users, save the ones they want to learn, and contribute words of their own.
 
-Built for Interactive Development 300 at Open Window.
+Built for Interactive Development 300 at Open Window, under supervision of Tsungai Katsuro.
 
 <p align="center">
   <img src="https://img.shields.io/badge/Learn_Something-2A2E8F?style=for-the-badge&logoColor=white" alt="Learn Something">
