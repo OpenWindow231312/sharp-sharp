@@ -14,11 +14,12 @@ export const styles = StyleSheet.create({
   },
   wordmark: {
     flexDirection: "row",
+    marginTop: theme.spacing.xxl,
   },
   wordmarkLine: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 40,
-    lineHeight: 46,
+    fontSize: 48,
+    lineHeight: 55,
   },
   wordmarkWhite: {
     color: theme.colors.primaryText,
@@ -41,8 +42,8 @@ export const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
+    paddingTop: theme.spacing.xxl,
+    paddingBottom: theme.spacing.xxl,
   },
   footer: {
     flexDirection: "row",
