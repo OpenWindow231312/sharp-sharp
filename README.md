@@ -197,7 +197,7 @@ These accounts exist in the seeded dataset for testing and grading purposes only
 | Role         | Email                   | Password                                |
 | ------------ | ----------------------- | --------------------------------------- |
 | Regular user | `seed@sharpsharp.local` | `seed@sharpsharp`                       |
-| Admin        | `admin@mail.com`        | _(provided separately to the lecturer)_ |
+| Admin        | `admin@mail.com`        | Admin123                                |
 
 The admin account has an `isAdmin: true` flag on its Firestore user document, which unlocks the Control Center from the Profile screen.
 
