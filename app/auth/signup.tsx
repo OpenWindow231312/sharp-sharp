@@ -72,7 +72,7 @@ export default function SignupScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.indigo }]}>
       <Text variant="display" style={{ marginBottom: 4 }}>
         Join in
       </Text>
