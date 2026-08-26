@@ -178,7 +178,7 @@ EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 EXPO_PUBLIC_FIREBASE_APP_ID=
 ```
 
-Fill these in with your own Firebase project's config values, found in the Firebase Console under Project Settings.
+**[Access the filled in .env file here](https://drive.google.com/drive/folders/1rM9hthB09ExNsGo49vPFtPxBbVTAqaVC?usp=sharing)**
 
 ### 3. Run the app
 
