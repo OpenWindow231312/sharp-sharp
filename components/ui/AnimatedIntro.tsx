@@ -1,5 +1,5 @@
 import { theme } from "@/constants/designTheme";
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -10,10 +10,43 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
+import Svg, { Defs, Line, Pattern, Rect } from "react-native-svg";
 
 type AnimatedIntroProps = {
   onFinish: () => void;
 };
+
+// Same hairline texture used for the Indigo colorway in
+// components/ui/SwipeCard.tsx's per-term card system, and already reused
+// as-is in app/auth/login.tsx (LoginTexture) since this splash and the
+// login screen share the same indigo colorway.
+function SplashTexture() {
+  const id = `splash-hairline-${useId()}`;
+  return (
+    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Defs>
+        <Pattern
+          id={id}
+          patternUnits="userSpaceOnUse"
+          width={4}
+          height={4}
+          patternTransform="rotate(115)"
+        >
+          <Line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={4}
+            stroke="white"
+            strokeOpacity={0.035}
+            strokeWidth={1}
+          />
+        </Pattern>
+      </Defs>
+      <Rect width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+}
 
 // Timeline:
 // 0ms    - wordmark line 1 (marigold "Sharp") starts a fly-in: translateY
@@ -23,12 +56,13 @@ type AnimatedIntroProps = {
 //          already shows this same indigo background with no logo, so
 //          the wordmark reads as arriving rather than "already in place".
 // 400ms  - tagline starts a fade + slight upward slide in (400ms).
-// 1850ms - 1050ms after the tagline finishes, the whole view starts a
-//          plain opacity fade to 0 (350ms). The background stays the
-//          same indigo throughout — it already matches the login/signup
-//          screens underneath, so no color-matching animation is needed.
-// 2200ms - fade completes, revealing the matching indigo screen
-//          underneath, so onFinish fires immediately.
+// 1850ms - 1050ms after the tagline finishes, the wordmark/tagline group
+//          (not the indigo background) starts a plain opacity fade to 0
+//          (350ms). The indigo background itself never animates — it
+//          stays solid throughout and matches the contentStyle now set
+//          on the index/login screens in app/_layout.tsx, so there's no
+//          gap where anything other than indigo is ever visible.
+// 2200ms - content fade completes, onFinish fires immediately.
 const WORDMARK_LINE_DURATION = 300;
 const WORDMARK_STAGGER = 120;
 const WORDMARK_EASING = Easing.out(Easing.quad);
@@ -42,7 +76,7 @@ export function AnimatedIntro({ onFinish }: AnimatedIntroProps) {
   const wordmarkLine1Progress = useSharedValue(0);
   const wordmarkLine2Progress = useSharedValue(0);
   const taglineProgress = useSharedValue(0);
-  const fadeProgress = useSharedValue(1);
+  const contentFadeProgress = useSharedValue(1);
 
   useEffect(() => {
     wordmarkLine1Progress.value = withTiming(1, {
@@ -60,7 +94,7 @@ export function AnimatedIntro({ onFinish }: AnimatedIntroProps) {
       TAGLINE_DELAY,
       withTiming(1, { duration: TAGLINE_DURATION }),
     );
-    fadeProgress.value = withDelay(
+    contentFadeProgress.value = withDelay(
       FADE_START,
       withTiming(0, { duration: FADE_DURATION }, (finished) => {
         if (finished) runOnJS(onFinish)();
@@ -90,32 +124,35 @@ export function AnimatedIntro({ onFinish }: AnimatedIntroProps) {
     ],
   }));
 
-  const fadeStyle = useAnimatedStyle(() => ({
-    opacity: fadeProgress.value,
+  const contentFadeStyle = useAnimatedStyle(() => ({
+    opacity: contentFadeProgress.value,
   }));
 
   return (
-    <Animated.View style={[styles.container, fadeStyle]}>
-      <View style={styles.wordmark}>
-        <Animated.Text
-          style={[styles.wordmarkLine, styles.wordmarkWhite, wordmarkLine2Style]}
-        >
-          Sharp
+    <View style={styles.container}>
+      <SplashTexture />
+      <Animated.View style={contentFadeStyle}>
+        <View style={styles.wordmark}>
+          <Animated.Text
+            style={[styles.wordmarkLine, styles.wordmarkWhite, wordmarkLine2Style]}
+          >
+            Sharp
+          </Animated.Text>
+          <Animated.Text
+            style={[
+              styles.wordmarkLine,
+              styles.wordmarkMarigold,
+              wordmarkLine1Style,
+            ]}
+          >
+            Sharp
+          </Animated.Text>
+        </View>
+        <Animated.Text style={[styles.tagline, taglineStyle]}>
+          Real Slang, Real SA
         </Animated.Text>
-        <Animated.Text
-          style={[
-            styles.wordmarkLine,
-            styles.wordmarkMarigold,
-            wordmarkLine1Style,
-          ]}
-        >
-          Sharp
-        </Animated.Text>
-      </View>
-      <Animated.Text style={[styles.tagline, taglineStyle]}>
-        Real Slang, Real SA
-      </Animated.Text>
-    </Animated.View>
+      </Animated.View>
+    </View>
   );
 }
 
