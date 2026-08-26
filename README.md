@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">Sharp Sharp</h1>
-<p align="center"><b>Real slang. Real South Africa.</b></p>
+<p align="center"><b>Real slang. Real South African.</b></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/React_Native-2A2E8F?style=flat-square&logoColor=white" alt="React Native">
