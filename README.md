@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo2.svg" width="360" alt="Sharp Sharp logo">
+  <img src="logo.svg" width="360" alt="Sharp Sharp logo">
 </p>
 
 <h1 align="center">Sharp Sharp</h1>
@@ -46,7 +46,7 @@ These three attributes shape everything about how the app works:
 
 ## Demonstration video
 
-**[Watch the full walkthrough on Google Drive, by clicking on this Google Drive Link](https://drive.google.com/drive/folders/1rM9hthB09ExNsGo49vPFtPxBbVTAqaVC?usp=sharing)**
+**[Watch the full walkthrough on Google Drive](https://drive.google.com/drive/folders/1rM9hthB09ExNsGo49vPFtPxBbVTAqaVC?usp=sharing)**
 
 ---
 
@@ -118,6 +118,11 @@ Saved terms can be reviewed in a dedicated landscape flashcard mode, an intentio
 
 A moderation layer sits behind the scenes. Admin accounts can browse every term ever submitted across the app (searchable and filterable by language), and review a dedicated flagged queue where community reports can be inspected in full before being dismissed or deleted.
 
+<p align="center">
+  <img src="screenshots/admin-all-terms.png" width="260">
+  <img src="screenshots/admin-flagged-detail.png" width="260">
+</p>
+
 <p align="center"><img src="screenshots/profile-admin-overview.png" width="260"></p>
 
 ---
@@ -176,7 +181,6 @@ EXPO_PUBLIC_FIREBASE_APP_ID=
 ```
 
 Fill these in with your own Firebase project's config values, found in the Firebase Console under Project Settings.
-To find a copy of the original .env file used for this project, please refer to the Google Drive Link.
 
 ### 3. Run the app
 

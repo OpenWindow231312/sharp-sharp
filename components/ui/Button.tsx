@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 10,
   },
   compact: {
     minHeight: 40,
