@@ -43,10 +43,10 @@ export const styles = StyleSheet.create({
     borderBottomRightRadius: 0,
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xxl,
-    paddingBottom: theme.spacing.xxl,
+    paddingBottom: 60,
   },
   cardHeading: {
-    marginTop: theme.spacing.xl,
+    marginTop: theme.spacing.l,
     marginBottom: theme.spacing.sm,
   },
   footer: {

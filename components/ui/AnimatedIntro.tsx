@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   wordmarkLine: {
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 48,
-    lineHeight: 56,
+    lineHeight: 60,
     textAlign: "center",
   },
   wordmarkWhite: {
