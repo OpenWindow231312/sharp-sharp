@@ -9,9 +9,41 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useState } from "react";
-import { Alert, Pressable, View } from "react-native";
+import { useId, useState } from "react";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
+import Svg, { Defs, Line, Pattern, Rect } from "react-native-svg";
 import { styles } from "@/styles/auth/login.styles";
+
+// Same hairline texture used for the Indigo colorway in
+// components/ui/SwipeCard.tsx's per-term card system, copied inline since
+// that component doesn't export its pattern-rendering pieces.
+function LoginTexture() {
+  const id = `login-hairline-${useId()}`;
+  return (
+    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Defs>
+        <Pattern
+          id={id}
+          patternUnits="userSpaceOnUse"
+          width={4}
+          height={4}
+          patternTransform="rotate(115)"
+        >
+          <Line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={4}
+            stroke="white"
+            strokeOpacity={0.035}
+            strokeWidth={1}
+          />
+        </Pattern>
+      </Defs>
+      <Rect width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+}
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -58,53 +90,62 @@ export default function LoginScreen() {
     );
   }
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.indigo }]}>
-      <Text variant="display" style={{ marginBottom: 4 }}>
-        Sharp Sharp
-      </Text>
-      <Text variant="muted" style={{ marginBottom: 32 }}>
-        Real slang. Real South Africa.
-      </Text>
-      <Input
-        label="Email"
-        placeholder="your@email.com"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <Input
-        label="Password"
-        placeholder="Enter your password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <Pressable
-        onPress={handleForgotPassword}
-        style={{ alignSelf: "flex-end", marginBottom: 16 }}
-      >
-        <Text variant="muted" style={{ textDecorationLine: "underline" }}>
-          Forgot password?
-        </Text>
-      </Pressable>
-      {errorMsg ? (
-        <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>
-          {errorMsg}
-        </Text>
-      ) : null}
-      <Button
-        label={isLoading ? "Logging in..." : "Let's go"}
-        variant="primary"
-        disabled={isLoading}
-        onPress={handleLogin}
-        style={{ marginTop: 8, marginBottom: 16 }}
-      />
-      <View style={styles.footer}>
-        <Text variant="muted">Don't have an account? </Text>
-        <Link href="/auth/signup">
-          <Text style={{ textDecorationLine: "underline" }}>Sign up</Text>
-        </Link>
+    <View style={styles.container}>
+      <LoginTexture />
+      <View style={styles.header}>
+        <View style={styles.wordmark}>
+          <Text style={[styles.wordmarkLine, styles.wordmarkWhite]}>
+            Sharp
+          </Text>
+          <Text style={[styles.wordmarkLine, styles.wordmarkMarigold]}>
+            Sharp
+          </Text>
+        </View>
+        <Text style={styles.tagline}>Real slang. Real South Africa.</Text>
+      </View>
+
+      <View style={styles.card}>
+        <Input
+          label="Email"
+          placeholder="your@email.com"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <Input
+          label="Password"
+          placeholder="Enter your password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+        <Pressable
+          onPress={handleForgotPassword}
+          style={{ alignSelf: "flex-end", marginBottom: 16 }}
+        >
+          <Text variant="muted" style={{ textDecorationLine: "underline" }}>
+            Forgot password?
+          </Text>
+        </Pressable>
+        {errorMsg ? (
+          <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>
+            {errorMsg}
+          </Text>
+        ) : null}
+        <Button
+          label={isLoading ? "Logging in..." : "Let's go"}
+          variant="primary"
+          disabled={isLoading}
+          onPress={handleLogin}
+          style={{ marginTop: 8, marginBottom: 16 }}
+        />
+        <View style={styles.footer}>
+          <Text variant="muted">Don't have an account? </Text>
+          <Link href="/auth/signup">
+            <Text style={{ textDecorationLine: "underline" }}>Sign up</Text>
+          </Link>
+        </View>
       </View>
     </View>
   );
