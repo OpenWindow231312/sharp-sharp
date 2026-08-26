@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
     backgroundColor: theme.colors.indigo,
   },
   header: {
-    flex: 1,
+    minHeight: 200,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: theme.spacing.lg,
@@ -36,6 +36,8 @@ export const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
   },
   card: {
+    flex: 1,
+    marginTop: theme.spacing.sm,
     backgroundColor: theme.colors.card,
     borderTopLeftRadius: theme.radius.lg,
     borderTopRightRadius: theme.radius.lg,
