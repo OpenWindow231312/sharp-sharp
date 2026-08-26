@@ -113,6 +113,9 @@ export default function SignupScreen() {
       </View>
 
       <View style={styles.card}>
+        <Text variant="display" style={styles.cardHeading}>
+          Get started
+        </Text>
         <Input
           label="First name"
           placeholder="Name"

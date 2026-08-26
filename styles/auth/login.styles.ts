@@ -45,6 +45,10 @@ export const styles = StyleSheet.create({
     paddingTop: theme.spacing.xxl,
     paddingBottom: theme.spacing.xxl,
   },
+  cardHeading: {
+    marginTop: theme.spacing.xl,
+    marginBottom: theme.spacing.sm,
+  },
   footer: {
     flexDirection: "row",
     justifyContent: "center",

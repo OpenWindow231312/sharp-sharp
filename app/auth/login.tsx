@@ -105,6 +105,9 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.card}>
+        <Text variant="display" style={styles.cardHeading}>
+          Welcome back
+        </Text>
         <Input
           label="Email"
           placeholder="your@email.com"
