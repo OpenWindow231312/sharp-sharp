@@ -4,6 +4,7 @@ import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { auth, db } from "@/services/firebase";
 import { getAuthErrorMessage } from "@/utils/authErrors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, useRouter } from "expo-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
@@ -89,7 +90,14 @@ export default function SignupScreen() {
         { merge: true },
       );
 
-      router.replace("/onboarding/story");
+      const hasCompletedOnboarding = await AsyncStorage.getItem(
+        "hasCompletedOnboarding",
+      );
+      router.replace(
+        hasCompletedOnboarding === "true"
+          ? "/(tabs)/feed"
+          : "/onboarding/story",
+      );
     } catch (error) {
       setErrorMsg(getAuthErrorMessage(error));
     } finally {

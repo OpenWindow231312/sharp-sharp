@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Text } from '@/components/ui/Text';
@@ -10,6 +11,11 @@ import { LANGUAGES } from '@/constants/languages';
 export default function OnboardingLanguagesScreen() {
   const router = useRouter();
   const { languages, toggleLanguage } = useOnboarding();
+
+  async function finishOnboarding() {
+    await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+    router.replace('/(tabs)/feed');
+  }
 
   return (
     <View style={styles.container}>
@@ -46,7 +52,7 @@ export default function OnboardingLanguagesScreen() {
         label="Next"
         variant="primary"
         disabled={languages.length === 0}
-        onPress={() => router.replace('/(tabs)/feed')}
+        onPress={finishOnboarding}
       />
     </View>
   );
