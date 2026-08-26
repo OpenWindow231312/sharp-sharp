@@ -97,7 +97,6 @@ export default function RootLayout() {
               options={{
                 headerShown: false,
                 contentStyle: { backgroundColor: theme.colors.indigo },
-                animation: "fade",
               }}
             />
             <Stack.Screen
@@ -107,8 +106,20 @@ export default function RootLayout() {
                 contentStyle: { backgroundColor: theme.colors.highveld },
               }}
             />
-            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="onboarding"
+              options={{
+                headerShown: false,
+                contentStyle: { backgroundColor: theme.colors.background },
+              }}
+            />
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerShown: false,
+                contentStyle: { backgroundColor: theme.colors.background },
+              }}
+            />
             <Stack.Screen name="learn" options={{ headerShown: false }} />
             <Stack.Screen name="edit-term" options={{ headerShown: false }} />
             <Stack.Screen name="admin/index" options={{ headerShown: false }} />

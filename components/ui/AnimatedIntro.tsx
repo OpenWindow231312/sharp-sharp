@@ -1,5 +1,5 @@
 import { theme } from "@/constants/designTheme";
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -10,10 +10,43 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
+import Svg, { Defs, Line, Pattern, Rect } from "react-native-svg";
 
 type AnimatedIntroProps = {
   onFinish: () => void;
 };
+
+// Same hairline texture used for the Indigo colorway in
+// components/ui/SwipeCard.tsx's per-term card system, and already reused
+// as-is in app/auth/login.tsx (LoginTexture) since this splash and the
+// login screen share the same indigo colorway.
+function SplashTexture() {
+  const id = `splash-hairline-${useId()}`;
+  return (
+    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Defs>
+        <Pattern
+          id={id}
+          patternUnits="userSpaceOnUse"
+          width={4}
+          height={4}
+          patternTransform="rotate(115)"
+        >
+          <Line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={4}
+            stroke="white"
+            strokeOpacity={0.035}
+            strokeWidth={1}
+          />
+        </Pattern>
+      </Defs>
+      <Rect width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+}
 
 // Timeline:
 // 0ms    - wordmark line 1 (marigold "Sharp") starts a fly-in: translateY
@@ -97,6 +130,7 @@ export function AnimatedIntro({ onFinish }: AnimatedIntroProps) {
 
   return (
     <View style={styles.container}>
+      <SplashTexture />
       <Animated.View style={contentFadeStyle}>
         <View style={styles.wordmark}>
           <Animated.Text
