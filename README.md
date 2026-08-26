@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.svg" width="360" alt="Sharp Sharp logo">
+  <img src="logo2.svg" width="360" alt="Sharp Sharp logo">
 </p>
 
 <h1 align="center">Sharp Sharp</h1>
