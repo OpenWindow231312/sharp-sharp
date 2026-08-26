@@ -9,7 +9,13 @@ import { Link, useRouter } from "expo-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import Svg, { Defs, Path, Pattern, Rect } from "react-native-svg";
 import { styles } from "@/styles/auth/signup.styles";
 
@@ -112,74 +118,85 @@ export default function SignupScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <SignupTexture />
-      <View style={styles.header}>
-        <View style={styles.wordmark}>
-          <Text style={[styles.wordmarkLine, styles.wordmarkWhite]}>
-            Sharp
-          </Text>
-          <Text style={[styles.wordmarkLine, styles.wordmarkMarigold]}>
-            Sharp
-          </Text>
-        </View>
-        <Text style={styles.tagline}>Real slang. Real South Africa.</Text>
-      </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.container}>
+          <SignupTexture />
+          <View style={styles.header}>
+            <View style={styles.wordmark}>
+              <Text style={[styles.wordmarkLine, styles.wordmarkWhite]}>
+                Sharp
+              </Text>
+              <Text style={[styles.wordmarkLine, styles.wordmarkMarigold]}>
+                Sharp
+              </Text>
+            </View>
+            <Text style={styles.tagline}>Real slang. Real South Africa.</Text>
+          </View>
 
-      <View style={styles.card}>
-        <Text variant="display" style={styles.cardHeading}>
-          Get started
-        </Text>
-        <Input
-          label="First name"
-          placeholder="Name"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-        <Input
-          label="Last name"
-          placeholder="Surname"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        <Input
-          label="Email"
-          placeholder="your.email@example.com"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <Input
-          label="Password"
-          placeholder="Create a password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        {errorMsg ? (
-          <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>
-            {errorMsg}
-          </Text>
-        ) : null}
-
-        <Button
-          label={isLoading ? "Creating account..." : "Create account"}
-          variant="primary"
-          disabled={isLoading}
-          onPress={handleSignup}
-          style={{ marginTop: 8, marginBottom: 16 }}
-        />
-        <Link href="/auth/login">
-          <Text variant="muted">
-            Already in?{" "}
-            <Text style={{ fontFamily: theme.fonts.bodySemibold }}>
-              Log in
+          <View style={styles.card}>
+            <Text variant="display" style={styles.cardHeading}>
+              Get started
             </Text>
-          </Text>
-        </Link>
-      </View>
-    </View>
+            <Input
+              label="First name"
+              placeholder="Name"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+            <Input
+              label="Last name"
+              placeholder="Surname"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+            <Input
+              label="Email"
+              placeholder="your.email@example.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <Input
+              label="Password"
+              placeholder="Create a password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            {errorMsg ? (
+              <Text style={{ color: theme.colors.protea, marginBottom: 8 }}>
+                {errorMsg}
+              </Text>
+            ) : null}
+
+            <Button
+              label={isLoading ? "Creating account..." : "Create account"}
+              variant="primary"
+              disabled={isLoading}
+              onPress={handleSignup}
+              style={{ marginTop: 8, marginBottom: 16 }}
+            />
+            <Link href="/auth/login">
+              <Text variant="muted">
+                Already in?{" "}
+                <Text style={{ fontFamily: theme.fonts.bodySemibold }}>
+                  Log in
+                </Text>
+              </Text>
+            </Link>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
