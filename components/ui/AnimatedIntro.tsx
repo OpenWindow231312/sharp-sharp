@@ -23,18 +23,18 @@ type AnimatedIntroProps = {
 //          already shows this same indigo background with no logo, so
 //          the wordmark reads as arriving rather than "already in place".
 // 400ms  - tagline starts a fade + slight upward slide in (400ms).
-// 1400ms - 600ms after the tagline finishes, the whole view starts a
+// 1850ms - 1050ms after the tagline finishes, the whole view starts a
 //          plain opacity fade to 0 (350ms). The background stays the
 //          same indigo throughout — it already matches the login/signup
 //          screens underneath, so no color-matching animation is needed.
-// 1750ms - fade completes, revealing the matching indigo screen
+// 2200ms - fade completes, revealing the matching indigo screen
 //          underneath, so onFinish fires immediately.
 const WORDMARK_LINE_DURATION = 300;
 const WORDMARK_STAGGER = 120;
 const WORDMARK_EASING = Easing.out(Easing.quad);
 const TAGLINE_DELAY = 400;
 const TAGLINE_DURATION = 400;
-const HOLD_MS = 600;
+const HOLD_MS = 1050;
 const FADE_DURATION = 350;
 const FADE_START = TAGLINE_DELAY + TAGLINE_DURATION + HOLD_MS;
 
