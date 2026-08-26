@@ -9,7 +9,7 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 import Svg, { Defs, Line, Pattern, Rect } from "react-native-svg";
 import { styles } from "@/styles/auth/login.styles";
@@ -17,8 +17,14 @@ import { styles } from "@/styles/auth/login.styles";
 // Same hairline texture used for the Indigo colorway in
 // components/ui/SwipeCard.tsx's per-term card system, copied inline since
 // that component doesn't export its pattern-rendering pieces.
+//
+// Uses a fixed id rather than React's useId() — useId() returns strings
+// containing colons (e.g. ":r3:"), and a colon in an SVG id referenced via
+// url(#id) fails to resolve in react-native-svg, silently dropping the
+// pattern fill entirely. Only one LoginTexture ever renders at a time, so a
+// static id is safe.
 function LoginTexture() {
-  const id = `login-hairline-${useId()}`;
+  const id = "login-hairline";
   return (
     <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>
