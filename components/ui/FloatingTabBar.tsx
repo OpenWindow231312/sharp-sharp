@@ -1,5 +1,5 @@
 import { theme } from "@/constants/designTheme";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import type { BottomTabBarProps } from "expo-router/js-tabs";
 import * as Haptics from "expo-haptics";
 import { Book, Bookmark, PlusCircle, User, type Icon } from "phosphor-react-native";
 import { Pressable, StyleSheet, View } from "react-native";

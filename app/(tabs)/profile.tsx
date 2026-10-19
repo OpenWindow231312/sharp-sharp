@@ -12,7 +12,7 @@ import { auth, db } from "@/services/firebase";
 import { deleteSlangTerm, getUserSubmittedTerms } from "@/services/slangTerms";
 import { styles } from "@/styles/tabs/profile.styles";
 import type { SlangTerm } from "@/types/slangTerm";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router/react-navigation";
 import * as Haptics from "expo-haptics";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";

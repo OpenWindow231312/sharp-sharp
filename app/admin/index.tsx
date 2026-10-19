@@ -17,7 +17,7 @@ import {
 } from "@/services/adminTerms";
 import { db } from "@/services/firebase";
 import type { Flag, SlangTerm } from "@/types/slangTerm";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router/react-navigation";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { doc, onSnapshot, QueryDocumentSnapshot } from "firebase/firestore";

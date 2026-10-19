@@ -123,7 +123,7 @@ function renderPatternDef(variant: PatternVariant, id: string) {
 
 const styles = StyleSheet.create({
   lockWrap: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
   },

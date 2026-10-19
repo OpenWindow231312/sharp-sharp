@@ -19,7 +19,7 @@ import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
-} from "@react-navigation/native";
+} from "expo-router/react-navigation";
 import { Stack } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as SplashScreen from "expo-splash-screen";
