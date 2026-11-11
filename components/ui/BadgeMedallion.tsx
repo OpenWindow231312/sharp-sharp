@@ -1,7 +1,7 @@
 import { theme } from "@/constants/designTheme";
 import type { PatternVariant } from "./PatternFill";
 import { Lock } from "phosphor-react-native";
-import { useId } from "react";
+import { useSvgId } from "@/utils/svgId";
 import { StyleSheet, View, type ViewStyle } from "react-native";
 import Svg, { Circle, Defs, Path, Pattern, Rect } from "react-native-svg";
 
@@ -31,16 +31,12 @@ export function BadgeMedallion({
   size = 64,
   style,
 }: BadgeMedallionProps) {
-  const id = `medallion-${variant}-${shape}-${useId()}`;
+  const id = useSvgId(`medallion-${variant}-${shape}`);
 
   return (
-    <View
-      style={[
-        { width: size, height: size },
-        unlocked && theme.shadow.soft,
-        style,
-      ]}
-    >
+    // No drop shadow on the wrapper: it is a transparent square, so the
+    // shadow drew a pale box behind the medallion.
+    <View style={[{ width: size, height: size }, style]}>
       <Svg width="100%" height="100%" viewBox="0 0 100 100">
         <Defs>{renderPatternDef(variant, id)}</Defs>
         {shape === "circle" ? (
@@ -59,11 +55,7 @@ export function BadgeMedallion({
       </Svg>
       {!unlocked ? (
         <View style={styles.lockWrap}>
-          <Lock
-            size={size * 0.32}
-            color={theme.colors.inkSoft}
-            weight="fill"
-          />
+          <Lock size={size * 0.32} color={theme.colors.inkSoft} weight="fill" />
         </View>
       ) : null}
     </View>
@@ -104,18 +96,8 @@ function renderPatternDef(variant: PatternVariant, id: string) {
         <Pattern id={id} patternUnits="userSpaceOnUse" width={26} height={26}>
           <Rect width={26} height={26} fill={theme.patterns.beadscatter.bg} />
           <Circle cx={5} cy={6} r={1.6} fill={theme.patterns.beadscatter.fg} />
-          <Circle
-            cx={16}
-            cy={18}
-            r={2}
-            fill={theme.patterns.beadscatter.fg}
-          />
-          <Circle
-            cx={22}
-            cy={7}
-            r={1.3}
-            fill={theme.patterns.beadscatter.fg}
-          />
+          <Circle cx={16} cy={18} r={2} fill={theme.patterns.beadscatter.fg} />
+          <Circle cx={22} cy={7} r={1.3} fill={theme.patterns.beadscatter.fg} />
         </Pattern>
       );
   }

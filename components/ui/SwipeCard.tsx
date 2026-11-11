@@ -5,13 +5,7 @@ import { flagTerm } from "@/services/adminTerms";
 import type { FlagReason, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import { X } from "phosphor-react-native";
-import {
-  forwardRef,
-  useId,
-  useImperativeHandle,
-  useMemo,
-  useState,
-} from "react";
+import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import {
   Dimensions,
   Modal,
@@ -31,6 +25,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
+import { useSvgId } from "@/utils/svgId";
 import { Button } from "./Button";
 import { Dropdown } from "./Dropdown";
 import { Input } from "./Input";
@@ -124,9 +119,16 @@ function colorwayForTerm(id: string): CardColorway {
 // Exact tile specs and opacities are copied from the approved HTML
 // reference's per-colorway CSS pattern definitions.
 function CardTexture({ variant }: { variant: TextureVariant }) {
-  const id = `swipecard-texture-${variant}-${useId()}`;
+  const id = useSvgId(`swipecard-texture-${variant}`);
+  // Explicit 100% size: without it the SVG falls back to its intrinsic
+  // 300x150 box and the texture only covers the top-left of the card.
   return (
-    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+    <Svg
+      width="100%"
+      height="100%"
+      style={StyleSheet.absoluteFill}
+      pointerEvents="none"
+    >
       <Defs>{renderTextureDef(variant, id)}</Defs>
       <Rect width="100%" height="100%" fill={`url(#${id})`} />
     </Svg>

@@ -1,6 +1,6 @@
 import { theme } from "@/constants/designTheme";
 import type { SlangTerm } from "@/types/slangTerm";
-import { useId, useMemo } from "react";
+import { useMemo } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
+import { useSvgId } from "@/utils/svgId";
 import { Text } from "./Text";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -85,9 +86,14 @@ function colorwayForTerm(id: string): CardColorway {
 }
 
 function CardTexture({ variant }: { variant: TextureVariant }) {
-  const id = `studycard-texture-${variant}-${useId()}`;
+  const id = useSvgId(`studycard-texture-${variant}`);
   return (
-    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+    <Svg
+      width="100%"
+      height="100%"
+      style={StyleSheet.absoluteFill}
+      pointerEvents="none"
+    >
       <Defs>{renderTextureDef(variant, id)}</Defs>
       <Rect width="100%" height="100%" fill={`url(#${id})`} />
     </Svg>
