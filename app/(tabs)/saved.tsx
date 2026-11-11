@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
@@ -6,12 +7,14 @@ import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
 import { getSavedTerms, removeSavedTerm } from "@/services/savedTerms";
 import type { SlangTerm } from "@/types/slangTerm";
+import { showAlert } from "@/utils/alert";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { DeviceMobile, Trash } from "phosphor-react-native";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
+  Platform,
   Pressable,
   ScrollView,
   View,
@@ -25,17 +28,26 @@ export default function SavedScreen() {
   const [terms, setTerms] = useState<SlangTerm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const source = USE_MOCK_DATA
-      ? Promise.resolve(MOCK_TERMS)
-      : user
-        ? getSavedTerms(user.uid)
-        : Promise.resolve([]);
-    source.then((loaded) => {
-      setTerms(loaded);
-      setIsLoading(false);
-    });
-  }, [user]);
+  // Reload every time the tab comes into view, so a word saved on the Feed
+  // a moment ago is already here (the old one-off load went stale).
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      const source = USE_MOCK_DATA
+        ? Promise.resolve(MOCK_TERMS)
+        : user
+          ? getSavedTerms(user.uid)
+          : Promise.resolve([]);
+      source.then((loaded) => {
+        if (cancelled) return;
+        setTerms(loaded);
+        setIsLoading(false);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [user]),
+  );
 
   function handleRemove(termId: string) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -51,9 +63,14 @@ export default function SavedScreen() {
     router.push({ pathname: "/learn", params: { startId: termId } });
   }
 
+  function handleStudyAll() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push("/learn");
+  }
+
   function confirmRemove(term: SlangTerm) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
+    showAlert(
       "Remove from saved?",
       `"${term.term}" will be removed from your dictionary.`,
       [
@@ -91,6 +108,35 @@ export default function SavedScreen() {
         </Card>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
+          <Card style={styles.studyCard}>
+            <View style={{ flex: 1, paddingRight: 12 }}>
+              <Text style={styles.studyTitle}>Dictionary mode</Text>
+              <View style={styles.studyHintRow}>
+                {Platform.OS !== "web" ? (
+                  <DeviceMobile
+                    size={16}
+                    color={theme.colors.inkSoft}
+                    style={{ transform: [{ rotate: "90deg" }] }}
+                  />
+                ) : null}
+                <Text variant="muted" style={styles.studyHint}>
+                  {Platform.OS === "web"
+                    ? "Flashcards, one word at a time."
+                    : "Opens sideways. Turn your phone to study."}
+                </Text>
+              </View>
+            </View>
+            <Button
+              label="Study all"
+              variant="primary"
+              size="compact"
+              onPress={handleStudyAll}
+              style={{ marginBottom: 0 }}
+            />
+          </Card>
+          <Text variant="muted" style={styles.listHint}>
+            Tap a word to study it. Hold to remove it.
+          </Text>
           {terms.map((term) => (
             <Animated.View
               key={term.id}
@@ -103,7 +149,21 @@ export default function SavedScreen() {
                 onLongPress={() => confirmRemove(term)}
               >
                 <Card style={styles.termCard}>
-                  <Text style={styles.termText}>{term.term}</Text>
+                  <View style={styles.cardTop}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.termText}>{term.term}</Text>
+                      <Text variant="muted" style={styles.termLanguage}>
+                        {term.language}
+                      </Text>
+                    </View>
+                    <Pressable
+                      onPress={() => confirmRemove(term)}
+                      hitSlop={10}
+                      style={styles.removeButton}
+                    >
+                      <Trash size={20} color={theme.colors.protea} />
+                    </Pressable>
+                  </View>
                 </Card>
               </Pressable>
             </Animated.View>

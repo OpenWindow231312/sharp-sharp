@@ -1,12 +1,18 @@
 import { theme } from "@/constants/designTheme";
+import { showAlert } from "@/utils/alert";
 import { useAuth } from "@/context/AuthContext";
 import { flagTerm } from "@/services/adminTerms";
 import type { FlagReason, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import { X } from "phosphor-react-native";
-import { forwardRef, useId, useImperativeHandle, useMemo, useState } from "react";
 import {
-  Alert,
+  forwardRef,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
+import {
   Dimensions,
   Modal,
   Pressable,
@@ -141,7 +147,15 @@ function renderTextureDef(variant: TextureVariant, id: string) {
           height={4}
           patternTransform="rotate(115)"
         >
-          <Line x1={0} y1={0} x2={0} y2={4} stroke="white" strokeOpacity={0.035} strokeWidth={1} />
+          <Line
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={4}
+            stroke="white"
+            strokeOpacity={0.035}
+            strokeWidth={1}
+          />
         </Pattern>
       );
     case "ndebele":
@@ -208,6 +222,9 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
     const translateY = useSharedValue(0);
     const flip = useSharedValue(0);
 
+    // Some seeded terms carry an example with an empty sentence, which
+    // rendered as a pair of bare quotation marks. Only show real ones.
+    const examples = (term.examples ?? []).filter((ex) => ex.sentence?.trim());
     const [reportModalVisible, setReportModalVisible] = useState(false);
     const [reportReasonLabel, setReportReasonLabel] = useState<string | null>(
       null,
@@ -237,14 +254,14 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
         );
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         closeReportModal();
-        Alert.alert("Reported", "Thanks — our team will take a look.");
+        showAlert("Reported", "Thanks — our team will take a look.");
         // Flagging behaves like a skip for the rest of this session — the
         // term leaves the visible stack rather than sitting there looking
         // untouched.
         onSwipe("left");
       } catch (error) {
         console.log("Flag term error:", error);
-        Alert.alert(
+        showAlert(
           "Couldn't report this term",
           "Check your connection and try again.",
         );
@@ -336,183 +353,235 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
     return (
       <>
-      <View style={styles.cardPositioner}>
-      <GestureDetector gesture={composedGesture}>
-        <Animated.View style={[styles.wrapper, dragStyle]}>
-          <Animated.View style={[styles.stamp, styles.saveStamp, saveStampStyle]}>
-            <Text style={styles.stampText}>SAVE</Text>
-          </Animated.View>
-          <Animated.View style={[styles.stamp, styles.skipStamp, skipStampStyle]}>
-            <Text style={styles.stampText}>SKIP</Text>
-          </Animated.View>
-
-          {/* Front face */}
-          <Animated.View style={[styles.face, frontFaceStyle]}>
-            <View style={[styles.cardShell, styles.frontCardShell, { backgroundColor: colorway.background }]}>
-              <CardTexture variant={colorway.texture} />
-
-              <View
-                style={[
-                  styles.rivet,
-                  styles.rivetTL,
-                  { borderTopColor: colorway.rivetLight, borderLeftColor: colorway.rivetLight, borderBottomColor: colorway.rivetDark, borderRightColor: colorway.rivetDark },
-                ]}
-              />
-              <View
-                style={[
-                  styles.rivet,
-                  styles.rivetTR,
-                  { borderTopColor: colorway.rivetLight, borderLeftColor: colorway.rivetLight, borderBottomColor: colorway.rivetDark, borderRightColor: colorway.rivetDark },
-                ]}
-              />
-              <View
-                style={[
-                  styles.rivet,
-                  styles.rivetBL,
-                  { borderTopColor: colorway.rivetLight, borderLeftColor: colorway.rivetLight, borderBottomColor: colorway.rivetDark, borderRightColor: colorway.rivetDark },
-                ]}
-              />
-              <View
-                style={[
-                  styles.rivet,
-                  styles.rivetBR,
-                  { borderTopColor: colorway.rivetLight, borderLeftColor: colorway.rivetLight, borderBottomColor: colorway.rivetDark, borderRightColor: colorway.rivetDark },
-                ]}
-              />
-
-              <View style={styles.plaqueContent}>
-                <Text style={styles.langTag}>{term.language.toUpperCase()}</Text>
-
-                <View style={styles.termWrap}>
-                  <Text
-                    style={[
-                      styles.termText,
-                      styles.termTextHighlight,
-                      { color: colorway.termShadowLight },
-                    ]}
-                  >
-                    {term.term}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.termText,
-                      styles.termTextMain,
-                      { textShadowColor: colorway.termShadowDark },
-                    ]}
-                  >
-                    {term.term}
-                  </Text>
-                </View>
-
-                <Text style={[styles.flipHint, { color: colorway.flipCueColor }]}>
-                  Tap to flip
-                </Text>
-              </View>
-            </View>
-          </Animated.View>
-
-          {/* Back face */}
-          <Animated.View
-            style={[styles.face, styles.backFacePosition, backFaceStyle]}
-          >
-            <View style={[styles.cardShell, styles.backCardShell, { borderColor: colorway.background }]}>
-              <ScrollView
-                contentContainerStyle={styles.backContent}
-                showsVerticalScrollIndicator={false}
+        <View style={styles.cardPositioner}>
+          <GestureDetector gesture={composedGesture}>
+            <Animated.View style={[styles.wrapper, dragStyle]}>
+              <Animated.View
+                style={[styles.stamp, styles.saveStamp, saveStampStyle]}
               >
-                <View style={styles.backTermRow}>
-                  <Text style={[styles.backTermSmall, { color: colorway.background }]}>
-                    {term.term}
-                  </Text>
-                  <Text style={styles.backLangSmall}>{term.language}</Text>
-                </View>
-                <View style={styles.backDivider} />
+                <Text style={styles.stampText}>SAVE</Text>
+              </Animated.View>
+              <Animated.View
+                style={[styles.stamp, styles.skipStamp, skipStampStyle]}
+              >
+                <Text style={styles.stampText}>SKIP</Text>
+              </Animated.View>
 
-                <Text style={styles.backSectionLabel}>Meaning</Text>
-                <Text style={styles.backMeaning}>{term.meaning}</Text>
+              {/* Front face */}
+              <Animated.View style={[styles.face, frontFaceStyle]}>
+                <View
+                  style={[
+                    styles.cardShell,
+                    styles.frontCardShell,
+                    { backgroundColor: colorway.background },
+                  ]}
+                >
+                  <CardTexture variant={colorway.texture} />
 
-                {term.examples && term.examples.length > 0 ? (
-                  <>
-                    <Text style={styles.backSectionLabel}>Example</Text>
-                    {term.examples.map((example, index) => (
-                      <View
-                        key={index}
-                        style={index > 0 ? styles.backExampleSpacing : undefined}
+                  <View
+                    style={[
+                      styles.rivet,
+                      styles.rivetTL,
+                      {
+                        borderTopColor: colorway.rivetLight,
+                        borderLeftColor: colorway.rivetLight,
+                        borderBottomColor: colorway.rivetDark,
+                        borderRightColor: colorway.rivetDark,
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.rivet,
+                      styles.rivetTR,
+                      {
+                        borderTopColor: colorway.rivetLight,
+                        borderLeftColor: colorway.rivetLight,
+                        borderBottomColor: colorway.rivetDark,
+                        borderRightColor: colorway.rivetDark,
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.rivet,
+                      styles.rivetBL,
+                      {
+                        borderTopColor: colorway.rivetLight,
+                        borderLeftColor: colorway.rivetLight,
+                        borderBottomColor: colorway.rivetDark,
+                        borderRightColor: colorway.rivetDark,
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.rivet,
+                      styles.rivetBR,
+                      {
+                        borderTopColor: colorway.rivetLight,
+                        borderLeftColor: colorway.rivetLight,
+                        borderBottomColor: colorway.rivetDark,
+                        borderRightColor: colorway.rivetDark,
+                      },
+                    ]}
+                  />
+
+                  <View style={styles.plaqueContent}>
+                    <Text style={styles.langTag}>
+                      {term.language.toUpperCase()}
+                    </Text>
+
+                    <View style={styles.termWrap}>
+                      <Text
+                        style={[
+                          styles.termText,
+                          styles.termTextHighlight,
+                          { color: colorway.termShadowLight },
+                        ]}
                       >
-                        <Text style={styles.backExample}>
-                          &quot;{example.sentence}&quot;
-                        </Text>
-                        {example.context ? (
-                          <Text style={styles.backContext}>{example.context}</Text>
-                        ) : null}
-                      </View>
-                    ))}
-                  </>
-                ) : null}
+                        {term.term}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.termText,
+                          styles.termTextMain,
+                          { textShadowColor: colorway.termShadowDark },
+                        ]}
+                      >
+                        {term.term}
+                      </Text>
+                    </View>
 
-                {term.region ? (
-                  <Text style={styles.backContext}>{term.region}</Text>
-                ) : null}
-                <Text style={styles.backContext}>
-                  Added by {term.authorDisplayName ?? term.submittedByName}
-                </Text>
-              </ScrollView>
-            </View>
-          </Animated.View>
-        </Animated.View>
-      </GestureDetector>
-      </View>
+                    <Text
+                      style={[
+                        styles.flipHint,
+                        { color: colorway.flipCueColor },
+                      ]}
+                    >
+                      Tap to flip
+                    </Text>
+                  </View>
+                </View>
+              </Animated.View>
 
-      <Modal
-        visible={reportModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={closeReportModal}
-      >
-        <View style={styles.backdrop}>
-          <View style={styles.reportCard}>
-            <Pressable
-              onPress={closeReportModal}
-              hitSlop={12}
-              style={styles.reportCloseButton}
-            >
-              <X size={20} weight="bold" color={theme.colors.textMuted} />
-            </Pressable>
+              {/* Back face */}
+              <Animated.View
+                style={[styles.face, styles.backFacePosition, backFaceStyle]}
+              >
+                <View
+                  style={[
+                    styles.cardShell,
+                    styles.backCardShell,
+                    { borderColor: colorway.background },
+                  ]}
+                >
+                  <ScrollView
+                    contentContainerStyle={styles.backContent}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <View style={styles.backTermRow}>
+                      <Text
+                        style={[
+                          styles.backTermSmall,
+                          { color: colorway.background },
+                        ]}
+                      >
+                        {term.term}
+                      </Text>
+                      <Text style={styles.backLangSmall}>{term.language}</Text>
+                    </View>
+                    <View style={styles.backDivider} />
 
-            <Text variant="heading" style={styles.reportTitle}>
-              Report this term
-            </Text>
-            <Text variant="muted" style={styles.reportSubtitle}>
-              Why are you flagging &quot;{term.term}&quot;?
-            </Text>
+                    <Text style={styles.backSectionLabel}>Meaning</Text>
+                    <Text style={styles.backMeaning}>{term.meaning}</Text>
 
-            <Dropdown
-              label="Reason"
-              value={reportReasonLabel}
-              options={FLAG_REASON_LABELS}
-              onChange={setReportReasonLabel}
-              placeholder="Select a reason"
-            />
+                    {examples.length > 0 ? (
+                      <>
+                        <Text style={styles.backSectionLabel}>Example</Text>
+                        {examples.map((example, index) => (
+                          <View
+                            key={index}
+                            style={
+                              index > 0 ? styles.backExampleSpacing : undefined
+                            }
+                          >
+                            <Text style={styles.backExample}>
+                              &quot;{example.sentence}&quot;
+                            </Text>
+                            {example.context ? (
+                              <Text style={styles.backContext}>
+                                {example.context}
+                              </Text>
+                            ) : null}
+                          </View>
+                        ))}
+                      </>
+                    ) : null}
 
-            <Input
-              label="Anything else? (optional)"
-              value={reportComment}
-              onChangeText={setReportComment}
-              multiline
-              numberOfLines={3}
-              style={styles.reportCommentInput}
-            />
-
-            <Button
-              label="Submit"
-              variant="primary"
-              disabled={!reportReasonLabel || isFlagging}
-              onPress={submitFlag}
-              style={{ marginTop: theme.spacing.xs }}
-            />
-          </View>
+                    {term.region ? (
+                      <Text style={styles.backContext}>{term.region}</Text>
+                    ) : null}
+                    <Text style={styles.backContext}>
+                      Added by {term.authorDisplayName ?? term.submittedByName}
+                    </Text>
+                  </ScrollView>
+                </View>
+              </Animated.View>
+            </Animated.View>
+          </GestureDetector>
         </View>
-      </Modal>
+
+        <Modal
+          visible={reportModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={closeReportModal}
+        >
+          <View style={styles.backdrop}>
+            <View style={styles.reportCard}>
+              <Pressable
+                onPress={closeReportModal}
+                hitSlop={12}
+                style={styles.reportCloseButton}
+              >
+                <X size={20} weight="bold" color={theme.colors.textMuted} />
+              </Pressable>
+
+              <Text variant="heading" style={styles.reportTitle}>
+                Report this term
+              </Text>
+              <Text variant="muted" style={styles.reportSubtitle}>
+                Why are you flagging &quot;{term.term}&quot;?
+              </Text>
+
+              <Dropdown
+                label="Reason"
+                value={reportReasonLabel}
+                options={FLAG_REASON_LABELS}
+                onChange={setReportReasonLabel}
+                placeholder="Select a reason"
+              />
+
+              <Input
+                label="Anything else? (optional)"
+                value={reportComment}
+                onChangeText={setReportComment}
+                multiline
+                numberOfLines={3}
+                style={styles.reportCommentInput}
+              />
+
+              <Button
+                label="Submit"
+                variant="primary"
+                disabled={!reportReasonLabel || isFlagging}
+                onPress={submitFlag}
+                style={{ marginTop: theme.spacing.xs }}
+              />
+            </View>
+          </View>
+        </Modal>
       </>
     );
   },

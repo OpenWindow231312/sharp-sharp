@@ -7,24 +7,39 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { theme } from '@/constants/designTheme';
 import { LANGUAGES } from '@/constants/languages';
+import { useAuth } from '@/context/AuthContext';
+import { setUserLanguages } from '@/services/userPrefs';
+import { useState } from 'react';
 
 export default function OnboardingLanguagesScreen() {
   const router = useRouter();
   const { languages, toggleLanguage } = useOnboarding();
+  const { user } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
 
   async function finishOnboarding() {
+    setIsSaving(true);
+    try {
+      // Persist the picks so the Feed can filter by them and Profile can
+      // edit them later. Before this they lived only in memory.
+      if (user) await setUserLanguages(user.uid, languages);
+    } catch (error) {
+      console.log('Save languages error:', error);
+    }
     await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+    setIsSaving(false);
     router.replace('/(tabs)/feed');
   }
 
   return (
     <View style={styles.container}>
-      <ProgressBar progress={0.5} />
+      {/* Last step of one continuous bar that the story screen fills first. */}
+      <ProgressBar progress={1} />
       <Text variant="display" style={{ marginBottom: 8 }}>
         Pick your languages
       </Text>
       <Text variant="muted" style={{ marginBottom: 24 }}>
-        Choose what you want to learn. You can always change this later.
+        Choose what you want to learn. You can change this any time on your profile.
       </Text>
       <ScrollView contentContainerStyle={styles.chipWrap} style={{ flex: 1 }}>
         {LANGUAGES.map((lang) => {
@@ -49,9 +64,9 @@ export default function OnboardingLanguagesScreen() {
         {languages.length} selected
       </Text>
       <Button
-        label="Next"
+        label={isSaving ? 'Saving...' : "Let's go"}
         variant="primary"
-        disabled={languages.length === 0}
+        disabled={languages.length === 0 || isSaving}
         onPress={finishOnboarding}
       />
     </View>

@@ -26,6 +26,13 @@ export const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  addExampleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 16,
+  },
+  addExampleHint: { fontSize: 12, flexShrink: 1 },
   examplesList: { gap: 10 },
   exampleRow: { flexDirection: "row", alignItems: "flex-start" },
   exampleCard: {},

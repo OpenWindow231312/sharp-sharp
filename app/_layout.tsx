@@ -21,7 +21,7 @@ import {
   Stack,
   ThemeProvider,
 } from "expo-router";
-import * as ScreenOrientation from "expo-screen-orientation";
+import { lockPortrait } from "@/utils/orientation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -57,7 +57,7 @@ export default function RootLayout() {
   // Portrait is the app's default everywhere except Learning Mode, which
   // handles its own landscape lock (and reverts back to this on exit).
   useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    lockPortrait();
   }, []);
 
   useEffect(() => {

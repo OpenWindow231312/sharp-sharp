@@ -13,19 +13,20 @@ import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/services/firebase";
 import { saveTermForUser } from "@/services/savedTerms";
+import { matchesLanguages } from "@/services/userPrefs";
 import { addXp } from "@/services/xp";
+import { getInitial } from "@/utils/initials";
 import type { SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import {
   collection,
   doc,
-  getDoc,
   onSnapshot,
   orderBy,
   query,
 } from "firebase/firestore";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { styles } from "@/styles/tabs/feed.styles";
 
 function shuffle<T>(items: T[]): T[] {
@@ -37,6 +38,23 @@ function shuffle<T>(items: T[]): T[] {
   return result;
 }
 
+// Gives every term a position the first time it is seen this session and
+// keeps it. The first snapshot is shuffled so the deck reads as random;
+// anything that arrives later (someone else adding a term) is appended
+// after everything already dealt, so the card under the user's thumb never
+// changes just because the collection changed.
+function dealIntoOrder(
+  terms: SlangTerm[],
+  positions: Map<string, number>,
+): SlangTerm[] {
+  const fresh = terms.filter((t) => !positions.has(t.id));
+  const incoming = positions.size === 0 ? shuffle(fresh) : fresh;
+  for (const term of incoming) positions.set(term.id, positions.size);
+  return [...terms].sort(
+    (a, b) => (positions.get(a.id) ?? 0) - (positions.get(b.id) ?? 0),
+  );
+}
+
 export default function FeedScreen() {
   const { user } = useAuth();
   const [allTerms, setAllTerms] = useState<SlangTerm[]>([]);
@@ -44,14 +62,17 @@ export default function FeedScreen() {
   const [savedCount, setSavedCount] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [xp, setXp] = useState(0);
-  const [photoBase64, setPhotoBase64] = useState<string | undefined>(
-    undefined,
-  );
+  const [photoBase64, setPhotoBase64] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
-  const [toast, setToast] = useState<{ id: number; amount: number } | null>(
-    null,
-  );
+  const [languages, setLanguages] = useState<string[]>([]);
+  const [showAllLanguages, setShowAllLanguages] = useState(false);
+  const [toast, setToast] = useState<{
+    id: number;
+    amount: number;
+    label?: string;
+  } | null>(null);
   const cardRef = useRef<SwipeCardHandle>(null);
+  const positionsRef = useRef(new Map<string, number>());
 
   useEffect(() => {
     if (USE_MOCK_DATA) {
@@ -60,18 +81,31 @@ export default function FeedScreen() {
       return;
     }
     if (!user) return;
-    async function loadInitial() {
-      const snap = await getDoc(doc(db, "users", user.uid));
-      const data = snap.exists() ? snap.data() : {};
-      const saved: string[] = data.savedTerms ?? [];
-      const learned: string[] = data.learnedTerms ?? [];
-      setExcludedIds(new Set([...saved, ...learned]));
-      setSavedCount(saved.length);
-      setXp(data.xp ?? 0);
-      setPhotoBase64(data.photoBase64 ?? undefined);
-      setName(data.name ?? undefined);
-    }
-    loadInitial();
+    // Live listener rather than a one-off read: XP earned on the Add tab
+    // (or anywhere else) shows up here straight away instead of waiting
+    // for the next login. The exclusion set is only taken from the first
+    // snapshot on purpose: if it tracked every save, the deck would shrink
+    // under the current index and skip a card each time.
+    let hasLoadedExclusions = false;
+    const unsubscribe = onSnapshot(
+      doc(db, "users", user.uid),
+      (snap) => {
+        const data = snap.exists() ? snap.data() : {};
+        const saved: string[] = data.savedTerms ?? [];
+        if (!hasLoadedExclusions) {
+          hasLoadedExclusions = true;
+          const learned: string[] = data.learnedTerms ?? [];
+          setExcludedIds(new Set([...saved, ...learned]));
+        }
+        setSavedCount(saved.length);
+        setXp(data.xp ?? 0);
+        setPhotoBase64(data.photoBase64 ?? undefined);
+        setName(data.name ?? undefined);
+        setLanguages(Array.isArray(data.languages) ? data.languages : []);
+      },
+      (error) => console.log("Feed profile listener error:", error),
+    );
+    return unsubscribe;
   }, [user]);
 
   useEffect(() => {
@@ -90,10 +124,7 @@ export default function FeedScreen() {
         const terms = snapshot.docs.map(
           (d) => ({ id: d.id, ...d.data() }) as SlangTerm,
         );
-        // Shuffled here, once per snapshot (not on every render), so the
-        // Feed reads as randomized per session instead of submission
-        // order, without reshuffling mid-swipe on unrelated re-renders.
-        setAllTerms(shuffle(terms));
+        setAllTerms(dealIntoOrder(terms, positionsRef.current));
       },
       (error) => {
         console.log("Feed listener error:", error.message);
@@ -102,23 +133,43 @@ export default function FeedScreen() {
     return unsubscribe;
   }, [user]);
 
+  const activeLanguages = showAllLanguages ? [] : languages;
+
   const feedTerms = useMemo(() => {
     if (!excludedIds) return [];
     return allTerms.filter(
-      (t) => t.submittedBy !== user?.uid && !excludedIds.has(t.id),
+      (t) =>
+        t.submittedBy !== user?.uid &&
+        !excludedIds.has(t.id) &&
+        matchesLanguages(t.language, activeLanguages),
     );
-  }, [allTerms, excludedIds, user]);
+  }, [allTerms, excludedIds, user, activeLanguages]);
+
+  const hiddenByLanguage = useMemo(() => {
+    if (!excludedIds || activeLanguages.length === 0) return 0;
+    return allTerms.filter(
+      (t) =>
+        t.submittedBy !== user?.uid &&
+        !excludedIds.has(t.id) &&
+        !matchesLanguages(t.language, activeLanguages),
+    ).length;
+  }, [allTerms, excludedIds, user, activeLanguages]);
 
   function handleSwipe(direction: "left" | "right") {
     const term = feedTerms[currentIndex];
 
     if (direction === "right" && term) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setXp((x) => x + 5);
-      setToast({ id: Date.now(), amount: 5 });
-      setSavedCount((c) => c + 1);
+      setToast({
+        id: Date.now(),
+        amount: 5,
+        label: "Saved to your dictionary",
+      });
 
-      if (!USE_MOCK_DATA && user) {
+      if (USE_MOCK_DATA) {
+        setXp((x) => x + 5);
+        setSavedCount((c) => c + 1);
+      } else if (user) {
         saveTermForUser(user.uid, term.id).catch((error) =>
           console.log("Save term error:", error),
         );
@@ -161,20 +212,11 @@ export default function FeedScreen() {
         Feed
       </Text>
 
-      {/* TODO: re-enable when quiz feature is built
-      <Button
-        label="Quiz"
-        variant="secondary"
-        size="compact"
-        onPress={() => Alert.alert("Coming soon", "Quizzes coming soon!")}
-        style={styles.quizButton}
-      /> */}
-
       <FeedHeader
         levelTitle={levelInfo.title}
         progress={levelInfo.progress}
         xp={xp}
-        avatarInitial={user?.email?.[0]?.toUpperCase() ?? "?"}
+        avatarInitial={getInitial(name, user?.displayName, user?.email)}
         photoBase64={photoBase64}
         name={name || user?.displayName || "there"}
       />
@@ -184,6 +226,7 @@ export default function FeedScreen() {
           <XpToast
             key={toast.id}
             amount={toast.amount}
+            label={toast.label}
             onDone={() => setToast(null)}
           />
         ) : null}
@@ -195,9 +238,24 @@ export default function FeedScreen() {
             <Text variant="heading" style={{ marginBottom: 8 }}>
               You're all caught up!
             </Text>
-            <Text variant="muted">
-              No new terms right now — check back later, or add one yourself.
+            <Text variant="muted" style={{ marginBottom: 16 }}>
+              {hiddenByLanguage > 0
+                ? `No new terms in your languages right now. There ${hiddenByLanguage === 1 ? "is" : "are"} ${hiddenByLanguage} in other languages.`
+                : "No new terms right now. Check back later, or add one yourself."}
             </Text>
+            {hiddenByLanguage > 0 ? (
+              <Button
+                label="Show all languages"
+                variant="secondary"
+                size="compact"
+                onPress={() => {
+                  // Widening the filter changes the list, so start the
+                  // deck over rather than pointing past the end.
+                  setCurrentIndex(0);
+                  setShowAllLanguages(true);
+                }}
+              />
+            ) : null}
           </Card>
         ) : (
           <>

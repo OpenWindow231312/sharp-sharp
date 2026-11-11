@@ -57,6 +57,19 @@ export const styles = StyleSheet.create({
     marginLeft: 12,
   },
   levelUnlockText: { marginTop: 10, fontSize: 13 },
+  levelThreshold: {
+    fontFamily: theme.fonts.mono,
+    fontSize: 11,
+    marginLeft: 12,
+    marginTop: 2,
+  },
+  levelSummary: {
+    fontFamily: theme.fonts.mono,
+    fontSize: 11,
+    marginBottom: 12,
+  },
+  languageWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  logoutButton: { marginTop: 8, marginBottom: 0 },
   termCard: { marginBottom: 12 },
   cardTop: {
     flexDirection: "row",

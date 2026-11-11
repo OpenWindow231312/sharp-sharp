@@ -124,7 +124,9 @@ export default function OnboardingStoryScreen() {
 
   return (
     <Pressable style={styles.container} onPress={advance}>
-      <ProgressBar progress={(stepIndex + 1) / BEATS.length} />
+      {/* The language picker is the final step, so the bar only reaches
+          100% there rather than filling up and then restarting. */}
+      <ProgressBar progress={(stepIndex + 1) / (BEATS.length + 1)} />
 
       <Pressable onPress={goToLanguages} hitSlop={12} style={styles.skipButton}>
         <Text variant="muted" style={styles.skipText}>

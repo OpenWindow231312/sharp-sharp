@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/Button";
+import { showAlert } from "@/utils/alert";
 import { Card } from "@/components/ui/Card";
 import { Dropdown } from "@/components/ui/Dropdown";
 import { Input } from "@/components/ui/Input";
@@ -21,7 +22,6 @@ import { CaretLeft, Trash, X } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     Pressable,
@@ -168,7 +168,7 @@ export default function EditTermScreen() {
   }
 
   function confirmDelete() {
-    Alert.alert(
+    showAlert(
       "Delete this term?",
       `"${original?.term}" will be permanently removed. This can't be undone.`,
       [

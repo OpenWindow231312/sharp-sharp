@@ -9,8 +9,8 @@ import { useAuth } from "@/context/AuthContext";
 import { getSavedTerms, markTermLearned } from "@/services/savedTerms";
 import type { SlangTerm } from "@/types/slangTerm";
 import { safeBack } from "@/utils/navigation";
+import { lockLandscape, lockPortrait } from "@/utils/orientation";
 import { useLocalSearchParams } from "expo-router";
-import * as ScreenOrientation from "expo-screen-orientation";
 import { CaretLeft, CaretRight, X } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
@@ -32,11 +32,9 @@ export default function LearnScreen() {
   );
 
   useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    lockLandscape();
     return () => {
-      ScreenOrientation.lockAsync(
-        ScreenOrientation.OrientationLock.PORTRAIT_UP,
-      );
+      lockPortrait();
     };
   }, []);
 
@@ -70,10 +68,8 @@ export default function LearnScreen() {
   // the effect cleanup below) avoids the visible stutter of the exit
   // transition starting before the device has finished rotating back.
   async function handleExit() {
-    await ScreenOrientation.lockAsync(
-      ScreenOrientation.OrientationLock.PORTRAIT_UP,
-    );
-    safeBack("/(tabs)/feed");
+    await lockPortrait();
+    safeBack("/(tabs)/saved");
   }
 
   const currentTerm = terms[currentIndex];

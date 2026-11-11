@@ -10,13 +10,13 @@ import { LANGUAGES, OTHER_LANGUAGE_OPTION } from "@/constants/languages";
 import { useAuth } from "@/context/AuthContext";
 import { addSlangTerm } from "@/services/slangTerms";
 import { addXp } from "@/services/xp";
+import { showAlert } from "@/utils/alert";
 import type { SlangExample, SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { CaretLeft, X } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -61,8 +61,19 @@ export default function AddTermScreen() {
     )
       return setErrorMsg("Type the language name.");
     if (step === 2 && !meaning.trim()) return setErrorMsg("Add a meaning.");
-    if (step === 3 && examples.length === 0)
-      return setErrorMsg("Add at least one example, or tap Skip.");
+    if (step === 3) {
+      // Someone who has typed an example and hits Next clearly means to
+      // keep it, so commit it for them rather than greying the button out
+      // until they find "+ Add example".
+      const pending = buildPendingExample();
+      if (pending) {
+        setExamples((prev) => [...prev, pending]);
+        setExampleSentence("");
+        setExampleContext("");
+      } else if (examples.length === 0) {
+        return setErrorMsg("Add at least one example, or tap Skip.");
+      }
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setStep((s) => s + 1);
   }
@@ -81,13 +92,18 @@ export default function AddTermScreen() {
     setStep((s) => Math.max(0, s - 1));
   }
 
-  function addExample() {
+  function buildPendingExample(): SlangExample | null {
     const trimmedSentence = exampleSentence.trim();
-    if (!trimmedSentence) return;
+    if (!trimmedSentence) return null;
     const trimmedContext = exampleContext.trim();
-    const newExample: SlangExample = trimmedContext
+    return trimmedContext
       ? { sentence: trimmedSentence, context: trimmedContext }
       : { sentence: trimmedSentence };
+  }
+
+  function addExample() {
+    const newExample = buildPendingExample();
+    if (!newExample) return;
     setExamples((prev) => [...prev, newExample]);
     setExampleSentence("");
     setExampleContext("");
@@ -152,7 +168,7 @@ export default function AddTermScreen() {
       setErrorMsg(
         "Couldn't add the term. Check your connection and try again.",
       );
-      Alert.alert("Couldn't add the term", detail);
+      showAlert("Couldn't add the term", detail);
     } finally {
       setIsSubmitting(false);
     }
@@ -261,7 +277,7 @@ export default function AddTermScreen() {
         {step === 3 && (
           <StepBlock
             title="Add some flavour"
-            subtitle="Show people how it's really used — you can add more than one."
+            subtitle="Show people how it's really used. Add as many as you like."
           >
             <Input
               label="Example sentence"
@@ -278,17 +294,21 @@ export default function AddTermScreen() {
               onSubmitEditing={addExample}
               returnKeyType="done"
             />
-            <Button
-              label="+ Add example"
-              variant="secondary"
-              size="compact"
-              disabled={!exampleSentence.trim()}
-              onPress={addExample}
-              style={{
-                alignSelf: "flex-start",
-                marginBottom: examples.length > 0 ? 16 : 4,
-              }}
-            />
+            <View style={styles.addExampleRow}>
+              <Button
+                label="+ Add another"
+                variant="secondary"
+                size="compact"
+                disabled={!exampleSentence.trim()}
+                onPress={addExample}
+                style={{ alignSelf: "flex-start", marginBottom: 0 }}
+              />
+              <Text variant="muted" style={styles.addExampleHint}>
+                {examples.length > 0
+                  ? `${examples.length} added`
+                  : "One is enough to continue."}
+              </Text>
+            </View>
             {examples.length > 0 ? (
               <View style={styles.examplesList}>
                 {examples.map((ex, i) => (
@@ -345,7 +365,10 @@ export default function AddTermScreen() {
               : "Next"
           }
           variant="primary"
-          disabled={isSubmitting || (step === 3 && examples.length === 0)}
+          disabled={
+            isSubmitting ||
+            (step === 3 && examples.length === 0 && !exampleSentence.trim())
+          }
           onPress={step === 4 ? handleSubmit : goNext}
           style={{ marginTop: 24 }}
         />

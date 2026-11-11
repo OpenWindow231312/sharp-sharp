@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PromptModal } from "@/components/ui/PromptModal";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { auth } from "@/services/firebase";
+import { showAlert } from "@/utils/alert";
 import { getAuthErrorMessage } from "@/utils/authErrors";
 import { Link, useRouter } from "expo-router";
 import {
@@ -11,7 +13,6 @@ import {
 } from "firebase/auth";
 import { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -65,6 +66,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   async function handleLogin() {
     setErrorMsg("");
     if (!email.trim() || !password) {
@@ -81,27 +84,22 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   }
-  function handleForgotPassword() {
-    Alert.prompt(
-      "Reset password",
-      "Enter your email address and we'll send you a reset link.",
-      async (inputEmail) => {
-        const targetEmail = (inputEmail ?? "").trim();
-        if (!targetEmail) return;
-        try {
-          await sendPasswordResetEmail(auth, targetEmail);
-        } catch (error) {
-          console.log("Password reset error:", error);
-        } finally {
-          Alert.alert(
-            "Check your email",
-            "If an account exists for this email, a reset link has been sent.",
-          );
-        }
-      },
-      "plain-text",
-      email.trim(),
-    );
+  async function handleSendReset(targetEmail: string) {
+    setIsSendingReset(true);
+    try {
+      await sendPasswordResetEmail(auth, targetEmail);
+    } catch (error) {
+      console.log("Password reset error:", error);
+    } finally {
+      setIsSendingReset(false);
+      setIsResetOpen(false);
+      // Same wording whether or not the address exists, so the form can't
+      // be used to check which emails have accounts.
+      showAlert(
+        "Check your email",
+        "If an account exists for this email, a reset link has been sent.",
+      );
+    }
   }
   return (
     <KeyboardAvoidingView
@@ -147,13 +145,10 @@ export default function LoginScreen() {
               onChangeText={setPassword}
             />
             <Pressable
-              onPress={handleForgotPassword}
+              onPress={() => setIsResetOpen(true)}
               style={{ alignSelf: "flex-end", marginBottom: 16 }}
             >
-              <Text
-                variant="muted"
-                style={{ textDecorationLine: "underline" }}
-              >
+              <Text variant="muted" style={{ textDecorationLine: "underline" }}>
                 Forgot password?
               </Text>
             </Pressable>
@@ -172,14 +167,25 @@ export default function LoginScreen() {
             <View style={styles.footer}>
               <Text variant="muted">Don't have an account? </Text>
               <Link href="/auth/signup">
-                <Text style={{ textDecorationLine: "underline" }}>
-                  Sign up
-                </Text>
+                <Text style={{ textDecorationLine: "underline" }}>Sign up</Text>
               </Link>
             </View>
           </View>
         </View>
       </ScrollView>
+      <PromptModal
+        visible={isResetOpen}
+        title="Reset password"
+        message="Enter your email address and we'll send you a reset link."
+        placeholder="your@email.com"
+        initialValue={email.trim()}
+        confirmLabel="Send reset link"
+        isBusy={isSendingReset}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        onConfirm={handleSendReset}
+        onCancel={() => setIsResetOpen(false)}
+      />
     </KeyboardAvoidingView>
   );
 }

@@ -6,10 +6,11 @@ import { theme } from '@/constants/designTheme';
 
 type XpToastProps = {
   amount: number;
+  label?: string;
   onDone: () => void;
 };
 
-export function XpToast({ amount, onDone }: XpToastProps) {
+export function XpToast({ amount, label, onDone }: XpToastProps) {
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.8);
@@ -17,12 +18,12 @@ export function XpToast({ amount, onDone }: XpToastProps) {
   useEffect(() => {
     opacity.value = withSequence(
       withTiming(1, { duration: 150 }),
-      withTiming(1, { duration: 500 }),
+      withTiming(1, { duration: label ? 900 : 500 }),
       withTiming(0, { duration: 300 }, (finished) => {
         if (finished) runOnJS(onDone)();
       })
     );
-    translateY.value = withTiming(-60, { duration: 950 });
+    translateY.value = withTiming(-60, { duration: label ? 1350 : 950 });
     scale.value = withTiming(1, { duration: 200 });
   }, []);
 
@@ -34,11 +35,24 @@ export function XpToast({ amount, onDone }: XpToastProps) {
   return (
     <Animated.View style={[styles.container, style]} pointerEvents="none">
       <Text style={styles.text}>+{amount} XP</Text>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { position: 'absolute', top: 100, alignSelf: 'center', zIndex: 50 },
+  container: {
+    position: 'absolute',
+    top: 100,
+    alignSelf: 'center',
+    zIndex: 50,
+    alignItems: 'center',
+    backgroundColor: theme.colors.paper,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: theme.radius.pill,
+    ...theme.shadow.soft,
+  },
   text: { fontFamily: theme.fonts.displayExtraBold, fontSize: 22, color: theme.colors.highveld },
+  label: { fontFamily: theme.fonts.bodySemibold, fontSize: 13, color: theme.colors.inkSoft },
 });

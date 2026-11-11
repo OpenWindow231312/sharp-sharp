@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/Button";
+import { showAlert } from "@/utils/alert";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Dropdown } from "@/components/ui/Dropdown";
@@ -33,7 +34,6 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -92,7 +92,7 @@ export default function AdminDashboardScreen() {
       .then(setFlags)
       .catch((error) => {
         console.log("Load flags error:", error);
-        Alert.alert(
+        showAlert(
           "Couldn't load flagged terms",
           "Check your connection and try again.",
         );
@@ -145,7 +145,7 @@ export default function AdminDashboardScreen() {
   }
 
   function confirmDeleteFlaggedTerm(flag: Flag) {
-    Alert.alert(
+    showAlert(
       "Delete this term?",
       `"${flag.termSnapshot}" will be permanently removed. This can't be undone.`,
       [
@@ -173,7 +173,7 @@ export default function AdminDashboardScreen() {
   }
 
   function confirmDeleteTerm(term: SlangTerm) {
-    Alert.alert(
+    showAlert(
       "Delete this term?",
       `"${term.term}" will be permanently removed. This can't be undone.`,
       [

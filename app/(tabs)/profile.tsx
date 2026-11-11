@@ -2,14 +2,19 @@ import { BadgeMedallion } from "@/components/ui/BadgeMedallion";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { PromptModal } from "@/components/ui/PromptModal";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
-import { LEVELS } from "@/constants/levels";
+import { LANGUAGES } from "@/constants/languages";
+import { getLevelInfo, LEVELS } from "@/constants/levels";
 import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
 import { auth, db } from "@/services/firebase";
 import { deleteSlangTerm, getUserSubmittedTerms } from "@/services/slangTerms";
+import { setUserLanguages } from "@/services/userPrefs";
+import { showAlert } from "@/utils/alert";
+import { getInitial } from "@/utils/initials";
 import { styles } from "@/styles/tabs/profile.styles";
 import type { SlangTerm } from "@/types/slangTerm";
 import * as Haptics from "expo-haptics";
@@ -22,7 +27,6 @@ import { PencilSimple, Trash } from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -32,20 +36,16 @@ import Animated, { FadeIn, Layout } from "react-native-reanimated";
 
 type Tab = "overview" | "myTerms";
 
-// Placeholder copy for now — no real per-level unlock mechanics exist yet.
+// Flavour copy per level. The actual XP numbers come from LEVELS so the
+// card can also say exactly how far away each tier is.
 const LEVEL_UNLOCK_TEXT: Record<string, string> = {
-  "Eish!": "Just getting started — keep swiping to earn XP.",
+  "Eish!": "Just getting started. Keep swiping to earn XP.",
   Ubuntu: "You're learning the community's words.",
-  Lekker: "Solid progress — you're getting the hang of this.",
+  Lekker: "Solid progress. You're getting the hang of this.",
   Ayoba: "You know your stuff. Keep going.",
   "Local Legend": "You've earned real street cred.",
   "Sharp Sharp": "Maximum level. You're fluent in the culture.",
 };
-
-function getInitial(nameOrEmail: string | null | undefined): string {
-  const trimmed = (nameOrEmail ?? "").trim();
-  return trimmed ? trimmed[0].toUpperCase() : "?";
-}
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -64,6 +64,9 @@ export default function ProfileScreen() {
   const [name, setName] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [languages, setLanguages] = useState<string[]>([]);
+  const [isNameOpen, setIsNameOpen] = useState(false);
+  const [isSavingName, setIsSavingName] = useState(false);
 
   useEffect(() => {
     if (USE_MOCK_DATA) {
@@ -83,6 +86,7 @@ export default function ProfileScreen() {
         setIsAdmin(data.isAdmin === true);
         setName(data.name ?? null);
         setPhotoBase64(data.photoBase64 ?? null);
+        setLanguages(Array.isArray(data.languages) ? data.languages : []);
       },
       (error) => console.log("Profile stats listener error:", error),
     );
@@ -113,7 +117,7 @@ export default function ProfileScreen() {
     if (!user) return;
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert(
+      showAlert(
         "Permission needed",
         "Allow photo library access to set a profile photo.",
       );
@@ -148,7 +152,7 @@ export default function ProfileScreen() {
       );
     } catch (error) {
       console.log("Photo upload error:", error);
-      Alert.alert(
+      showAlert(
         "Couldn't update photo",
         "Check your connection and try again.",
       );
@@ -157,31 +161,43 @@ export default function ProfileScreen() {
     }
   }
 
-  function handleEditName() {
+  async function handleSaveName(inputName: string) {
     if (!user) return;
-    Alert.prompt(
-      "Edit name",
-      "Enter your name.",
-      async (inputName) => {
-        const trimmed = (inputName ?? "").trim();
-        if (!trimmed) return;
-        try {
-          await setDoc(
-            doc(db, "users", user.uid),
-            { name: trimmed },
-            { merge: true },
-          );
-        } catch (error) {
-          console.log("Update name error:", error);
-          Alert.alert(
-            "Couldn't update name",
-            "Check your connection and try again.",
-          );
-        }
-      },
-      "plain-text",
-      displayName,
+    setIsSavingName(true);
+    try {
+      await setDoc(
+        doc(db, "users", user.uid),
+        { name: inputName },
+        { merge: true },
+      );
+      setIsNameOpen(false);
+    } catch (error) {
+      console.log("Update name error:", error);
+      showAlert("Couldn't update name", "Check your connection and try again.");
+    } finally {
+      setIsSavingName(false);
+    }
+  }
+
+  function toggleLanguage(lang: string) {
+    if (!user) return;
+    Haptics.selectionAsync();
+    const next = languages.includes(lang)
+      ? languages.filter((l) => l !== lang)
+      : [...languages, lang];
+    // Optimistic so the chip flips instantly; the snapshot listener above
+    // confirms (or reverts) it a moment later.
+    setLanguages(next);
+    setUserLanguages(user.uid, next).catch((error) =>
+      console.log("Update languages error:", error),
     );
+  }
+
+  function confirmLogout() {
+    showAlert("Log out?", "You'll need your password to get back in.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Log out", style: "destructive", onPress: handleLogout },
+    ]);
   }
 
   async function handleLogout() {
@@ -202,7 +218,7 @@ export default function ProfileScreen() {
   }
 
   function confirmDeleteTerm(term: SlangTerm) {
-    Alert.alert(
+    showAlert(
       "Delete this term?",
       `"${term.term}" will be permanently removed. This can't be undone.`,
       [
@@ -230,6 +246,7 @@ export default function ProfileScreen() {
 
   const displayName =
     name || user?.displayName || user?.email || "Sharp Sharp user";
+  const levelInfo = getLevelInfo(xp);
 
   return (
     <View style={styles.container}>
@@ -293,7 +310,7 @@ export default function ProfileScreen() {
             {displayName}
           </Text>
           <Pressable
-            onPress={handleEditName}
+            onPress={() => setIsNameOpen(true)}
             hitSlop={8}
             style={{ marginLeft: 6 }}
           >
@@ -375,13 +392,43 @@ export default function ProfileScreen() {
             </Card>
           </View>
 
-          <Text variant="heading" style={{ marginTop: 24, marginBottom: 12 }}>
+          <Text variant="heading" style={{ marginTop: 24, marginBottom: 4 }}>
+            Your languages
+          </Text>
+          <Text variant="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+            {languages.length > 0
+              ? "The Feed only shows terms in these."
+              : "Nothing picked, so the Feed shows every language."}
+          </Text>
+          <View style={styles.languageWrap}>
+            {LANGUAGES.map((lang) => (
+              <Chip
+                key={lang}
+                label={lang}
+                selected={languages.includes(lang)}
+                onPress={() => toggleLanguage(lang)}
+              />
+            ))}
+          </View>
+
+          <Text variant="heading" style={{ marginTop: 24, marginBottom: 4 }}>
             Levels
+          </Text>
+          <Text variant="muted" style={styles.levelSummary}>
+            {levelInfo.isMaxLevel
+              ? `${xp} XP · top tier reached`
+              : `${xp} XP · ${LEVELS[levelInfo.level].threshold - xp} XP to ${LEVELS[levelInfo.level].title}`}
           </Text>
           <View style={{ gap: 10 }}>
             {LEVELS.map((level) => {
               const unlocked = xp >= level.threshold;
               const isExpanded = expandedLevel === level.title;
+              const requirement =
+                level.threshold === 0
+                  ? "Everyone starts here."
+                  : unlocked
+                    ? `Unlocked at ${level.threshold} XP.`
+                    : `Unlocks at ${level.threshold} XP. ${level.threshold - xp} XP to go.`;
               return (
                 <Pressable
                   key={level.title}
@@ -397,11 +444,16 @@ export default function ProfileScreen() {
                         unlocked={unlocked}
                         size={44}
                       />
-                      <Text style={styles.levelListTitle}>{level.title}</Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.levelListTitle}>{level.title}</Text>
+                        <Text variant="muted" style={styles.levelThreshold}>
+                          {level.threshold} XP
+                        </Text>
+                      </View>
                     </View>
                     {isExpanded ? (
                       <Text variant="muted" style={styles.levelUnlockText}>
-                        {LEVEL_UNLOCK_TEXT[level.title]}
+                        {requirement} {LEVEL_UNLOCK_TEXT[level.title]}
                       </Text>
                     ) : null}
                   </Card>
@@ -409,14 +461,7 @@ export default function ProfileScreen() {
               );
             })}
           </View>
-
-          <Button
-            label={isLoggingOut ? "Logging out..." : "Log out"}
-            variant="secondary"
-            disabled={isLoggingOut}
-            onPress={handleLogout}
-            style={{ marginTop: 8, marginBottom: 24 }}
-          />
+          <View style={{ height: 24 }} />
         </ScrollView>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -466,6 +511,27 @@ export default function ProfileScreen() {
           )}
         </ScrollView>
       )}
+
+      <Button
+        label={isLoggingOut ? "Logging out..." : "Log out"}
+        variant="secondary"
+        disabled={isLoggingOut}
+        onPress={confirmLogout}
+        style={styles.logoutButton}
+      />
+
+      <PromptModal
+        visible={isNameOpen}
+        title="Edit name"
+        message="This is how you'll appear on terms you add."
+        placeholder="Your name"
+        initialValue={name ?? user?.displayName ?? ""}
+        confirmLabel="Save name"
+        isBusy={isSavingName}
+        autoCapitalize="words"
+        onConfirm={handleSaveName}
+        onCancel={() => setIsNameOpen(false)}
+      />
     </View>
   );
 }

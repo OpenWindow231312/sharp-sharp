@@ -24,7 +24,7 @@
       "package": "com.anonymous.sharpsharp"
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
