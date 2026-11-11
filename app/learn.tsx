@@ -73,7 +73,7 @@ export default function LearnScreen() {
     await ScreenOrientation.lockAsync(
       ScreenOrientation.OrientationLock.PORTRAIT_UP,
     );
-    safeBack("/(tabs)");
+    safeBack("/(tabs)/feed");
   }
 
   const currentTerm = terms[currentIndex];

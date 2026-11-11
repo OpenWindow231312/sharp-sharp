@@ -1,7 +1,7 @@
 // utils/navigation.ts
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 
-export function safeBack(fallbackHref: string) {
+export function safeBack(fallbackHref: Href) {
   if (router.canGoBack()) {
     router.back();
   } else {

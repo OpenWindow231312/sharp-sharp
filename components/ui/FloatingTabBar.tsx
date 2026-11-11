@@ -1,5 +1,5 @@
 import { theme } from "@/constants/designTheme";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import type { BottomTabBarProps } from "expo-router/tabs";
 import * as Haptics from "expo-haptics";
 import { Book, Bookmark, PlusCircle, User, type Icon } from "phosphor-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -13,7 +13,7 @@ const ICONS: Record<string, Icon> = {
   profile: User,
 };
 
-export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -35,13 +35,13 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
 
           const onPress = () => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            const event = navigation.emit({
+            const event = emitter.emit({
               type: "tabPress",
               target: route.key,
               canPreventDefault: true,
             });
             if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
+              navigateToTab(route.key);
             }
           };
 
