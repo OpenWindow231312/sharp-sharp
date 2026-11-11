@@ -15,12 +15,7 @@ import {
   PlusJakartaSans_700Bold,
   useFonts as usePlusJakartaSansFonts,
 } from "@expo-google-fonts/plus-jakarta-sans";
-import {
-  DarkTheme,
-  DefaultTheme,
-  Stack,
-  ThemeProvider,
-} from "expo-router";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import { lockPortrait } from "@/utils/orientation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -122,6 +117,20 @@ export default function RootLayout() {
             />
             <Stack.Screen name="learn" options={{ headerShown: false }} />
             <Stack.Screen name="edit-term" options={{ headerShown: false }} />
+            <Stack.Screen name="my-terms" options={{ headerShown: false }} />
+            <Stack.Screen name="levels" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="settings/index"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="settings/name"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="settings/languages"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="admin/index" options={{ headerShown: false }} />
             <Stack.Screen
               name="modal"

@@ -8,6 +8,10 @@ import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
 import { LANGUAGES, OTHER_LANGUAGE_OPTION } from "@/constants/languages";
 import { useAuth } from "@/context/AuthContext";
+import {
+  TAB_BAR_CLEARANCE,
+  useHideTabBarOnScroll,
+} from "@/context/TabBarContext";
 import { addSlangTerm } from "@/services/slangTerms";
 import { addXp } from "@/services/xp";
 import { showAlert } from "@/utils/alert";
@@ -36,6 +40,7 @@ const TOTAL_STEPS = 5;
 export default function AddTermScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const onScroll = useHideTabBarOnScroll();
 
   const [step, setStep] = useState(0);
   const [term, setTerm] = useState("");
@@ -194,8 +199,13 @@ export default function AddTermScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+          styles.container,
+          { paddingBottom: TAB_BAR_CLEARANCE },
+        ]}
         keyboardShouldPersistTaps="handled"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
         <ProgressBar progress={(step + 1) / TOTAL_STEPS} />
 

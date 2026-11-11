@@ -1,8 +1,20 @@
 import { theme } from "@/constants/designTheme";
+import { useTabBar } from "@/context/TabBarContext";
 import type { BottomTabBarProps } from "expo-router/tabs";
 import * as Haptics from "expo-haptics";
-import { Book, Bookmark, PlusCircle, User, type Icon } from "phosphor-react-native";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  Book,
+  Bookmark,
+  PlusCircle,
+  User,
+  type Icon,
+} from "phosphor-react-native";
+import { useEffect } from "react";
+import { Pressable, StyleSheet } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "./Text";
 
@@ -13,17 +25,38 @@ const ICONS: Record<string, Icon> = {
   profile: User,
 };
 
-export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
+export function FloatingTabBar({
+  state,
+  descriptors,
+  emitter,
+  navigateToTab,
+}: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { hidden, show } = useTabBar();
+
+  // Switching tabs always brings the bar back, so a tab never opens with
+  // its own navigation missing.
+  useEffect(() => {
+    show();
+  }, [state.index, show]);
+
+  const slide = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: withTiming(hidden.value * 140, { duration: 220 }) },
+    ],
+    opacity: withTiming(1 - hidden.value, { duration: 180 }),
+  }));
 
   return (
-    <View
+    <Animated.View
+      pointerEvents="box-none"
       style={[
         styles.wrap,
         { paddingBottom: insets.bottom || theme.spacing.md },
+        slide,
       ]}
     >
-      <View style={styles.shell}>
+      <Animated.View style={styles.shell}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -54,27 +87,34 @@ export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: B
               <IconComponent
                 size={24}
                 weight={isFocused ? "fill" : "bold"}
-                color={isFocused ? theme.colors.primaryText : theme.colors.inkSoft}
+                color={
+                  isFocused ? theme.colors.primaryText : theme.colors.inkSoft
+                }
               />
               {isFocused ? <Text style={styles.label}>{label}</Text> : null}
             </Pressable>
           );
         })}
-      </View>
-    </View>
+      </Animated.View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Floats over the screens instead of taking a slice of the height, so
+  // hiding it actually gives the space back.
   wrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: "center",
-    backgroundColor: theme.colors.background,
     paddingTop: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
   },
   shell: {
     flexDirection: "row",
-    backgroundColor: "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.94)",
     borderRadius: theme.radius.pill,
     padding: theme.spacing.sm,
     ...theme.shadow.soft,

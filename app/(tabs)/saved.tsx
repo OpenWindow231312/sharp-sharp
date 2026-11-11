@@ -5,6 +5,10 @@ import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
 import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
+import {
+  TAB_BAR_CLEARANCE,
+  useHideTabBarOnScroll,
+} from "@/context/TabBarContext";
 import { getSavedTerms, removeSavedTerm } from "@/services/savedTerms";
 import type { SlangTerm } from "@/types/slangTerm";
 import { showAlert } from "@/utils/alert";
@@ -25,6 +29,7 @@ import { styles } from "@/styles/tabs/saved.styles";
 export default function SavedScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const onScroll = useHideTabBarOnScroll();
   const [terms, setTerms] = useState<SlangTerm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -107,7 +112,12 @@ export default function SavedScreen() {
           </Text>
         </Card>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: TAB_BAR_CLEARANCE }}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+        >
           <Card style={styles.studyCard}>
             <View style={{ flex: 1, paddingRight: 12 }}>
               <Text style={styles.studyTitle}>Dictionary mode</Text>

@@ -5,6 +5,9 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 70,
+    // The tab bar floats over the screen now, so leave room under the
+    // swipe controls.
+    paddingBottom: 96,
     backgroundColor: theme.colors.background,
   },
   stack: {
