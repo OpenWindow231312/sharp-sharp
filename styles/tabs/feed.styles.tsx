@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   cardSlot: {
-    marginTop: 56,
+    marginTop: 24,
     marginBottom: 10,
   },
   avatar: {
