@@ -11,9 +11,10 @@ export const styles = StyleSheet.create({
   },
   // Just tall enough for the card, so the swipe controls sit right under
   // it instead of being pushed to the bottom of a tall phone.
+  // height = CARD_HEIGHT (components/ui/SwipeCard.tsx) + paddingTop + 10.
   stack: {
-    height: 500,
-    paddingTop: 30,
+    height: 566,
+    paddingTop: 56,
     justifyContent: "flex-start",
   },
   avatar: {

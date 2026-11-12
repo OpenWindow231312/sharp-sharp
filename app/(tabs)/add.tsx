@@ -371,7 +371,7 @@ export default function AddTermScreen() {
               title="Ready to teach Sharp Sharp?"
               subtitle="Here's what people will see."
             >
-              <View style={{ position: "relative", minHeight: 460 }}>
+              <View style={{ position: "relative", minHeight: 500 }}>
                 <SwipeCard term={previewTerm} interactive={false} />
               </View>
             </StepBlock>
