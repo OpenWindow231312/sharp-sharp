@@ -11,11 +11,15 @@ export const styles = StyleSheet.create({
   },
   // Just tall enough for the card, so the swipe controls sit right under
   // it instead of being pushed to the bottom of a tall phone.
-  // height = CARD_HEIGHT (components/ui/SwipeCard.tsx) + paddingTop + 10.
+  // The card is absolutely positioned, so it gets its own slot: cardSlot's
+  // marginTop is the gap between the XP bar and the card. The controls
+  // follow the stack, so they move with the card.
   stack: {
-    height: 566,
-    paddingTop: 56,
     justifyContent: "flex-start",
+  },
+  cardSlot: {
+    marginTop: 56,
+    marginBottom: 10,
   },
   avatar: {
     width: 48,

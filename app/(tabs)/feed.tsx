@@ -3,7 +3,11 @@ import { Card } from "@/components/ui/Card";
 import { FeedControls } from "@/components/ui/FeedControls";
 import { BAND_OVERLAP, MonoTag, ScreenBand } from "@/components/ui/ScreenBand";
 import { FirstTimeTutorial } from "@/components/ui/FirstTimeTutorial";
-import { SwipeCard, type SwipeCardHandle } from "@/components/ui/SwipeCard";
+import {
+  CARD_HEIGHT,
+  SwipeCard,
+  type SwipeCardHandle,
+} from "@/components/ui/SwipeCard";
 import { Text } from "@/components/ui/Text";
 import { XpToast } from "@/components/ui/XpToast";
 import { theme } from "@/constants/designTheme";
@@ -274,12 +278,14 @@ export default function FeedScreen() {
         ) : (
           <>
             {topTerm ? (
-              <SwipeCard
-                ref={cardRef}
-                key={topTerm.id}
-                term={topTerm}
-                onSwipe={handleSwipe}
-              />
+              <View style={[styles.cardSlot, { height: CARD_HEIGHT }]}>
+                <SwipeCard
+                  ref={cardRef}
+                  key={topTerm.id}
+                  term={topTerm}
+                  onSwipe={handleSwipe}
+                />
+              </View>
             ) : null}
           </>
         )}

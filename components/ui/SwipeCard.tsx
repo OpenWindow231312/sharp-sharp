@@ -43,7 +43,7 @@ const FLAG_REASON_LABELS = FLAG_REASONS.map((r) => r.label);
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
-const CARD_HEIGHT = 500;
+export const CARD_HEIGHT = 500;
 
 // The enamel-plaque accent (front border, rivets, front language tag) is
 // the same marigold across every colorway. The back face instead borders
