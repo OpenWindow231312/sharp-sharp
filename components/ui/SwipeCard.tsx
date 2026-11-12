@@ -211,6 +211,10 @@ type SwipeCardProps = {
   // static preview — e.g. the Add wizard's review step — with swiping
   // and flagging disabled. Tap-to-flip still works either way.
   interactive?: boolean;
+  // Overrides for places that show a smaller card (the Add preview).
+  // Every other card keeps CARD_HEIGHT and the default word size.
+  height?: number;
+  termFontSize?: number;
 };
 
 export type SwipeCardHandle = {
@@ -219,7 +223,21 @@ export type SwipeCardHandle = {
 };
 
 export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
-  function SwipeCard({ term, onSwipe = () => {}, interactive = true }, ref) {
+  function SwipeCard(
+    {
+      term,
+      onSwipe = () => {},
+      interactive = true,
+      height = CARD_HEIGHT,
+      termFontSize,
+    },
+    ref,
+  ) {
+    const sizeStyle = { minHeight: height };
+    const shellStyle = { height };
+    const termSizeStyle = termFontSize
+      ? { fontSize: termFontSize, lineHeight: Math.round(termFontSize * 1.24) }
+      : null;
     const { user } = useAuth();
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
@@ -356,9 +374,9 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
     return (
       <>
-        <View style={styles.cardPositioner}>
+        <View style={[styles.cardPositioner, sizeStyle]}>
           <GestureDetector gesture={composedGesture}>
-            <Animated.View style={[styles.wrapper, dragStyle]}>
+            <Animated.View style={[styles.wrapper, sizeStyle, dragStyle]}>
               <Animated.View
                 style={[styles.stamp, styles.saveStamp, saveStampStyle]}
               >
@@ -375,6 +393,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 <View
                   style={[
                     styles.cardShell,
+                    shellStyle,
                     styles.frontCardShell,
                     { backgroundColor: colorway.background },
                   ]}
@@ -439,7 +458,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
 
                     <View style={styles.termWrap}>
                       <Text
-                        style={styles.termText}
+                        style={[styles.termText, termSizeStyle]}
                         numberOfLines={3}
                         adjustsFontSizeToFit
                         minimumFontScale={0.6}
@@ -467,6 +486,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                 <View
                   style={[
                     styles.cardShell,
+                    shellStyle,
                     styles.backCardShell,
                     { borderColor: colorway.background },
                   ]}
