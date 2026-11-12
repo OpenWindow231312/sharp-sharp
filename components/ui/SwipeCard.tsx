@@ -432,30 +432,18 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                   />
 
                   <View style={styles.plaqueContent}>
-                    <Text style={styles.langTag}>
-                      {term.language.toUpperCase()}
-                    </Text>
+                    <View style={styles.langPill}>
+                      <Text style={styles.langPillText}>
+                        {term.language.toUpperCase()}
+                      </Text>
+                    </View>
 
                     <View style={styles.termWrap}>
                       <Text
-                        style={[
-                          styles.termText,
-                          styles.termTextHighlight,
-                          { color: colorway.termShadowLight },
-                        ]}
-                        numberOfLines={2}
+                        style={styles.termText}
+                        numberOfLines={3}
                         adjustsFontSizeToFit
-                      >
-                        {term.term}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.termText,
-                          styles.termTextMain,
-                          { textShadowColor: colorway.termShadowDark },
-                        ]}
-                        numberOfLines={2}
-                        adjustsFontSizeToFit
+                        minimumFontScale={0.6}
                       >
                         {term.term}
                       </Text>
@@ -489,24 +477,25 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                     showsVerticalScrollIndicator={false}
                   >
                     <View style={styles.backTermRow}>
-                      <Text
+                      <View
                         style={[
-                          styles.backTermSmall,
-                          { color: colorway.background },
+                          styles.backTermPill,
+                          { backgroundColor: colorway.background },
                         ]}
                       >
-                        {term.term}
+                        <Text style={styles.backTermPillText}>
+                          {term.term.toUpperCase()}
+                        </Text>
+                      </View>
+                      <Text style={styles.backLangSmall}>
+                        {term.language.toUpperCase()}
                       </Text>
-                      <Text style={styles.backLangSmall}>{term.language}</Text>
                     </View>
-                    <View style={styles.backDivider} />
 
-                    <Text style={styles.backSectionLabel}>Meaning</Text>
                     <Text style={styles.backMeaning}>{term.meaning}</Text>
 
                     {examples.length > 0 ? (
-                      <>
-                        <Text style={styles.backSectionLabel}>Example</Text>
+                      <View style={styles.backExamples}>
                         {examples.map((example, index) => (
                           <View
                             key={index}
@@ -524,7 +513,7 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                             ) : null}
                           </View>
                         ))}
-                      </>
+                      </View>
                     ) : null}
 
                     {term.region ? (
@@ -646,33 +635,33 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 20,
   },
-  langTag: {
+  langPill: {
+    alignSelf: "flex-start",
+    backgroundColor: theme.colors.ink,
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  langPillText: {
     fontFamily: theme.fonts.mono,
-    fontSize: 10,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    color: ACCENT,
-    alignSelf: "center",
+    fontSize: 12,
+    letterSpacing: 2,
+    color: theme.colors.paper,
   },
   termWrap: {
     alignItems: "center",
     justifyContent: "center",
+    // Long words and phrases wrap inside this width instead of running
+    // to the card edge; anything longer still shrinks to fit.
+    maxWidth: "86%",
+    alignSelf: "center",
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 56,
-    lineHeight: 62,
+    fontSize: 60,
+    lineHeight: 64,
     textAlign: "center",
-    paddingHorizontal: theme.spacing.md,
-  },
-  termTextHighlight: {
-    position: "absolute",
-    transform: [{ translateX: -1 }, { translateY: -1 }],
-  },
-  termTextMain: {
     color: theme.colors.paper,
-    textShadowOffset: { width: 1, height: 2 },
-    textShadowRadius: 1,
   },
   flipHint: {
     fontFamily: theme.fonts.mono,
@@ -683,63 +672,62 @@ const styles = StyleSheet.create({
   },
   backTermRow: {
     flexDirection: "row",
-    alignItems: "baseline",
-    justifyContent: "space-between",
-    marginBottom: 4,
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 20,
   },
-  backTermSmall: {
-    fontFamily: theme.fonts.displayBold,
-    fontSize: 20,
+  backTermPill: {
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     flexShrink: 1,
+  },
+  backTermPillText: {
+    fontFamily: theme.fonts.mono,
+    fontSize: 12,
+    letterSpacing: 2,
+    color: theme.colors.paper,
   },
   backLangSmall: {
     fontFamily: theme.fonts.mono,
-    fontSize: 9,
-    letterSpacing: 0.72,
-    textTransform: "uppercase",
+    fontSize: 12,
+    letterSpacing: 2,
     color: theme.colors.textMuted,
-    marginLeft: theme.spacing.sm,
-  },
-  backDivider: {
-    height: 1,
-    backgroundColor: theme.colors.border,
-    marginVertical: 10,
   },
   backContent: {
-    paddingVertical: 22,
-    paddingHorizontal: 20,
+    paddingVertical: 26,
+    paddingHorizontal: 24,
     flexGrow: 1,
   },
-  backSectionLabel: {
-    fontFamily: theme.fonts.mono,
-    fontSize: 9,
-    letterSpacing: 0.9,
-    textTransform: "uppercase",
-    color: theme.colors.textMuted,
-    marginBottom: 4,
-  },
+  // The meaning is the headline of the back; the word becomes a tag.
   backMeaning: {
-    fontFamily: theme.fonts.body,
-    fontSize: 13.5,
-    lineHeight: 19.6,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 30,
+    lineHeight: 36,
     color: theme.colors.text,
-    marginBottom: 14,
+    marginBottom: 20,
+  },
+  backExamples: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    paddingTop: 18,
+    marginBottom: 18,
   },
   backExampleSpacing: {
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.md,
   },
   backExample: {
     fontFamily: theme.fonts.body,
     fontStyle: "italic",
-    fontSize: 13,
-    lineHeight: 18.2,
+    fontSize: 18,
+    lineHeight: 25,
     color: theme.colors.text,
     marginBottom: 4,
   },
   backContext: {
     fontFamily: theme.fonts.body,
-    fontSize: 11.5,
-    lineHeight: 15.5,
+    fontSize: 14,
+    lineHeight: 20,
     color: theme.colors.textMuted,
   },
   stamp: {
