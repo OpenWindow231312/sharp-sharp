@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.svg" width="360" alt="Sharp Sharp logo">
+  <img src="banner.png" width="700" alt="Sharp Sharp banner">
 </p>
 
 <h1 align="center">Sharp Sharp</h1>
@@ -68,7 +68,7 @@ Email and password authentication with a persistent session, so you stay logged 
 
 ### 2. Meet the app
 
-A short, character-driven onboarding walks new users through what "real" South African slang actually sounds like before they ever see the feed.
+A short, character-driven onboarding walks new users through what "real" South African slang actually sounds like before they ever see the feed, then lets them pick which languages they want to learn (changeable any time from their profile).
 
 <p align="center">
   <img src="screenshots/meet the app.png" width="700">
@@ -80,9 +80,6 @@ Terms appear one at a time as enamel-plaque style cards, colour-coded per term. 
 
 <p align="center">
   <img src="screenshots/Swipe through feed 1.png" width="700">
-</p>
-<p align="center">
-  <img src="screenshots/Swipe through feed 2.png" width="700">
 </p>
 
 If a term looks wrong, offensive, or inaccurate, flag it directly from the feed with a reason and an optional comment. It's reviewed by an admin before anything is removed.
@@ -105,6 +102,12 @@ Every saved term and every contribution earns XP. As XP builds up, you climb a s
 
 <p align="center">
   <img src="screenshots/Earn XP.png" width="700">
+</p>
+
+Your profile pulls it all together: your current level, the terms you've added, saved and studied, plus settings for your name, photo and learning languages.
+
+<p align="center">
+  <img src="screenshots/Profile and settings.png" width="700">
 </p>
 
 ### 6. Study in Dictionary Mode
