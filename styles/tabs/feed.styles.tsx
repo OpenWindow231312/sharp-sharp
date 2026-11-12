@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
   // Just tall enough for the card, so the swipe controls sit right under
   // it instead of being pushed to the bottom of a tall phone.
   stack: {
-    height: 440,
+    height: 470,
     justifyContent: "flex-start",
   },
   avatar: {
