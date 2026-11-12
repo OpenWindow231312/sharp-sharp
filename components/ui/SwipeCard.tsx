@@ -24,7 +24,8 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
+import { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
+import { FillSvg } from "./FillSvg";
 import { useSvgId } from "@/utils/svgId";
 import { Button } from "./Button";
 import { Dropdown } from "./Dropdown";
@@ -129,15 +130,10 @@ function CardTexture({ variant }: { variant: TextureVariant }) {
   // Explicit 100% size: without it the SVG falls back to its intrinsic
   // 300x150 box and the texture only covers the top-left of the card.
   return (
-    <Svg
-      width="100%"
-      height="100%"
-      style={StyleSheet.absoluteFill}
-      pointerEvents="none"
-    >
+    <FillSvg>
       <Defs>{renderTextureDef(variant, id)}</Defs>
       <Rect width="100%" height="100%" fill={`url(#${id})`} />
-    </Svg>
+    </FillSvg>
   );
 }
 

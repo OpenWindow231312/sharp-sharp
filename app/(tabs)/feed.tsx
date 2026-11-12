@@ -189,14 +189,6 @@ export default function FeedScreen() {
   const noMoreCards = !isLoading && currentIndex >= feedTerms.length;
   const levelInfo = getLevelInfo(xp);
   const showControls = !isLoading && !noMoreCards && !!topTerm;
-  // How many faint cards to hint at behind the top one — purely decorative,
-  // doesn't need real term data, just enough to read as "a deck" rather
-  // than "one card floating alone."
-  const peekCount = Math.min(
-    2,
-    Math.max(0, feedTerms.length - currentIndex - 1),
-  );
-
   const firstName = (name || user?.displayName || "there").split(" ")[0];
   const nextLevel = LEVELS[levelInfo.level];
 
@@ -281,16 +273,6 @@ export default function FeedScreen() {
           </Card>
         ) : (
           <>
-            {peekCount > 1 ? (
-              <View style={[styles.peekWrapper, styles.peekWrapperFar]}>
-                <Card style={styles.peekCard} />
-              </View>
-            ) : null}
-            {peekCount > 0 ? (
-              <View style={[styles.peekWrapper, styles.peekWrapperNear]}>
-                <Card style={styles.peekCard} />
-              </View>
-            ) : null}
             {topTerm ? (
               <SwipeCard
                 ref={cardRef}

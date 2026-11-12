@@ -3,7 +3,8 @@ import { useSvgId } from "@/utils/svgId";
 import type { ReactNode } from "react";
 import { StyleSheet, View, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Defs, Path, Pattern, Rect } from "react-native-svg";
+import { Defs, Path, Pattern, Rect } from "react-native-svg";
+import { FillSvg } from "./FillSvg";
 import { Text } from "./Text";
 
 type ScreenBandProps = {
@@ -19,6 +20,8 @@ type ScreenBandProps = {
 // low strength across its whole height, and leaves room at the bottom for
 // the screen's first card to overlap it by BAND_OVERLAP.
 export const BAND_OVERLAP = 36;
+// Height of the band below the status bar (title, content and overlap).
+const BAND_BODY_HEIGHT = 176;
 
 export function ScreenBand({
   title,
@@ -31,14 +34,17 @@ export function ScreenBand({
   const id = useSvgId("band-chevron");
   return (
     <View
-      style={[styles.band, { paddingTop: Math.max(insets.top, 20) + 8 }, style]}
+      style={[
+        styles.band,
+        {
+          paddingTop: Math.max(insets.top, 20) + 8,
+          // Same height on every tab, whatever each one puts in it.
+          minHeight: Math.max(insets.top, 20) + BAND_BODY_HEIGHT,
+        },
+        style,
+      ]}
     >
-      <Svg
-        width="100%"
-        height="100%"
-        style={StyleSheet.absoluteFill}
-        pointerEvents="none"
-      >
+      <FillSvg>
         <Defs>
           <Pattern id={id} patternUnits="userSpaceOnUse" width={32} height={32}>
             <Path
@@ -49,7 +55,7 @@ export function ScreenBand({
           </Pattern>
         </Defs>
         <Rect width="100%" height="100%" fill={`url(#${id})`} />
-      </Svg>
+      </FillSvg>
       <View style={styles.titleRow}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title} numberOfLines={1}>
@@ -79,10 +85,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  // Baloo's ascenders sit high: a tight lineHeight clipped the title on
+  // iOS, so give it room and no extra Android padding.
   title: {
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 32,
-    lineHeight: 36,
+    lineHeight: 42,
+    includeFontPadding: false,
     color: theme.colors.paper,
   },
   subtitle: {

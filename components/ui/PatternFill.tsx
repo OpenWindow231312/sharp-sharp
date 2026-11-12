@@ -1,7 +1,8 @@
 import { type ReactNode } from "react";
 import { useSvgId } from "@/utils/svgId";
 import { View, StyleSheet, type ViewStyle, type StyleProp } from "react-native";
-import Svg, { Defs, Pattern, Path, Rect, Circle } from "react-native-svg";
+import { Defs, Pattern, Path, Rect, Circle } from "react-native-svg";
+import { FillSvg } from "./FillSvg";
 import { theme } from "@/constants/designTheme";
 
 export type PatternVariant = "chevron" | "diamond" | "triangle" | "beadscatter";
@@ -29,14 +30,12 @@ export function PatternFill({
 
   return (
     <View style={[styles.wrap, style]}>
-      <Svg
-        width="100%"
-        height="100%"
-        style={[StyleSheet.absoluteFill, { opacity }]}
-      >
-        <Defs>{renderPatternDef(variant, id)}</Defs>
-        <Rect x={0} y={0} width="100%" height="100%" fill={`url(#${id})`} />
-      </Svg>
+      <View style={[StyleSheet.absoluteFill, { opacity }]} pointerEvents="none">
+        <FillSvg>
+          <Defs>{renderPatternDef(variant, id)}</Defs>
+          <Rect x={0} y={0} width="100%" height="100%" fill={`url(#${id})`} />
+        </FillSvg>
+      </View>
       {children}
     </View>
   );

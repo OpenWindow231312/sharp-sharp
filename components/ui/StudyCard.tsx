@@ -10,7 +10,8 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
+import { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
+import { FillSvg } from "./FillSvg";
 import { useSvgId } from "@/utils/svgId";
 import { Text } from "./Text";
 
@@ -88,15 +89,10 @@ function colorwayForTerm(id: string): CardColorway {
 function CardTexture({ variant }: { variant: TextureVariant }) {
   const id = useSvgId(`studycard-texture-${variant}`);
   return (
-    <Svg
-      width="100%"
-      height="100%"
-      style={StyleSheet.absoluteFill}
-      pointerEvents="none"
-    >
+    <FillSvg>
       <Defs>{renderTextureDef(variant, id)}</Defs>
       <Rect width="100%" height="100%" fill={`url(#${id})`} />
-    </Svg>
+    </FillSvg>
   );
 }
 
