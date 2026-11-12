@@ -626,7 +626,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
   },
   textureStrip: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     overflow: "hidden",
   },
   rivet: {
