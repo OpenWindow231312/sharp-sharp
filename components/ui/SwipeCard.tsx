@@ -24,7 +24,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { Defs, Line, Path, Pattern, Rect } from "react-native-svg";
+import { Defs, Path, Pattern, Rect } from "react-native-svg";
 import { FillSvg } from "./FillSvg";
 import { useSvgId } from "@/utils/svgId";
 import { Button } from "./Button";
@@ -51,9 +51,10 @@ export const CARD_HEIGHT = 500;
 // reused directly as the back border/term-small color.
 const ACCENT = theme.colors.marigold;
 
-type TextureVariant = "hairline" | "ndebele" | "diamond" | "herringbone";
+export type TextureVariant =
+  "chevron" | "triangle" | "diamond" | "diamondFill" | "herringbone";
 
-type CardColorway = {
+export type CardColorway = {
   background: string;
   texture: TextureVariant;
   // Exact per-colorway values lifted from the approved HTML reference's
@@ -68,10 +69,10 @@ type CardColorway = {
   flipCueColor: string;
 };
 
-const CARD_COLORWAYS: CardColorway[] = [
+export const CARD_COLORWAYS: CardColorway[] = [
   {
     background: theme.colors.indigo,
-    texture: "hairline",
+    texture: "chevron",
     termShadowLight: "rgba(255,255,255,0.2)",
     termShadowDark: "rgba(0,0,0,0.45)",
     rivetLight: "rgba(255,255,255,0.25)",
@@ -80,7 +81,7 @@ const CARD_COLORWAYS: CardColorway[] = [
   },
   {
     background: theme.colors.highveld,
-    texture: "ndebele",
+    texture: "triangle",
     termShadowLight: "rgba(255,255,255,0.15)",
     termShadowDark: "rgba(0,60,30,0.4)",
     rivetLight: "rgba(255,255,255,0.25)",
@@ -92,6 +93,15 @@ const CARD_COLORWAYS: CardColorway[] = [
     texture: "diamond",
     termShadowLight: "rgba(255,255,255,0.18)",
     termShadowDark: "rgba(80,10,40,0.4)",
+    rivetLight: "rgba(255,255,255,0.25)",
+    rivetDark: "rgba(0,0,0,0.25)",
+    flipCueColor: "rgba(255,248,236,0.6)",
+  },
+  {
+    background: theme.colors.protea,
+    texture: "diamondFill",
+    termShadowLight: "rgba(255,255,255,0.18)",
+    termShadowDark: "rgba(90,20,0,0.4)",
     rivetLight: "rgba(255,255,255,0.25)",
     rivetDark: "rgba(0,0,0,0.25)",
     flipCueColor: "rgba(255,248,236,0.6)",
@@ -115,7 +125,7 @@ export function termColor(id: string): string {
   return colorwayForTerm(id).background;
 }
 
-function colorwayForTerm(id: string): CardColorway {
+export function colorwayForTerm(id: string): CardColorway {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
@@ -125,50 +135,44 @@ function colorwayForTerm(id: string): CardColorway {
 
 // Exact tile specs and opacities are copied from the approved HTML
 // reference's per-colorway CSS pattern definitions.
-function CardTexture({ variant }: { variant: TextureVariant }) {
-  const id = useSvgId(`swipecard-texture-${variant}`);
-  // Explicit 100% size: without it the SVG falls back to its intrinsic
-  // 300x150 box and the texture only covers the top-left of the card.
+// Motif in a strip across the top of the plaque, so the word always sits
+// on solid colour. Shared with StudyCard.
+export const TEXTURE_STRIP_HEIGHT = 150;
+export function CardTexture({
+  variant,
+  height = TEXTURE_STRIP_HEIGHT,
+}: {
+  variant: TextureVariant;
+  height?: number;
+}) {
+  const id = useSvgId(`card-texture-${variant}`);
   return (
-    <FillSvg>
-      <Defs>{renderTextureDef(variant, id)}</Defs>
-      <Rect width="100%" height="100%" fill={`url(#${id})`} />
-    </FillSvg>
+    <View style={[styles.textureStrip, { height }]} pointerEvents="none">
+      <FillSvg>
+        <Defs>{renderTextureDef(variant, id)}</Defs>
+        <Rect width="100%" height="100%" fill={`url(#${id})`} />
+      </FillSvg>
+    </View>
   );
 }
 
 function renderTextureDef(variant: TextureVariant, id: string) {
+  const paper = theme.colors.paper;
   switch (variant) {
-    case "hairline":
-      // repeating-linear-gradient(115deg, white 3.5% 0-1px, transparent
-      // 1-4px) — one diagonal hairline per 4px tile, rotated via
-      // patternTransform to reproduce the 115deg repeat angle.
+    case "chevron":
       return (
-        <Pattern
-          id={id}
-          patternUnits="userSpaceOnUse"
-          width={4}
-          height={4}
-          patternTransform="rotate(115)"
-        >
-          <Line
-            x1={0}
-            y1={0}
-            x2={0}
-            y2={4}
-            stroke="white"
-            strokeOpacity={0.035}
-            strokeWidth={1}
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={32} height={32}>
+          <Path
+            d="M0 8 L8 0 L16 8 L8 16 Z M16 8 L24 0 L32 8 L24 16 Z M0 24 L8 16 L16 24 L8 32 Z M16 24 L24 16 L32 24 L24 32 Z"
+            fill={theme.colors.marigold}
+            fillOpacity={0.2}
           />
         </Pattern>
       );
-    case "ndebele":
+    case "triangle":
       return (
-        <Pattern id={id} patternUnits="userSpaceOnUse" width={48} height={24}>
-          <Path d="M0 24 L12 0 L24 24 Z" fill="white" fillOpacity={0.07} />
-          <Path d="M24 24 L36 0 L48 24 Z" fill="white" fillOpacity={0.07} />
-          <Path d="M0 0 L12 24 L24 0 Z" fill="white" fillOpacity={0.045} />
-          <Path d="M24 0 L36 24 L48 0 Z" fill="white" fillOpacity={0.045} />
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={24} height={24}>
+          <Path d="M0 24 L24 24 L24 0 Z" fill={paper} fillOpacity={0.16} />
         </Pattern>
       );
     case "diamond":
@@ -177,9 +181,19 @@ function renderTextureDef(variant: TextureVariant, id: string) {
           <Path
             d="M15 1 L29 15 L15 29 L1 15 Z"
             fill="none"
-            stroke="white"
-            strokeOpacity={0.08}
-            strokeWidth={1}
+            stroke={paper}
+            strokeOpacity={0.28}
+            strokeWidth={1.5}
+          />
+        </Pattern>
+      );
+    case "diamondFill":
+      return (
+        <Pattern id={id} patternUnits="userSpaceOnUse" width={20} height={20}>
+          <Path
+            d="M10 0 L20 10 L10 20 L0 10 Z"
+            fill={paper}
+            fillOpacity={0.18}
           />
         </Pattern>
       );
@@ -187,17 +201,10 @@ function renderTextureDef(variant: TextureVariant, id: string) {
       return (
         <Pattern id={id} patternUnits="userSpaceOnUse" width={24} height={24}>
           <Path
-            d="M0 12 L12 0 L24 12"
+            d="M0 12 L12 0 L24 12 M0 24 L12 12 L24 24"
             fill="none"
-            stroke="white"
-            strokeOpacity={0.06}
-            strokeWidth={1.5}
-          />
-          <Path
-            d="M0 24 L12 12 L24 24"
-            fill="none"
-            stroke="white"
-            strokeOpacity={0.06}
+            stroke={paper}
+            strokeOpacity={0.14}
             strokeWidth={1.5}
           />
         </Pattern>
@@ -618,6 +625,13 @@ const styles = StyleSheet.create({
   },
   backCardShell: {
     backgroundColor: theme.colors.card,
+  },
+  textureStrip: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    overflow: "hidden",
   },
   rivet: {
     position: "absolute",

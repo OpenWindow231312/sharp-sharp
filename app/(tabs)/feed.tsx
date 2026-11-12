@@ -167,7 +167,7 @@ export default function FeedScreen() {
       setToast({
         id: Date.now(),
         amount: 5,
-        label: "Lekker, saved",
+        label: "Lekker",
       });
 
       if (USE_MOCK_DATA) {
