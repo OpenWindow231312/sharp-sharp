@@ -27,9 +27,7 @@ export default function LearnScreen() {
   const [terms, setTerms] = useState<SlangTerm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState<"forward" | "backward">(
-    "forward",
-  );
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
 
   useEffect(() => {
     lockLandscape();
@@ -79,7 +77,7 @@ export default function LearnScreen() {
   return (
     <View style={styles.container}>
       <Pressable onPress={handleExit} style={styles.closeButton} hitSlop={12}>
-        <X size={28} color={theme.colors.ink} />
+        <X size={22} weight="bold" color={theme.colors.ink} />
       </Pressable>
 
       {isLoading ? (
@@ -92,11 +90,7 @@ export default function LearnScreen() {
           <Text variant="muted" style={{ marginBottom: 16 }}>
             Swipe right on terms in the Feed to save them here first.
           </Text>
-          <Button
-            label="Back to Feed"
-            variant="primary"
-            onPress={handleExit}
-          />
+          <Button label="Back to Feed" variant="primary" onPress={handleExit} />
         </Card>
       ) : isDone ? (
         <Card style={styles.messageCard}>
@@ -110,9 +104,17 @@ export default function LearnScreen() {
         </Card>
       ) : (
         <>
-          <Text variant="muted" style={styles.progress}>
-            {currentIndex + 1} of {terms.length}
-          </Text>
+          <View style={styles.progress}>
+            {terms.map((t, i) => (
+              <View
+                key={t.id}
+                style={[styles.dot, i === currentIndex && styles.dotActive]}
+              />
+            ))}
+            <Text style={styles.progressText}>
+              {currentIndex + 1} OF {terms.length}
+            </Text>
+          </View>
           <Animated.View
             key={currentTerm.id}
             entering={
@@ -141,7 +143,7 @@ export default function LearnScreen() {
                 currentIndex === 0 && styles.arrowDisabled,
               ]}
             >
-              <CaretLeft size={32} color={theme.colors.ink} />
+              <CaretLeft size={26} weight="bold" color={theme.colors.ink} />
             </Pressable>
             <Pressable
               onPress={() => {
@@ -150,7 +152,7 @@ export default function LearnScreen() {
               }}
               style={styles.arrowButton}
             >
-              <CaretRight size={32} color={theme.colors.ink} />
+              <CaretRight size={26} weight="bold" color={theme.colors.ink} />
             </Pressable>
           </View>
         </>
@@ -162,8 +164,7 @@ export default function LearnScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 16,
+    backgroundColor: theme.colors.card,
     justifyContent: "center",
   },
   closeButton: {
@@ -171,29 +172,61 @@ const styles = StyleSheet.create({
     top: 16,
     right: 16,
     zIndex: 10,
-    width: theme.tapTarget,
-    height: theme.tapTarget,
-    borderRadius: theme.tapTarget / 2,
-    backgroundColor: "rgba(36,28,21,0.15)",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(36,28,21,0.12)",
     alignItems: "center",
     justifyContent: "center",
   },
-  progress: { position: "absolute", top: 16, alignSelf: "center" },
+  progress: {
+    position: "absolute",
+    top: 24,
+    left: 24,
+    zIndex: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,248,236,0.45)",
+  },
+  dotActive: {
+    width: 20,
+    backgroundColor: theme.colors.paper,
+  },
+  progressText: {
+    fontFamily: theme.fonts.mono,
+    fontSize: 11,
+    letterSpacing: 1,
+    color: theme.colors.paper,
+    marginLeft: 6,
+  },
   cardWrap: { flex: 1 },
+  // Arrows float over the card at mid height.
   arrowRow: {
     position: "absolute",
-    bottom: 16,
-    width: "100%",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
+    alignItems: "center",
+    paddingHorizontal: 12,
+    pointerEvents: "box-none",
   },
   arrowButton: {
-    width: theme.tapTarget + 8,
-    height: theme.tapTarget + 8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(36,28,21,0.12)",
     alignItems: "center",
     justifyContent: "center",
   },
-  arrowDisabled: { opacity: 0.3 },
+  arrowDisabled: { opacity: 0.35 },
   messageCard: { alignItems: "center", padding: 32, marginHorizontal: 40 },
 });

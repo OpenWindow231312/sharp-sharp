@@ -16,8 +16,6 @@ import { Text } from "./Text";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = 80;
 
-const ACCENT = theme.colors.marigold;
-
 type StudyCardProps = {
   term: SlangTerm;
   onSwipe: (direction: "left" | "right") => void;
@@ -58,181 +56,141 @@ export function StudyCard({ term, onSwipe }: StudyCardProps) {
         >
           <CardTexture variant={colorway.texture} />
           <View style={styles.plaqueContent}>
-            <Text style={styles.langTag}>{term.language.toUpperCase()}</Text>
-            <View style={styles.termWrap}>
-              <Text
-                style={[
-                  styles.termText,
-                  styles.termTextHighlight,
-                  { color: colorway.termShadowLight },
-                ]}
-              >
-                {term.term}
-              </Text>
-              <Text
-                style={[
-                  styles.termText,
-                  styles.termTextMain,
-                  { textShadowColor: colorway.termShadowDark },
-                ]}
-              >
-                {term.term}
+            <View style={styles.langPill}>
+              <Text style={styles.langPillText}>
+                {term.language.toUpperCase()}
               </Text>
             </View>
+            <Text
+              style={styles.termText}
+              numberOfLines={3}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
+              {term.term}
+            </Text>
           </View>
         </View>
 
         <View style={styles.detailsSide}>
-          <Text variant="muted" style={{ marginBottom: 4 }}>
-            Meaning
+          <Text
+            style={[
+              styles.meaning,
+              term.meaning.length > 110 && styles.meaningLong,
+            ]}
+          >
+            {term.meaning}
           </Text>
-          <Text style={{ marginBottom: 16 }}>{term.meaning}</Text>
           {examples.length > 0 ? (
-            <View style={{ marginBottom: 16 }}>
-              <Text variant="muted" style={{ marginBottom: 4 }}>
-                {examples.length > 1 ? "Examples" : "Example"}
-              </Text>
-              {examples.map((example, index) => (
+            <View style={styles.examples}>
+              {examples.slice(0, 2).map((example, index) => (
                 <View
                   key={index}
-                  style={index > 0 ? { marginTop: 8 } : undefined}
+                  style={index > 0 ? { marginTop: 10 } : undefined}
                 >
-                  <Text style={{ fontStyle: "italic" }}>
+                  <Text style={styles.example}>
                     &quot;{example.sentence}&quot;
                   </Text>
                   {example.context ? (
-                    <Text
-                      variant="muted"
-                      style={{ fontSize: 12, marginTop: 2 }}
-                    >
-                      {example.context}
-                    </Text>
+                    <Text style={styles.context}>{example.context}</Text>
                   ) : null}
                 </View>
               ))}
             </View>
           ) : null}
-          {term.region ? <Text variant="muted">{term.region}</Text> : null}
-          <Text variant="muted" style={{ marginTop: 12 }}>
-            Added by {term.submittedByName}
+          <Text style={styles.addedBy}>
+            Added by {term.authorDisplayName ?? term.submittedByName}
           </Text>
         </View>
-
-        {/* Corner rivets frame the whole plaque, matching SwipeCard's hardware */}
-        <View
-          style={[
-            styles.rivet,
-            styles.rivetTL,
-            {
-              borderTopColor: colorway.rivetLight,
-              borderLeftColor: colorway.rivetLight,
-              borderBottomColor: colorway.rivetDark,
-              borderRightColor: colorway.rivetDark,
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.rivet,
-            styles.rivetTR,
-            {
-              borderTopColor: colorway.rivetLight,
-              borderLeftColor: colorway.rivetLight,
-              borderBottomColor: colorway.rivetDark,
-              borderRightColor: colorway.rivetDark,
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.rivet,
-            styles.rivetBL,
-            {
-              borderTopColor: colorway.rivetLight,
-              borderLeftColor: colorway.rivetLight,
-              borderBottomColor: colorway.rivetDark,
-              borderRightColor: colorway.rivetDark,
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.rivet,
-            styles.rivetBR,
-            {
-              borderTopColor: colorway.rivetLight,
-              borderLeftColor: colorway.rivetLight,
-              borderBottomColor: colorway.rivetDark,
-              borderRightColor: colorway.rivetDark,
-            },
-          ]}
-        />
       </Animated.View>
     </GestureDetector>
   );
 }
 
 const styles = StyleSheet.create({
+  // Fills the whole landscape screen; the Learn screen overlays its
+  // controls on top.
   row: {
     flex: 1,
     flexDirection: "row",
-    borderRadius: 18,
-    overflow: "hidden",
-    borderWidth: 3,
-    borderColor: ACCENT,
     backgroundColor: theme.colors.card,
-    ...theme.shadow.card,
   },
   plaqueSide: {
-    flex: 1,
+    width: "42%",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 24,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   plaqueContent: {
     alignItems: "center",
     justifyContent: "center",
+    width: "100%",
   },
-  langTag: {
+  langPill: {
+    backgroundColor: theme.colors.ink,
+    borderRadius: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginBottom: 14,
+  },
+  langPillText: {
     fontFamily: theme.fonts.mono,
     fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    color: ACCENT,
-    marginBottom: 12,
+    letterSpacing: 2,
+    color: theme.colors.paper,
   },
-  termWrap: { alignItems: "center", justifyContent: "center" },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 40,
+    fontSize: 48,
+    lineHeight: 58,
+    includeFontPadding: false,
     textAlign: "center",
-  },
-  termTextHighlight: {
-    position: "absolute",
-    transform: [{ translateX: -1 }, { translateY: -1 }],
-  },
-  termTextMain: {
     color: theme.colors.paper,
-    textShadowOffset: { width: 1, height: 2 },
-    textShadowRadius: 1,
   },
   detailsSide: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 32,
+    paddingVertical: 28,
+    paddingLeft: 32,
+    // Room for the overlaid next arrow and close button.
+    paddingRight: 72,
     backgroundColor: theme.colors.card,
   },
-  rivet: {
-    position: "absolute",
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
-    backgroundColor: ACCENT,
-    borderWidth: 1,
+  meaning: {
+    fontFamily: theme.fonts.bodyMedium,
+    fontSize: 24,
+    lineHeight: 31,
+    color: theme.colors.text,
   },
-  rivetTL: { top: 10, left: 10 },
-  rivetTR: { top: 10, right: 10 },
-  rivetBL: { bottom: 10, left: 10 },
-  rivetBR: { bottom: 10, right: 10 },
+  meaningLong: {
+    fontSize: 19,
+    lineHeight: 25,
+  },
+  examples: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    marginTop: 14,
+    paddingTop: 12,
+  },
+  example: {
+    fontFamily: theme.fonts.body,
+    fontStyle: "italic",
+    fontSize: 17,
+    lineHeight: 23,
+    color: theme.colors.text,
+  },
+  context: {
+    fontFamily: theme.fonts.body,
+    fontSize: 13,
+    lineHeight: 18,
+    color: theme.colors.textMuted,
+    marginTop: 2,
+  },
+  addedBy: {
+    fontFamily: theme.fonts.body,
+    fontSize: 12,
+    color: theme.colors.textMuted,
+    marginTop: 14,
+  },
 });
