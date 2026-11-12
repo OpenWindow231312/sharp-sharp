@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import {
   TAB_BAR_CLEARANCE,
   useHideTabBarOnScroll,
+  useTabBar,
 } from "@/context/TabBarContext";
 import { addSlangTerm } from "@/services/slangTerms";
 import { addXp } from "@/services/xp";
@@ -42,6 +43,15 @@ export default function AddTermScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const onScroll = useHideTabBarOnScroll();
+  const { hide, show } = useTabBar();
+
+  // The preview step is the one place the bar gets in the way of the
+  // card, so tuck it away there. Tapping where it was brings it back.
+  useEffect(() => {
+    if (step === 4) hide();
+    else show();
+    return show;
+  }, [step, hide, show]);
 
   const [step, setStep] = useState(0);
   const [term, setTerm] = useState("");

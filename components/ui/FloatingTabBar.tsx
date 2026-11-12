@@ -9,9 +9,11 @@ import {
   User,
   type Icon,
 } from "phosphor-react-native";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import Animated, {
+  runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
@@ -33,6 +35,15 @@ export function FloatingTabBar({
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { hidden, show } = useTabBar();
+  // Mirror of the shared value for React, so a tap target can be shown
+  // where the bar was while it is hidden.
+  const [isHidden, setIsHidden] = useState(false);
+  useAnimatedReaction(
+    () => hidden.value,
+    (value, previous) => {
+      if (value !== previous) runOnJS(setIsHidden)(value === 1);
+    },
+  );
 
   // Switching tabs always brings the bar back, so a tab never opens with
   // its own navigation missing.
@@ -48,55 +59,64 @@ export function FloatingTabBar({
   }));
 
   return (
-    <Animated.View
-      pointerEvents="box-none"
-      style={[
-        styles.wrap,
-        { paddingBottom: insets.bottom || theme.spacing.md },
-        slide,
-      ]}
-    >
-      <Animated.View style={styles.shell}>
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
-          const IconComponent = ICONS[route.name] ?? Book;
-          const label =
-            typeof options.tabBarLabel === "string"
-              ? options.tabBarLabel
-              : (options.title ?? route.name);
+    <>
+      {isHidden ? (
+        <Pressable
+          accessibilityLabel="Show navigation"
+          onPress={show}
+          style={[styles.reveal, { height: 72 + (insets.bottom || 0) }]}
+        />
+      ) : null}
+      <Animated.View
+        pointerEvents={isHidden ? "none" : "box-none"}
+        style={[
+          styles.wrap,
+          { paddingBottom: insets.bottom || theme.spacing.md },
+          slide,
+        ]}
+      >
+        <Animated.View style={styles.shell}>
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const isFocused = state.index === index;
+            const IconComponent = ICONS[route.name] ?? Book;
+            const label =
+              typeof options.tabBarLabel === "string"
+                ? options.tabBarLabel
+                : (options.title ?? route.name);
 
-          const onPress = () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            const event = emitter.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigateToTab(route.key);
-            }
-          };
+            const onPress = () => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              const event = emitter.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                navigateToTab(route.key);
+              }
+            };
 
-          return (
-            <Pressable
-              key={route.key}
-              onPress={onPress}
-              style={[styles.tab, isFocused && styles.tabActive]}
-            >
-              <IconComponent
-                size={24}
-                weight={isFocused ? "fill" : "bold"}
-                color={
-                  isFocused ? theme.colors.primaryText : theme.colors.inkSoft
-                }
-              />
-              {isFocused ? <Text style={styles.label}>{label}</Text> : null}
-            </Pressable>
-          );
-        })}
+            return (
+              <Pressable
+                key={route.key}
+                onPress={onPress}
+                style={[styles.tab, isFocused && styles.tabActive]}
+              >
+                <IconComponent
+                  size={24}
+                  weight={isFocused ? "fill" : "bold"}
+                  color={
+                    isFocused ? theme.colors.primaryText : theme.colors.inkSoft
+                  }
+                />
+                {isFocused ? <Text style={styles.label}>{label}</Text> : null}
+              </Pressable>
+            );
+          })}
+        </Animated.View>
       </Animated.View>
-    </Animated.View>
+    </>
   );
 }
 
@@ -111,6 +131,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
+  },
+  // Invisible strip where the bar normally sits; tapping it brings the
+  // bar back.
+  reveal: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   shell: {
     flexDirection: "row",

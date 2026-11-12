@@ -16,6 +16,7 @@ import { useSharedValue, type SharedValue } from "react-native-reanimated";
 type TabBarContextType = {
   hidden: SharedValue<number>; // 0 = showing, 1 = hidden
   show: () => void;
+  hide: () => void;
 };
 
 const TabBarContext = createContext<TabBarContextType | null>(null);
@@ -28,7 +29,10 @@ export function TabBarProvider({ children }: { children: ReactNode }) {
   const show = useCallback(() => {
     hidden.value = 0;
   }, [hidden]);
-  const value = useMemo(() => ({ hidden, show }), [hidden, show]);
+  const hide = useCallback(() => {
+    hidden.value = 1;
+  }, [hidden]);
+  const value = useMemo(() => ({ hidden, show, hide }), [hidden, show, hide]);
   return (
     <TabBarContext.Provider value={value}>{children}</TabBarContext.Provider>
   );
