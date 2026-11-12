@@ -516,12 +516,15 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                       </View>
                     ) : null}
 
-                    {term.region ? (
-                      <Text style={styles.backContext}>{term.region}</Text>
-                    ) : null}
-                    <Text style={styles.backContext}>
-                      Added by {term.authorDisplayName ?? term.submittedByName}
-                    </Text>
+                    <View style={styles.backFooter}>
+                      {term.region ? (
+                        <Text style={styles.backContext}>{term.region}</Text>
+                      ) : null}
+                      <Text style={styles.backContext}>
+                        Added by{" "}
+                        {term.authorDisplayName ?? term.submittedByName}
+                      </Text>
+                    </View>
                   </ScrollView>
                 </View>
               </Animated.View>
@@ -653,15 +656,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     // Long words and phrases wrap inside this width instead of running
     // to the card edge; anything longer still shrinks to fit.
-    maxWidth: "86%",
+    width: "86%",
     alignSelf: "center",
   },
+  // Baloo's ascenders and descenders need more than the font size, or
+  // iOS clips the top and bottom of the word.
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
     fontSize: 60,
-    lineHeight: 64,
+    lineHeight: 74,
+    includeFontPadding: false,
     textAlign: "center",
     color: theme.colors.paper,
+    paddingVertical: 4,
   },
   flipHint: {
     fontFamily: theme.fonts.mono,
@@ -723,6 +730,11 @@ const styles = StyleSheet.create({
     lineHeight: 25,
     color: theme.colors.text,
     marginBottom: 4,
+  },
+  // Pinned to the bottom of the back face however short the content is.
+  backFooter: {
+    marginTop: "auto",
+    paddingTop: theme.spacing.md,
   },
   backContext: {
     fontFamily: theme.fonts.body,
