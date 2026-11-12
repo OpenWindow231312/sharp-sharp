@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="banner.png" width="700" alt="Sharp Sharp banner">
+  <img src="readme-banner.png" width="700" alt="Sharp Sharp banner">
 </p>
 
 <h1 align="center">Sharp Sharp</h1>
@@ -63,7 +63,7 @@ Sharp Sharp is a cross-platform mobile app built entirely in **React Native**, i
 Email and password authentication with a persistent session, so you stay logged in between app launches. Forgot your password? There's a reset flow that emails you a secure link.
 
 <p align="center">
-  <img src="screenshots/Sign up.png" width="700">
+  <img src="screenshots/mockup-sign-up.png" width="700">
 </p>
 
 ### 2. Meet the app
@@ -71,7 +71,7 @@ Email and password authentication with a persistent session, so you stay logged 
 A short, character-driven onboarding walks new users through what "real" South African slang actually sounds like before they ever see the feed, then lets them pick which languages they want to learn (changeable any time from their profile).
 
 <p align="center">
-  <img src="screenshots/meet the app.png" width="700">
+  <img src="screenshots/mockup-meet-the-app.png" width="700">
 </p>
 
 ### 3. Swipe through the feed
@@ -79,13 +79,13 @@ A short, character-driven onboarding walks new users through what "real" South A
 Terms appear one at a time as enamel-plaque style cards, colour-coded per term. Swipe right to save a term (and earn XP), swipe left to skip it. Tap a card to flip it and see the full meaning, an example sentence, and who added it.
 
 <p align="center">
-  <img src="screenshots/Swipe through feed 1.png" width="700">
+  <img src="screenshots/mockup-swipe-feed.png" width="700">
 </p>
 
 If a term looks wrong, offensive, or inaccurate, flag it directly from the feed with a reason and an optional comment. It's reviewed by an admin before anything is removed.
 
 <p align="center">
-  <img src="screenshots/Report term.png" width="700">
+  <img src="screenshots/mockup-report-term.png" width="700">
 </p>
 
 ### 4. Add your own words
@@ -93,7 +93,7 @@ If a term looks wrong, offensive, or inaccurate, flag it directly from the feed 
 Know a term that's not in the app yet? Add it in a few quick steps: the word itself, which language it belongs to, an example sentence in context, and a preview of exactly how it'll appear in the feed before you submit it.
 
 <p align="center">
-  <img src="screenshots/Add your own terms.png" width="700">
+  <img src="screenshots/mockup-add-your-own-terms.png" width="700">
 </p>
 
 ### 5. Earn XP and level up
@@ -101,13 +101,13 @@ Know a term that's not in the app yet? Add it in a few quick steps: the word its
 Every saved term and every contribution earns XP. As XP builds up, you climb a six-tier ladder named after real South African slang itself: **Eish! → Ubuntu → Lekker → Ayoba → Local Legend → Sharp Sharp**. Your profile shows exactly how much XP each tier needs and what you've unlocked so far.
 
 <p align="center">
-  <img src="screenshots/Earn XP.png" width="700">
+  <img src="screenshots/mockup-earn-xp.png" width="700">
 </p>
 
 Your profile pulls it all together: your current level, the terms you've added, saved and studied, plus settings for your name, photo and learning languages.
 
 <p align="center">
-  <img src="screenshots/Profile and settings.png" width="700">
+  <img src="screenshots/mockup-profile-and-settings.png" width="700">
 </p>
 
 ### 6. Study in Dictionary Mode
@@ -115,7 +115,7 @@ Your profile pulls it all together: your current level, the terms you've added, 
 Saved terms can be reviewed in a dedicated landscape flashcard mode, an intentional use of Landscape Support: turning the phone sideways switches into a focused, distraction-free study session with larger cards, swipeable navigation, and full definitions on demand.
 
 <p align="center">
-  <img src="screenshots/Dictonary mode.png" width="700">
+  <img src="screenshots/mockup-dictionary-mode.png" width="700">
 </p>
 
 ### 7. Admin controls
