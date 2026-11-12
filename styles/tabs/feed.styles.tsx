@@ -75,5 +75,13 @@ export const styles = StyleSheet.create({
     opacity: 0.32,
   },
   peekCard: { minHeight: 340 },
+  // When there is no deck, the message sits in the middle of the space
+  // under the band instead of hugging it.
+  stackCentered: {
+    flex: 1,
+    justifyContent: "center",
+    marginTop: 0,
+    paddingHorizontal: theme.spacing.lg,
+  },
   emptyCard: { alignItems: "center", padding: 32 },
 });

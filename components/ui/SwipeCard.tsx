@@ -135,19 +135,11 @@ export function colorwayForTerm(id: string): CardColorway {
 
 // Exact tile specs and opacities are copied from the approved HTML
 // reference's per-colorway CSS pattern definitions.
-// Motif in a strip across the top of the plaque, so the word always sits
-// on solid colour. Shared with StudyCard.
-export const TEXTURE_STRIP_HEIGHT = 150;
-export function CardTexture({
-  variant,
-  height = TEXTURE_STRIP_HEIGHT,
-}: {
-  variant: TextureVariant;
-  height?: number;
-}) {
+// Motif across the whole plaque. Shared with StudyCard.
+export function CardTexture({ variant }: { variant: TextureVariant }) {
   const id = useSvgId(`card-texture-${variant}`);
   return (
-    <View style={[styles.textureStrip, { height }]} pointerEvents="none">
+    <View style={styles.textureStrip} pointerEvents="none">
       <FillSvg>
         <Defs>{renderTextureDef(variant, id)}</Defs>
         <Rect width="100%" height="100%" fill={`url(#${id})`} />
@@ -499,7 +491,14 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                       </Text>
                     </View>
 
-                    <Text style={styles.backMeaning}>{term.meaning}</Text>
+                    <Text
+                      style={[
+                        styles.backMeaning,
+                        term.meaning.length > 90 && styles.backMeaningLong,
+                      ]}
+                    >
+                      {term.meaning}
+                    </Text>
 
                     {examples.length > 0 ? (
                       <View style={styles.backExamples}>
@@ -627,10 +626,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
   },
   textureStrip: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
+    ...StyleSheet.absoluteFillObject,
     overflow: "hidden",
   },
   rivet: {
@@ -727,6 +723,10 @@ const styles = StyleSheet.create({
     lineHeight: 36,
     color: theme.colors.text,
     marginBottom: 20,
+  },
+  backMeaningLong: {
+    fontSize: 22,
+    lineHeight: 28,
   },
   backExamples: {
     borderTopWidth: 1,

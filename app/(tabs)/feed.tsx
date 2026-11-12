@@ -239,7 +239,13 @@ export default function FeedScreen() {
         </View>
       </ScreenBand>
 
-      <View style={[styles.stack, { marginTop: -BAND_OVERLAP }]}>
+      <View
+        style={[
+          styles.stack,
+          { marginTop: -BAND_OVERLAP },
+          (isLoading || noMoreCards) && styles.stackCentered,
+        ]}
+      >
         {toast ? (
           <XpToast
             key={toast.id}
