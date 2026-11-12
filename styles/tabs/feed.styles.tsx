@@ -4,7 +4,6 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 70,
     // The tab bar floats over the screen now, so leave room under the
     // swipe controls.
     paddingBottom: 96,
@@ -13,6 +12,40 @@ export const styles = StyleSheet.create({
   stack: {
     flex: 1,
     justifyContent: "center",
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: theme.colors.marigold,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    marginLeft: theme.spacing.md,
+  },
+  avatarImage: { width: 48, height: 48, borderRadius: 24 },
+  avatarText: {
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 22,
+    color: theme.colors.ink,
+  },
+  xpRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.lg,
+  },
+  xpTrack: {
+    flex: 1,
+    height: 8,
+    borderRadius: theme.radius.pill,
+    backgroundColor: "rgba(255,248,236,0.2)",
+    overflow: "hidden",
+  },
+  xpFill: {
+    height: "100%",
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.marigold,
   },
   quizButton: {
     alignSelf: "center",

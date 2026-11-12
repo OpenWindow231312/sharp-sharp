@@ -1,12 +1,21 @@
+import { BAND_OVERLAP } from "@/components/ui/ScreenBand";
 import { theme } from "@/constants/designTheme";
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    paddingTop: 70,
     backgroundColor: theme.colors.background,
+  },
+  body: {
+    paddingHorizontal: theme.spacing.lg,
+    marginTop: -BAND_OVERLAP,
+  },
+  spine: {
+    width: 10,
+    height: 44,
+    borderRadius: 5,
+    marginRight: theme.spacing.md,
   },
   emptyCard: { alignItems: "center", padding: 32 },
   termCard: { marginBottom: 12 },
@@ -16,27 +25,23 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   termText: {
-    fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 22,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 19,
     color: theme.colors.text,
-  },
-  termLanguage: {
-    fontFamily: theme.fonts.mono,
-    fontSize: 11,
-    textTransform: "uppercase",
-    letterSpacing: 1,
+    marginBottom: 2,
   },
   removeButton: { padding: 4 },
   studyCard: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: theme.colors.paperAlt,
+    backgroundColor: theme.colors.card,
     marginBottom: 12,
+    ...theme.shadow.soft,
   },
   studyTitle: {
     fontFamily: theme.fonts.displayBold,
-    fontSize: 17,
+    fontSize: 18,
     color: theme.colors.text,
   },
   studyHintRow: {

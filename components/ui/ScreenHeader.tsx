@@ -4,6 +4,7 @@ import { type Href } from "expo-router";
 import { CaretLeft } from "phosphor-react-native";
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "./Text";
 
 type ScreenHeaderProps = {
@@ -18,8 +19,9 @@ export function ScreenHeader({
   backTo = "/(tabs)/profile",
   right,
 }: ScreenHeaderProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, { marginTop: Math.max(insets.top, 20) + 4 }]}>
       <Pressable
         onPress={() => safeBack(backTo)}
         hitSlop={12}

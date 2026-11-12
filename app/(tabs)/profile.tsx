@@ -1,5 +1,6 @@
 import { BadgeMedallion } from "@/components/ui/BadgeMedallion";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { BAND_OVERLAP, MonoTag, ScreenBand } from "@/components/ui/ScreenBand";
 import { SettingsGroup, SettingsRow } from "@/components/ui/SettingsRow";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
@@ -25,6 +26,7 @@ import {
   GraduationCap,
   ShieldCheck,
 } from "phosphor-react-native";
+
 import { useCallback, useEffect, useState } from "react";
 import { Image, Pressable, ScrollView, View } from "react-native";
 
@@ -89,8 +91,8 @@ export default function ProfileScreen() {
     languages.length === 0
       ? "All languages"
       : languages.length <= 2
-        ? languages.join(" and ")
-        : `${languages.slice(0, 2).join(", ")} and ${languages.length - 2} more`;
+        ? languages.join(" · ")
+        : `${languages.slice(0, 2).join(" · ")} +${languages.length - 2}`;
 
   return (
     <ScrollView
@@ -103,43 +105,48 @@ export default function ProfileScreen() {
       onScroll={onScroll}
       scrollEventThrottle={16}
     >
-      <View style={styles.titleRow}>
-        <Text variant="display" style={styles.title}>
-          Profile
-        </Text>
-        <Pressable
-          onPress={() => router.push("/settings")}
-          hitSlop={8}
-          style={styles.gearButton}
-          accessibilityLabel="Settings"
-        >
-          <GearSix size={24} weight="bold" color={theme.colors.ink} />
-        </Pressable>
-      </View>
-
-      <View style={styles.identityRow}>
-        <View style={styles.avatar}>
-          {photoBase64 ? (
-            <Image source={{ uri: photoBase64 }} style={styles.avatarImage} />
-          ) : (
-            <Text style={styles.avatarInitial}>
-              {getInitial(name, user?.displayName, user?.email)}
+      <ScreenBand
+        title="Profile"
+        style={{ marginHorizontal: -theme.spacing.lg }}
+        right={
+          <Pressable
+            onPress={() => router.push("/settings")}
+            hitSlop={8}
+            style={styles.gearButton}
+            accessibilityLabel="Settings"
+          >
+            <GearSix size={24} weight="fill" color={theme.colors.paper} />
+          </Pressable>
+        }
+      >
+        <View style={styles.identityRow}>
+          <View style={styles.avatar}>
+            {photoBase64 ? (
+              <Image source={{ uri: photoBase64 }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarInitial}>
+                {getInitial(name, user?.displayName, user?.email)}
+              </Text>
+            )}
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name} numberOfLines={1}>
+              {displayName}
             </Text>
-          )}
+            <MonoTag onDark style={{ marginTop: 6 }}>
+              {languagesLine}
+            </MonoTag>
+          </View>
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.name} numberOfLines={1}>
-            {displayName}
-          </Text>
-          <Text variant="muted" style={styles.subline} numberOfLines={1}>
-            Learning {languagesLine}
-          </Text>
-        </View>
-      </View>
+      </ScreenBand>
 
       <Pressable
         onPress={() => router.push("/levels")}
-        style={({ pressed }) => [styles.levelCard, pressed && { opacity: 0.9 }]}
+        style={({ pressed }) => [
+          styles.levelCard,
+          { marginTop: -BAND_OVERLAP },
+          pressed && { opacity: 0.9 },
+        ]}
       >
         <View style={styles.levelTop}>
           <BadgeMedallion

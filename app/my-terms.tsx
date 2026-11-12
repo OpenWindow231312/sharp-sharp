@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.colors.background },
   container: {
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: 60,
+    paddingTop: 0,
     paddingBottom: theme.spacing.xxl,
   },
   intro: { marginBottom: theme.spacing.lg, fontSize: 14 },

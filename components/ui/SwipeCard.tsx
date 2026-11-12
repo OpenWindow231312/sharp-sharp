@@ -108,6 +108,12 @@ const CARD_COLORWAYS: CardColorway[] = [
 
 // Stable per term id so a given card doesn't change color as the user
 // swipes back and forth or the feed list re-renders.
+// The plaque colour a term gets in the Feed, so other screens (the
+// dictionary's colour spines) can match it.
+export function termColor(id: string): string {
+  return colorwayForTerm(id).background;
+}
+
 function colorwayForTerm(id: string): CardColorway {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {

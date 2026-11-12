@@ -19,7 +19,7 @@ export function FeedControls({ onSkip, onSave, onFlag }: FeedControlsProps) {
           pressed && styles.pressed,
         ]}
       >
-        <X size={20} weight="bold" color={theme.colors.protea} />
+        <X size={22} weight="bold" color={theme.colors.protea} />
       </Pressable>
       <Pressable
         onPress={onSave}
@@ -29,7 +29,7 @@ export function FeedControls({ onSkip, onSave, onFlag }: FeedControlsProps) {
           pressed && styles.pressed,
         ]}
       >
-        <BookmarkSimple size={20} weight="bold" color={theme.colors.highveld} />
+        <BookmarkSimple size={22} weight="fill" color={theme.colors.ink} />
       </Pressable>
       <Pressable
         onPress={onFlag}
@@ -39,7 +39,7 @@ export function FeedControls({ onSkip, onSave, onFlag }: FeedControlsProps) {
           pressed && styles.pressed,
         ]}
       >
-        <Flag size={20} weight="bold" color={theme.colors.marigold} />
+        <Flag size={22} weight="fill" color={theme.colors.inkSoft} />
       </Pressable>
     </View>
   );
@@ -54,25 +54,16 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
   },
   circle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: theme.colors.card,
   },
-  skipCircle: {
-    borderWidth: 2.5,
-    borderColor: theme.colors.protea,
-  },
-  saveCircle: {
-    borderWidth: 2.5,
-    borderColor: theme.colors.highveld,
-  },
-  flagCircle: {
-    borderWidth: 2.5,
-    borderColor: theme.colors.marigold,
-  },
+  skipCircle: {},
+  saveCircle: { backgroundColor: theme.colors.marigold },
+  flagCircle: {},
   pressed: {
     opacity: 0.8,
     transform: [{ scale: 0.95 }],

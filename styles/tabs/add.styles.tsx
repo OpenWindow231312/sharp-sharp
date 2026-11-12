@@ -3,10 +3,14 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    paddingTop: 70,
+    paddingHorizontal: 24,
     backgroundColor: theme.colors.background,
     flexGrow: 1,
+  },
+  stepCard: {
+    marginTop: -36,
+    padding: 20,
+    ...theme.shadow.soft,
   },
   headerRow: {
     flexDirection: "row",

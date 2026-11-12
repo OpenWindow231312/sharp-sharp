@@ -99,5 +99,5 @@ export default function EditNameScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.colors.background },
-  container: { paddingHorizontal: theme.spacing.lg, paddingTop: 60 },
+  container: { paddingHorizontal: theme.spacing.lg, paddingTop: 0 },
 });

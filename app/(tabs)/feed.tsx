@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FeedControls } from "@/components/ui/FeedControls";
-import { FeedHeader } from "@/components/ui/FeedHeader";
+import { BAND_OVERLAP, MonoTag, ScreenBand } from "@/components/ui/ScreenBand";
 import { FirstTimeTutorial } from "@/components/ui/FirstTimeTutorial";
 import { SwipeCard, type SwipeCardHandle } from "@/components/ui/SwipeCard";
 import { Text } from "@/components/ui/Text";
 import { XpToast } from "@/components/ui/XpToast";
 import { theme } from "@/constants/designTheme";
 import { USE_MOCK_DATA } from "@/constants/devConfig";
-import { getLevelInfo } from "@/constants/levels";
+import { getLevelInfo, LEVELS } from "@/constants/levels";
 import { MOCK_TERMS } from "@/constants/mockTerms";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/services/firebase";
@@ -26,7 +26,7 @@ import {
   query,
 } from "firebase/firestore";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Image, View } from "react-native";
 import { styles } from "@/styles/tabs/feed.styles";
 
 function shuffle<T>(items: T[]): T[] {
@@ -163,7 +163,7 @@ export default function FeedScreen() {
       setToast({
         id: Date.now(),
         amount: 5,
-        label: "Saved to your dictionary",
+        label: "Lekker, saved",
       });
 
       if (USE_MOCK_DATA) {
@@ -197,31 +197,53 @@ export default function FeedScreen() {
     Math.max(0, feedTerms.length - currentIndex - 1),
   );
 
+  const firstName = (name || user?.displayName || "there").split(" ")[0];
+  const nextLevel = LEVELS[levelInfo.level];
+
   return (
     <View style={styles.container}>
       <FirstTimeTutorial />
 
-      <Text
-        variant="display"
-        style={{
-          marginBottom: 4,
-          fontSize: 35,
-          paddingHorizontal: theme.spacing.lg,
-        }}
+      <ScreenBand
+        title={`Howzit, ${firstName}`}
+        subtitle={
+          feedTerms.length - currentIndex > 0
+            ? `${feedTerms.length - currentIndex} ${feedTerms.length - currentIndex === 1 ? "word" : "words"} waiting for you.`
+            : "Time to learn Sharp Sharp."
+        }
+        right={
+          <View style={styles.avatar}>
+            {photoBase64 ? (
+              <Image source={{ uri: photoBase64 }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {getInitial(name, user?.displayName, user?.email)}
+              </Text>
+            )}
+          </View>
+        }
       >
-        Feed
-      </Text>
+        <View style={styles.xpRow}>
+          <MonoTag onDark>
+            {levelInfo.title} · {xp} XP
+          </MonoTag>
+          <View style={styles.xpTrack}>
+            <View
+              style={[
+                styles.xpFill,
+                { width: `${Math.round(levelInfo.progress * 100)}%` },
+              ]}
+            />
+          </View>
+          <MonoTag onDark>
+            {nextLevel
+              ? `${nextLevel.threshold - xp} to ${nextLevel.title}`
+              : "Top tier"}
+          </MonoTag>
+        </View>
+      </ScreenBand>
 
-      <FeedHeader
-        levelTitle={levelInfo.title}
-        progress={levelInfo.progress}
-        xp={xp}
-        avatarInitial={getInitial(name, user?.displayName, user?.email)}
-        photoBase64={photoBase64}
-        name={name || user?.displayName || "there"}
-      />
-
-      <View style={styles.stack}>
+      <View style={[styles.stack, { marginTop: -BAND_OVERLAP }]}>
         {toast ? (
           <XpToast
             key={toast.id}

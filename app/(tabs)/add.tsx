@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { BAND_OVERLAP, ScreenBand } from "@/components/ui/ScreenBand";
 import { SwipeCard } from "@/components/ui/SwipeCard";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
@@ -207,181 +208,197 @@ export default function AddTermScreen() {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        <ProgressBar progress={(step + 1) / TOTAL_STEPS} />
-
-        {step > 0 ? (
-          <View style={styles.headerRow}>
-            <Pressable onPress={goBack} style={styles.backButton} hitSlop={12}>
-              <CaretLeft size={22} color={theme.colors.ink} />
-            </Pressable>
-            {step === 3 ? (
-              <Pressable onPress={skipStep} hitSlop={12}>
-                <Text variant="muted" style={styles.skipText}>
-                  Skip
-                </Text>
-              </Pressable>
-            ) : null}
+        <ScreenBand
+          title="Teach a word"
+          subtitle={`Step ${step + 1} of ${TOTAL_STEPS}`}
+          style={{ marginHorizontal: -24 }}
+        >
+          <View style={{ marginTop: 20 }}>
+            <ProgressBar progress={(step + 1) / TOTAL_STEPS} />
           </View>
-        ) : null}
-
-        {step === 0 && (
-          <StepBlock
-            title="What's the word?"
-            subtitle="A slang term or phrase you know."
-          >
-            <Input
-              placeholder="e.g. Eish"
-              value={term}
-              onChangeText={setTerm}
-              autoFocus
-            />
-          </StepBlock>
-        )}
-
-        {step === 1 && (
-          <StepBlock
-            title="Which language?"
-            subtitle={`"${term}" belongs to...`}
-          >
-            <View style={styles.chipWrap}>
-              {LANGUAGES.map((lang, i) => (
-                <Chip
-                  key={lang}
-                  label={lang}
-                  selected={language === lang}
-                  onPress={() => setLanguage(lang)}
-                  delay={i * 25}
-                />
-              ))}
-              <Chip
-                label={OTHER_LANGUAGE_OPTION}
-                selected={language === OTHER_LANGUAGE_OPTION}
-                onPress={() => setLanguage(OTHER_LANGUAGE_OPTION)}
-                delay={LANGUAGES.length * 25}
-              />
+        </ScreenBand>
+        <Card style={styles.stepCard}>
+          {step > 0 ? (
+            <View style={styles.headerRow}>
+              <Pressable
+                onPress={goBack}
+                style={styles.backButton}
+                hitSlop={12}
+              >
+                <CaretLeft size={22} color={theme.colors.ink} />
+              </Pressable>
+              {step === 3 ? (
+                <Pressable onPress={skipStep} hitSlop={12}>
+                  <Text variant="muted" style={styles.skipText}>
+                    Skip
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
-            {language === OTHER_LANGUAGE_OPTION ? (
+          ) : null}
+
+          {step === 0 && (
+            <StepBlock
+              title="What's the word?"
+              subtitle="A slang term or phrase you know."
+            >
               <Input
-                placeholder="e.g. Hebrew"
-                value={customLanguage}
-                onChangeText={setCustomLanguage}
+                placeholder="e.g. Eish"
+                value={term}
+                onChangeText={setTerm}
                 autoFocus
-                containerStyle={{ marginTop: 16 }}
               />
-            ) : null}
-          </StepBlock>
-        )}
+            </StepBlock>
+          )}
 
-        {step === 2 && (
-          <StepBlock title="What does it mean?" subtitle="Explain it simply.">
-            <Input
-              placeholder="What does it mean?"
-              value={meaning}
-              onChangeText={setMeaning}
-              multiline
-              autoFocus
-            />
-          </StepBlock>
-        )}
-
-        {step === 3 && (
-          <StepBlock
-            title="Add some flavour"
-            subtitle="Show people how it's really used. Add as many as you like."
-          >
-            <Input
-              label="Example sentence"
-              placeholder="e.g. That's your problem, sorry neh"
-              value={exampleSentence}
-              onChangeText={setExampleSentence}
-              returnKeyType="next"
-            />
-            <Input
-              label="Context"
-              placeholder="When would someone say this? e.g. sarcastically, when they're annoyed"
-              value={exampleContext}
-              onChangeText={setExampleContext}
-              onSubmitEditing={addExample}
-              returnKeyType="done"
-            />
-            <View style={styles.addExampleRow}>
-              <Button
-                label="+ Add another"
-                variant="secondary"
-                size="compact"
-                disabled={!exampleSentence.trim()}
-                onPress={addExample}
-                style={{ alignSelf: "flex-start", marginBottom: 0 }}
-              />
-              <Text variant="muted" style={styles.addExampleHint}>
-                {examples.length > 0
-                  ? `${examples.length} added`
-                  : "One is enough to continue."}
-              </Text>
-            </View>
-            {examples.length > 0 ? (
-              <View style={styles.examplesList}>
-                {examples.map((ex, i) => (
-                  <Card key={`${ex.sentence}-${i}`} style={styles.exampleCard}>
-                    <View style={styles.exampleRow}>
-                      <View style={{ flex: 1, paddingRight: 8 }}>
-                        <Text style={styles.exampleSentence}>
-                          "{ex.sentence}"
-                        </Text>
-                        {ex.context ? (
-                          <Text variant="muted" style={styles.exampleContext}>
-                            {ex.context}
-                          </Text>
-                        ) : null}
-                      </View>
-                      <Pressable
-                        onPress={() => removeExample(i)}
-                        hitSlop={10}
-                        style={styles.removeExampleButton}
-                      >
-                        <X size={18} color={theme.colors.protea} />
-                      </Pressable>
-                    </View>
-                  </Card>
+          {step === 1 && (
+            <StepBlock
+              title="Which language?"
+              subtitle={`"${term}" belongs to...`}
+            >
+              <View style={styles.chipWrap}>
+                {LANGUAGES.map((lang, i) => (
+                  <Chip
+                    key={lang}
+                    label={lang}
+                    selected={language === lang}
+                    onPress={() => setLanguage(lang)}
+                    delay={i * 25}
+                  />
                 ))}
+                <Chip
+                  label={OTHER_LANGUAGE_OPTION}
+                  selected={language === OTHER_LANGUAGE_OPTION}
+                  onPress={() => setLanguage(OTHER_LANGUAGE_OPTION)}
+                  delay={LANGUAGES.length * 25}
+                />
               </View>
-            ) : null}
-          </StepBlock>
-        )}
+              {language === OTHER_LANGUAGE_OPTION ? (
+                <Input
+                  placeholder="e.g. Hebrew"
+                  value={customLanguage}
+                  onChangeText={setCustomLanguage}
+                  autoFocus
+                  containerStyle={{ marginTop: 16 }}
+                />
+              ) : null}
+            </StepBlock>
+          )}
 
-        {step === 4 && (
-          <StepBlock
-            title="Ready to teach Sharp Sharp?"
-            subtitle="Here's what people will see."
-          >
-            <View style={{ position: "relative", minHeight: 400 }}>
-              <SwipeCard term={previewTerm} interactive={false} />
-            </View>
-          </StepBlock>
-        )}
+          {step === 2 && (
+            <StepBlock title="What does it mean?" subtitle="Explain it simply.">
+              <Input
+                placeholder="What does it mean?"
+                value={meaning}
+                onChangeText={setMeaning}
+                multiline
+                autoFocus
+              />
+            </StepBlock>
+          )}
 
-        {errorMsg ? (
-          <Text style={{ color: theme.colors.protea, marginTop: 8 }}>
-            {errorMsg}
-          </Text>
-        ) : null}
+          {step === 3 && (
+            <StepBlock
+              title="Add some flavour"
+              subtitle="Show people how it's really used. Add as many as you like."
+            >
+              <Input
+                label="Example sentence"
+                placeholder="e.g. That's your problem, sorry neh"
+                value={exampleSentence}
+                onChangeText={setExampleSentence}
+                returnKeyType="next"
+              />
+              <Input
+                label="Context"
+                placeholder="When would someone say this? e.g. sarcastically, when they're annoyed"
+                value={exampleContext}
+                onChangeText={setExampleContext}
+                onSubmitEditing={addExample}
+                returnKeyType="done"
+              />
+              <View style={styles.addExampleRow}>
+                <Button
+                  label="+ Add another"
+                  variant="secondary"
+                  size="compact"
+                  disabled={!exampleSentence.trim()}
+                  onPress={addExample}
+                  style={{ alignSelf: "flex-start", marginBottom: 0 }}
+                />
+                <Text variant="muted" style={styles.addExampleHint}>
+                  {examples.length > 0
+                    ? `${examples.length} added`
+                    : "One is enough to continue."}
+                </Text>
+              </View>
+              {examples.length > 0 ? (
+                <View style={styles.examplesList}>
+                  {examples.map((ex, i) => (
+                    <Card
+                      key={`${ex.sentence}-${i}`}
+                      style={styles.exampleCard}
+                    >
+                      <View style={styles.exampleRow}>
+                        <View style={{ flex: 1, paddingRight: 8 }}>
+                          <Text style={styles.exampleSentence}>
+                            "{ex.sentence}"
+                          </Text>
+                          {ex.context ? (
+                            <Text variant="muted" style={styles.exampleContext}>
+                              {ex.context}
+                            </Text>
+                          ) : null}
+                        </View>
+                        <Pressable
+                          onPress={() => removeExample(i)}
+                          hitSlop={10}
+                          style={styles.removeExampleButton}
+                        >
+                          <X size={18} color={theme.colors.protea} />
+                        </Pressable>
+                      </View>
+                    </Card>
+                  ))}
+                </View>
+              ) : null}
+            </StepBlock>
+          )}
 
-        <Button
-          label={
-            step === 4
-              ? isSubmitting
-                ? "Adding..."
-                : "Add term (+20 XP)"
-              : "Next"
-          }
-          variant="primary"
-          disabled={
-            isSubmitting ||
-            (step === 3 && examples.length === 0 && !exampleSentence.trim())
-          }
-          onPress={step === 4 ? handleSubmit : goNext}
-          style={{ marginTop: 24 }}
-        />
+          {step === 4 && (
+            <StepBlock
+              title="Ready to teach Sharp Sharp?"
+              subtitle="Here's what people will see."
+            >
+              <View style={{ position: "relative", minHeight: 400 }}>
+                <SwipeCard term={previewTerm} interactive={false} />
+              </View>
+            </StepBlock>
+          )}
+
+          {errorMsg ? (
+            <Text style={{ color: theme.colors.protea, marginTop: 8 }}>
+              {errorMsg}
+            </Text>
+          ) : null}
+
+          <Button
+            label={
+              step === 4
+                ? isSubmitting
+                  ? "Adding..."
+                  : "Add term (+20 XP)"
+                : "Next"
+            }
+            variant="primary"
+            disabled={
+              isSubmitting ||
+              (step === 3 && examples.length === 0 && !exampleSentence.trim())
+            }
+            onPress={step === 4 ? handleSubmit : goNext}
+            style={{ marginTop: 24, marginBottom: 0 }}
+          />
+        </Card>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -398,10 +415,10 @@ function StepBlock({
 }) {
   return (
     <View>
-      <Text variant="display" style={{ marginBottom: 4 }}>
+      <Text variant="heading" style={{ marginBottom: 4, fontSize: 24 }}>
         {title}
       </Text>
-      <Text variant="muted" style={{ marginBottom: 24 }}>
+      <Text variant="muted" style={{ marginBottom: 20 }}>
         {subtitle}
       </Text>
       {children}

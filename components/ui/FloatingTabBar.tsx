@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
   },
   tabActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.indigoDeep,
   },
   label: {
     fontFamily: theme.fonts.bodyBold,

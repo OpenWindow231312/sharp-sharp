@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/Button";
+import { BAND_OVERLAP, MonoTag, ScreenBand } from "@/components/ui/ScreenBand";
+import { termColor } from "@/components/ui/SwipeCard";
 import { Card } from "@/components/ui/Card";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
@@ -91,19 +93,23 @@ export default function SavedScreen() {
 
   return (
     <View style={styles.container}>
-      <Text variant="display" style={{ marginBottom: 4 }}>
-        My dictionary
-      </Text>
-      <Text variant="muted" style={{ marginBottom: 24 }}>
-        {terms.length > 0
-          ? `${terms.length} word${terms.length === 1 ? "" : "s"} saved`
-          : "Everything you save from the Feed lands here."}
-      </Text>
+      <ScreenBand
+        title="My dictionary"
+        subtitle={
+          terms.length > 0
+            ? `${terms.length} ${terms.length === 1 ? "word" : "words"} saved`
+            : "Everything you save from the Feed lands here."
+        }
+      />
 
       {isLoading ? (
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator
+          size="large"
+          color={theme.colors.primary}
+          style={{ marginTop: theme.spacing.xl }}
+        />
       ) : terms.length === 0 ? (
-        <Card style={styles.emptyCard}>
+        <Card style={[styles.emptyCard, styles.body]}>
           <Text variant="heading" style={{ marginBottom: 8 }}>
             Nothing saved yet
           </Text>
@@ -114,7 +120,10 @@ export default function SavedScreen() {
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: TAB_BAR_CLEARANCE }}
+          contentContainerStyle={[
+            styles.body,
+            { paddingBottom: TAB_BAR_CLEARANCE },
+          ]}
           onScroll={onScroll}
           scrollEventThrottle={16}
         >
@@ -160,11 +169,15 @@ export default function SavedScreen() {
               >
                 <Card style={styles.termCard}>
                   <View style={styles.cardTop}>
+                    <View
+                      style={[
+                        styles.spine,
+                        { backgroundColor: termColor(term.id) },
+                      ]}
+                    />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.termText}>{term.term}</Text>
-                      <Text variant="muted" style={styles.termLanguage}>
-                        {term.language}
-                      </Text>
+                      <MonoTag>{term.language}</MonoTag>
                     </View>
                     <Pressable
                       onPress={() => confirmRemove(term)}
