@@ -45,14 +45,6 @@ export default function AddTermScreen() {
   const onScroll = useHideTabBarOnScroll();
   const { hide, show } = useTabBar();
 
-  // The preview step is the one place the bar gets in the way of the
-  // card, so tuck it away there. Tapping where it was brings it back.
-  useEffect(() => {
-    if (step === 4) hide();
-    else show();
-    return show;
-  }, [step, hide, show]);
-
   const [step, setStep] = useState(0);
   const [term, setTerm] = useState("");
   const [language, setLanguage] = useState<string | null>(null);
@@ -64,6 +56,14 @@ export default function AddTermScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isDone, setIsDone] = useState(false);
+
+  // The preview step is the one place the bar gets in the way of the
+  // card, so tuck it away there. Tapping where it was brings it back.
+  useEffect(() => {
+    if (step === 4) hide();
+    else show();
+    return show;
+  }, [step, hide, show]);
 
   function goNext() {
     setErrorMsg("");
