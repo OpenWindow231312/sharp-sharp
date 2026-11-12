@@ -1,5 +1,9 @@
 import { Button } from "@/components/ui/Button";
-import { BAND_OVERLAP, MonoTag, ScreenBand } from "@/components/ui/ScreenBand";
+import {
+  MonoTag,
+  OverscrollFill,
+  ScreenBand,
+} from "@/components/ui/ScreenBand";
 import { termColor } from "@/components/ui/SwipeCard";
 import { Card } from "@/components/ui/Card";
 import { Text } from "@/components/ui/Text";
@@ -99,6 +103,7 @@ export default function SavedScreen() {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
+        <OverscrollFill />
         <ScreenBand
           title="My dictionary"
           subtitle={

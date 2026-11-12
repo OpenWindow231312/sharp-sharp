@@ -443,6 +443,8 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                           styles.termTextHighlight,
                           { color: colorway.termShadowLight },
                         ]}
+                        numberOfLines={2}
+                        adjustsFontSizeToFit
                       >
                         {term.term}
                       </Text>
@@ -452,6 +454,8 @@ export const SwipeCard = forwardRef<SwipeCardHandle, SwipeCardProps>(
                           styles.termTextMain,
                           { textShadowColor: colorway.termShadowDark },
                         ]}
+                        numberOfLines={2}
+                        adjustsFontSizeToFit
                       >
                         {term.term}
                       </Text>
@@ -656,8 +660,10 @@ const styles = StyleSheet.create({
   },
   termText: {
     fontFamily: theme.fonts.displayExtraBold,
-    fontSize: 42,
+    fontSize: 56,
+    lineHeight: 62,
     textAlign: "center",
+    paddingHorizontal: theme.spacing.md,
   },
   termTextHighlight: {
     position: "absolute",

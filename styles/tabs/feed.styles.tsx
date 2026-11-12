@@ -9,9 +9,11 @@ export const styles = StyleSheet.create({
     paddingBottom: 96,
     backgroundColor: theme.colors.background,
   },
+  // Just tall enough for the card, so the swipe controls sit right under
+  // it instead of being pushed to the bottom of a tall phone.
   stack: {
-    flex: 1,
-    justifyContent: "center",
+    height: 440,
+    justifyContent: "flex-start",
   },
   avatar: {
     width: 48,

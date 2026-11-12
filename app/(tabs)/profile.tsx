@@ -1,6 +1,11 @@
 import { BadgeMedallion } from "@/components/ui/BadgeMedallion";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { BAND_OVERLAP, MonoTag, ScreenBand } from "@/components/ui/ScreenBand";
+import {
+  BAND_OVERLAP,
+  MonoTag,
+  OverscrollFill,
+  ScreenBand,
+} from "@/components/ui/ScreenBand";
 import { SettingsGroup, SettingsRow } from "@/components/ui/SettingsRow";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
@@ -105,6 +110,7 @@ export default function ProfileScreen() {
       onScroll={onScroll}
       scrollEventThrottle={16}
     >
+      <OverscrollFill />
       <ScreenBand
         title="Profile"
         style={{ marginHorizontal: -theme.spacing.lg }}

@@ -21,7 +21,7 @@ type ScreenBandProps = {
 // the screen's first card to overlap it by BAND_OVERLAP.
 export const BAND_OVERLAP = 36;
 // Height of the band below the status bar (title, content and overlap).
-const BAND_BODY_HEIGHT = 176;
+const BAND_BODY_HEIGHT = 180;
 
 export function ScreenBand({
   title,
@@ -37,7 +37,7 @@ export function ScreenBand({
       style={[
         styles.band,
         {
-          paddingTop: Math.max(insets.top, 20) + 8,
+          paddingTop: Math.max(insets.top, 20) + 20,
           // Same height on every tab, whatever each one puts in it.
           minHeight: Math.max(insets.top, 20) + BAND_BODY_HEIGHT,
         },
@@ -85,6 +85,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  overscroll: {
+    position: "absolute",
+    top: -800,
+    left: 0,
+    right: 0,
+    height: 800,
+    backgroundColor: theme.colors.indigoDeep,
+  },
   // Baloo's ascenders sit high: a tight lineHeight clipped the title on
   // iOS, so give it room and no extra Android padding.
   title: {
@@ -102,6 +110,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
+
+// Put this first inside a ScrollView whose first child is a ScreenBand:
+// on iOS the pull-down bounce otherwise reveals paper above the band.
+export function OverscrollFill() {
+  return <View pointerEvents="none" style={styles.overscroll} />;
+}
 
 // Small mono label used on the band and in lists (language, XP).
 export function MonoTag({

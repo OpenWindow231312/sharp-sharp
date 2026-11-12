@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { BAND_OVERLAP, ScreenBand } from "@/components/ui/ScreenBand";
+import { OverscrollFill, ScreenBand } from "@/components/ui/ScreenBand";
 import { SwipeCard } from "@/components/ui/SwipeCard";
 import { Text } from "@/components/ui/Text";
 import { theme } from "@/constants/designTheme";
@@ -208,6 +208,7 @@ export default function AddTermScreen() {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
+        <OverscrollFill />
         <ScreenBand
           title="Teach a word"
           subtitle={`Step ${step + 1} of ${TOTAL_STEPS}`}
